@@ -1,0 +1,57 @@
+# =============================================================================
+# Kirthi Diamonds — Cloud Build pipeline
+# Commit this file at the REPO ROOT (same level as the Dockerfile),
+# replacing the existing cloudbuild.yaml, then push to main.
+# Builds the Docker image, pushes to Artifact Registry, deploys to Cloud Run.
+# =============================================================================
+
+steps:
+  # 1. Build the image using the repo's existing Dockerfile
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/kirthi:$COMMIT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/kirthi:latest
+      - .
+
+  # 2. Push both tags
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/kirthi
+
+  # 3. Deploy the freshly built image to the existing Cloud Run service.
+  #    This swaps ONLY the image — existing env vars, secrets, domain
+  #    mapping, and scaling settings on the service are preserved.
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/kirthi:$COMMIT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8080
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/kirthi:$COMMIT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/kirthi:latest
+
+substitutions:
+  _REGION: asia-southeast1
+  _SERVICE: remix-remix-kirthi-diamonds
+  _AR_REPO: web
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+timeout: 1200s
