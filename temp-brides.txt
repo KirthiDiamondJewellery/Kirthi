@@ -1,0 +1,31 @@
+  },
+  {
+    id: 'shop',
+    title: 'The Shop',
+    subtitle: 'Boutique',
+    description: 'A selection of our pieces, shown in detail. For acquisitions and bespoke commissions, we recommend a visit to the boutique.',
+    index: '05 / 08',
+    location: 'Digital Flagship',
+    image: '',
+    isShop: true,
+  },
+  {
+    id: 'brides',
+    title: 'Our Patrons',
+    seoTitle: 'Bridal Stories: Celebrating Unique Love Stories with Kirthi Diamonds',
+    subtitle: 'Stories',
+    description: "Kirthi Brides represent the pinnacle of our bespoke commissioning process. For nearly two decades, since our formal establishment in 2006, we have had the distinct privilege of crafting the foundational heirlooms for countless new beginnings. We understand that an engagement ring or bridal suite is not merely a purchase; it is a profoundly personal symbol of enduring commitment. That is why our approach to bridal jewellery is inherently consultative, never transactional. From our quiet boutiques in Kochi and Calicut, our design team works one-on-one with patrons to understand their unique vision, guiding them through the nuances of GIA and IGI certified diamonds.\n\nBecause our production is strictly low-volume, we dedicate the necessary time and intimacy to ensure that every bridal commission is as unique as the love story it represents. Our master artisans meticulously hand-forge each setting in BIS-hallmarked gold or platinum, securing the centre stone with absolute precision. The result is a bespoke masterpiece designed to be worn, cherished, and eventually passed down through generations. Understanding and deciphering a customers requirement and creating a beautiful creation which talks about both the brand and the bride in question is the main challenge we passionately embrace.",
+    index: '06 / 08',
+    location: 'Calicut Boutique',
+    image: '',
+  }
+];
+
+export const HERITAGE_ITEMS: HeritageItem[] = [
+  {
+    id: 'heritage-1975',
+    year: '1975',
+    title: 'Foundational Roots',
+    description: 'Our family\'s diamond trade begins, establishing deep relationships in Antwerp and Surat for loose diamond sourcing and distribution, setting the standard for uncompromising quality.',
+    image: ''
+  },

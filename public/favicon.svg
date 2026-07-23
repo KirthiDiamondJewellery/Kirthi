@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400&amp;display=swap');
+    </style>
+  </defs>
+  <rect width="192" height="192" fill="#050505"/>
+  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#D4AF37" font-family="'Playfair Display', serif" font-size="125" font-style="italic">K</text>
+</svg>

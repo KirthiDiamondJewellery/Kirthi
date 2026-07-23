@@ -1,0 +1,26 @@
+5:  description: string;
+18:  description: string;
+46:  description: string;
+53:  description: string;
+71:    description: 'A modern journey of light engineering. We curate the extraordinary, transforming rare minerals into radiant masterpieces that transcend generations.',
+80:    description: 'A dedicated chronicle for the discerning collector. Exploring the intersection of geology, history, and the timeless art of high jewelry.',
+89:    description: 'A legacy etched in light. Journey through the historical milestones and archival masterpieces that define the Kirthi name.',
+98:    description: 'Witness the alchemy of creation. From raw mineral to radiant masterpiece, our production methodology is a testament to human precision.',
+107:    description: 'The soul of Kirthi Diamonds. A modern journey of artistic integrity, ethical leadership, and the relentless pursuit of brilliance.',
+116:    description: 'Acquire our most coveted pieces. A curated digital flagship for the discerning collector of rare and exceptional jewelry.',
+126:    description: 'A celebration of cherished legacies. Exploring the personal narratives and exceptional commissions created for our most cherished patrons.',
+149:    description: 'A historic reconstruction featuring 400 micro-pavé diamonds and a central blue sapphire.',
+156:    description: 'Worn by cinematic icons, this piece defined contemporary elegance with its cascading brilliant cuts.',
+163:    description: 'A 100-carat rough stone transformed into a perfect D-Flawless emerald cut.',
+170:    description: 'Featuring two identical 10-carat pear-shaped diamonds of unparalleled symmetry.',
+177:    description: 'An Art Deco masterpiece featuring celestial motifs set in polished platinum.',
+186:    description: 'The journey begins with a spark. Our creative directors interpret narratives of light into foundational jewelry concepts.',
+192:    description: 'Gouache rendering on matte paper allows us to visualize the interplay of light and shadow before a single cut is made.',
+198:    description: 'Translating artistry into digital precision. Advanced 3D mapping computes the exact structural mathematics of the piece.',
+204:    description: 'The precious metal is heated to its essence and cast into wax-printed molds to ensure a flawless foundation.',
+210:    description: 'Artisans meticulously file and refine the raw casting, smoothing every curve to perfection.',
+216:    description: 'Master setters secure each stone under microscopes, ensuring maximal security and light exposure.',
+222:    description: 'The final act. A multi-stage polishing process that reveals the mirror-like finish of the Kirthi signature.',
+253:  { id: 'solitaire', label: 'Classic Solitaire', description: 'Timeless focus on the center stone' },
+254:  { id: 'halo', label: 'Radiant Halo', description: 'Surrounded by a shimmer of micro-diamonds' },
+255:  { id: 'pave', label: 'Vintage Pavé', description: 'Diamond-encrusted band for ultimate sparkle' },

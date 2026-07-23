@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "SiteContent": {
+      "title": "SiteContent",
+      "description": "Dynamic content for the website pages.",
+      "type": "object",
+      "properties": {
+        "logoUrl": { "type": "string" },
+        "heroVideoUrl": { "type": "string" },
+        "heroTitle": { "type": "string" },
+        "heroSubtitle": { "type": "string" }
+      }
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer order containing shipping and product details.",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": { "type": "object" }
+        },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "processing", "shipped", "delivered"] },
+        "createdAt": { "type": "number" },
+        "updates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "timestamp": { "type": "number" }
+            }
+          }
+        }
+      },
+      "required": ["orderId", "customerName", "email", "phone", "address", "items", "totalAmount", "status", "createdAt"]
+    },
+    "BridalSubmission": {
+      "title": "BridalSubmission",
+      "description": "User submission of bridal photos and story",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "story": { "type": "string" },
+        "images": { 
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "email", "story", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "site_content/{contentId}": {
+      "schema": { "$ref": "#/entities/SiteContent" },
+      "description": "Global and page-specific site content."
+    },
+    "orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Customer orders."
+    },
+    "bridalSubmissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/BridalSubmission" },
+      "description": "Bridal story submissions."
+    }
+  }
+}

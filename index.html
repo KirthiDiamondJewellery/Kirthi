@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      window.addEventListener('error', function(e) {
+        var msg = e.message || (e.error && e.error.message) || "";
+        if (typeof msg === 'string' && (msg.indexOf('Script error') > -1 || msg.indexOf('ResizeObserver') > -1)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return true;
+        }
+      }, true);
+      window.onerror = function(msg, url, line, col, error) {
+        if (!msg || (typeof msg === 'string' && (msg.indexOf('Script error') > -1 || msg.indexOf('ResizeObserver') > -1))) {
+          return true;
+        }
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        if (!e.reason) {
+          e.preventDefault();
+          return;
+        }
+        var reason = e.reason.message || (typeof e.reason === 'string' ? e.reason : "");
+        if (typeof reason === 'string' && (reason.indexOf('Script error') > -1 || reason.indexOf('ResizeObserver') > -1 || reason.indexOf('ResizeObserver loop limit exceeded') > -1)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return true;
+        }
+        console.warn('Unhandled rejection (suppressed):', e.reason);
+        e.preventDefault();
+      });
+    </script>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
+    <title>Kirthi Diamonds | Bespoke Luxury Diamond Jewellery</title>
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <meta
+      name="description"
+      content="Bespoke diamond house est. 2006, family diamond trade since 1975. Luxury GIA and IGI certified diamond and gold jewellery in Kochi and Calicut, Kerala."
+    />
+    <meta name="author" content="Kirthi Diamonds" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" as="image" href="/logo.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="canonical" href="https://kirthidiamonds.com" />
+
+    <!-- Preconnect for Google Fonts to improve LCP -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400&subset=latin&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400&subset=latin&display=swap" />
+    </noscript>
+
+    <!-- AEO & Semantic Web Data -->
+    <script id="schema-organization" type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://kirthidiamonds.com/#organization",
+      "name": "Kirthi Diamonds",
+      "alternateName": "Kirthi Diamond Jewellery",
+      "url": "https://kirthidiamonds.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://kirthidiamonds.com/logo.png"
+      },
+      "foundingDate": "2006",
+      "description": "A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975. Offering GIA and IGI certified diamonds, BIS hallmarked 18kt and 22kt gold, and bespoke bridal jewellery through exclusive boutiques in Kochi and Calicut, Kerala.",
+      "award": [
+        "GIA Certified Diamond Retailer",
+        "IGI Certified Diamond Retailer",
+        "BIS Hallmarked Gold Jeweller"
+      ],
+      "sameAs": [
+        "https://www.instagram.com/kirthidiamonds",
+        "https://www.facebook.com/kirthidiamonds",
+        "https://twitter.com/kirthidiamonds"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "telephone": "+919847086990",
+        "availableLanguage": ["English", "Malayalam", "Hindi"]
+      }
+    }
+    </script>
+
+    <script id="schema-jewelrystore" type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "JewelryStore",
+      "@id": "https://kirthidiamonds.com/#jewelrystore",
+      "name": "Kirthi Diamonds",
+      "alternateName": "Kirthi Diamond Jewellery",
+      "url": "https://kirthidiamonds.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://kirthidiamonds.com/logo.png"
+      },
+      "description": "A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975. Offering GIA and IGI certified diamonds, BIS hallmarked 18kt and 22kt gold, and bespoke bridal jewellery.",
+      "telephone": "+919847086990",
+      "priceRange": "₹₹₹₹",
+      "currenciesAccepted": "INR",
+      "paymentAccepted": "Cash, Credit Card, Debit Card, Bank Transfer",
+      "sameAs": [
+        "https://www.instagram.com/kirthidiamonds",
+        "https://www.facebook.com/kirthidiamonds",
+        "https://twitter.com/kirthidiamonds"
+      ]
+    }
+    </script>
+
+    <script id="schema-kochi-boutique" type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "JewelryStore",
+      "@id": "https://kirthidiamonds.com/#kochi",
+      "name": "Kirthi Diamonds - Kochi Boutique",
+      "alternateName": "Kirthi Diamond Jewellery Kochi",
+      "description": "A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975. VVS1 clarity, E/F colour, 18kt and 22kt BIS hallmarked gold. One-on-one bespoke consultation boutique in Palarivattom, Kochi, Kerala.",
+      "url": "https://kirthidiamonds.com/",
+      "telephone": "+919847086990",
+      "priceRange": "₹₹₹₹",
+      "currenciesAccepted": "INR",
+      "paymentAccepted": "Cash, Credit Card, Debit Card, Bank Transfer",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://kirthidiamonds.com/logo.png"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "34/572, By Pass Road, Palarivattom",
+        "addressLocality": "Kochi",
+        "addressRegion": "Kerala",
+        "postalCode": "682024",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "10.0159",
+        "longitude": "76.3102"
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+          ],
+          "opens": "10:00",
+          "closes": "19:30"
+        }
+      ],
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "telephone": "+91-98470-86990",
+          "contactType": "customer service",
+          "areaServed": "IN",
+          "availableLanguage": ["en", "ml"]
+        }
+      ],
+      "hasMap": "https://maps.google.com/?q=Kirthi+Diamond+Jewellery+Palarivattom+Kochi",
+      "sameAs": [
+        "https://www.instagram.com/kirthidiamonds",
+        "https://www.facebook.com/kirthidiamonds"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "85",
+        "reviewCount": "85",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "review": [
+        {
+          "@type": "Review",
+          "author": {
+            "@type": "Person",
+            "name": "Ananya Nair"
+          },
+          "datePublished": "2026-05-10",
+          "reviewBody": "Exceptional service and exquisite diamond collections. The bespoke design consultation process was flawless, and the diamond certification is completely transparent.",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "5",
+            "bestRating": "5",
+            "worstRating": "1"
+          }
+        }
+      ]
+    }
+    </script>
+
+    <script id="schema-calicut-boutique" type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "JewelryStore",
+      "@id": "https://kirthidiamonds.com/#calicut",
+      "name": "Kirthi Diamonds - Calicut Boutique",
+      "alternateName": "Kirthi Diamond Jewellery Kozhikode",
+      "description": "A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975. GIA and IGI certified bespoke diamond jewellery boutique opposite Federal Bank, Puthiyara, Kozhikode, Kerala.",
+      "url": "https://kirthidiamonds.com/",
+      "telephone": "+919847086002",
+      "priceRange": "₹₹₹₹",
+      "currenciesAccepted": "INR",
+      "paymentAccepted": "Cash, Credit Card, Debit Card, Bank Transfer",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://kirthidiamonds.com/logo.png"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "61/11508A, Opposite Federal Bank, Puthiyara",
+        "addressLocality": "Kozhikode",
+        "addressRegion": "Kerala",
+        "postalCode": "673004",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "11.2640",
+        "longitude": "75.7804"
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+          ],
+          "opens": "09:30",
+          "closes": "19:30"
+        }
+      ],
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "telephone": "+91-98470-86002",
+          "contactType": "customer service",
+          "areaServed": "IN",
+          "availableLanguage": ["en", "ml"]
+        }
+      ],
+      "hasMap": "https://maps.google.com/?q=Kirthi+Diamond+Jewellery+Puthiyara+Kozhikode",
+      "sameAs": [
+        "https://www.instagram.com/kirthidiamonds",
+        "https://www.facebook.com/kirthidiamonds"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "63",
+        "reviewCount": "63",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "review": [
+        {
+          "@type": "Review",
+          "author": {
+            "@type": "Person",
+            "name": "Gautham Krishna"
+          },
+          "datePublished": "2026-06-02",
+          "reviewBody": "A premium boutique with magnificent bridal collections. Their team is extremely knowledgeable and helped us choose the perfect certified solitaire.",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "5",
+            "bestRating": "5",
+            "worstRating": "1"
+          }
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://kirthidiamonds.com/#website",
+      "url": "https://kirthidiamonds.com/",
+      "name": "Kirthi Diamonds",
+      "description": "A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975. Boutiques in Kochi and Calicut, Kerala.",
+      "inLanguage": "en-IN",
+      "publisher": {
+        "@id": "https://kirthidiamonds.com/#organization"
+      }
+    }
+    </script>
+    <script id="dynamic-faq-schema" type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Are Kirthi Diamonds' jewellery pieces certified?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Every diamond above 0.30 carats at Kirthi Diamonds is certified by GIA (Gemological Institute of America) or IGI (International Gemological Institute), ensuring internationally recognised grading for cut, colour, clarity, and carat weight."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the gold jewellery at Kirthi Diamonds hallmarked?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. All gold jewellery at Kirthi Diamonds is 100% BIS Hallmarked, guaranteeing purity in both 18kt and 22kt alloy configurations. Every piece is rigorously tested and stamped before leaving the atelier."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Kirthi Diamonds offer bespoke and custom jewellery?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Kirthi Diamonds specialises in bespoke commissions, from custom masterpieces and engagement rings to bridal jewellery. Each piece is crafted through a one-on-one bespoke consultation process, from conceptual sketches to final polish, ensuring a unique personal narrative."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is Kirthi Diamonds' exchange and buyback policy?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Kirthi Diamonds offers a lifetime buyback and exchange policy on all Kirthi creations. The policy is transparent and honours the enduring value of every piece purchased."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where are Kirthi Diamonds' showrooms located?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Kirthi Diamonds has two boutiques in Kerala. The Kochi showroom is at 34/572, By Pass Road, Palarivattom, Ernakulam, Kerala 682024, open Monday to Saturday 10:00 am to 7:30 pm. The Calicut showroom is at 61/11508A, Opposite Federal Bank, Puthiyara, Kozhikode, Kerala 673004, open Monday to Saturday 9:30 am to 7:30 pm."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long has Kirthi Diamonds been in business?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Kirthi Diamonds sell bridal jewellery and engagement rings?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Kirthi Diamonds offers a dedicated bridal jewellery collection, including engagement rings, wedding bands, and custom bridal masterpieces. Bespoke bridal commissions are available through one-on-one bespoke consultation appointments at both the Kochi and Calicut boutiques."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What diamond quality standard does Kirthi Diamonds use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Kirthi Diamonds sources exclusively 100% natural diamonds to an Internally Flawless standard, with VVS1 clarity and E/F colour grades. All diamonds above 0.30 carats carry GIA or IGI certification, and every piece is documented and archived for full traceability."
+          }
+        }
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://kirthidiamonds.com"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Journal",
+            "item": "https://kirthidiamonds.com/journal"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Heritage",
+            "item": "https://kirthidiamonds.com/heritage"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "Methodology",
+            "item": "https://kirthidiamonds.com/methodology"
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "name": "Maison",
+            "item": "https://kirthidiamonds.com/maison"
+          },
+          {
+            "@type": "ListItem",
+            "position": 6,
+            "name": "Shop",
+            "item": "https://kirthidiamonds.com/shop"
+          },
+          {
+            "@type": "ListItem",
+            "position": 7,
+            "name": "Brides",
+            "item": "https://kirthidiamonds.com/brides"
+          }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Bespoke Diamond & Gold Jewellery",
+        "image": "https://kirthidiamonds.com/logo.png",
+        "description": "Exquisite custom-crafted diamond and gold jewellery from Kirthi Diamonds. Specializing in GIA and IGI certified diamonds.",
+        "sku": "KD-BESPOKE-01",
+        "mpn": "KD-BESPOKE-01",
+        "brand": {
+          "@type": "Brand",
+          "name": "Kirthi Diamonds"
+        },
+        "offers": {
+          "@type": "AggregateOffer",
+          "url": "https://kirthidiamonds.com",
+          "priceCurrency": "INR",
+          "lowPrice": 50000,
+          "highPrice": 5000000,
+          "offerCount": 150,
+          "priceValidUntil": "2027-12-31",
+          "availability": "https://schema.org/InStock",
+          "itemCondition": "https://schema.org/NewCondition"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": 4.9,
+          "reviewCount": 148
+        },
+        "review": {
+          "@type": "Review",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "5",
+            "bestRating": "5"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Shekar Menon"
+          }
+        }
+      }
+    </script>
+
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "How to Identify Quality in Diamond Jewellery Brands",
+        "description": "Learn exactly how to identify true quality in diamond jewellery brands beyond the marketing.",
+        "image": "https://kirthidiamonds.com/og-cover.jpg",
+        "datePublished": "2026-05-19",
+        "dateModified": "2026-05-29",
+        "author": {
+          "@type": "Person",
+          "name": "Shekar Menon",
+          "jobTitle": "Diamond Expert",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "Kirthi Diamonds",
+            "url": "https://kirthidiamonds.com"
+          }
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Kirthi Diamonds",
+          "url": "https://kirthidiamonds.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://kirthidiamonds.com/logo.png"
+          }
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://kirthidiamonds.com/journal/how-to-identify-quality-in-diamond-jewellery-brands"
+        },
+        "about": [
+          { "@type": "Thing", "name": "Diamond Quality" },
+          { "@type": "Thing", "name": "Diamond Jewellery Brands" }
+        ],
+        "keywords": "diamond quality, how to identify quality diamonds, diamond jewellery brands"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Investment-Grade Diamond Jewellery: A Complete Buyer's Guide for India",
+        "description": "What makes a diamond investment-grade in India: certification, 4C grading thresholds, buyback policies, and how to structure a purchase.",
+        "image": "https://kirthidiamonds.com/og-cover.jpg",
+        "datePublished": "2026-05-19",
+        "dateModified": "2026-05-29",
+        "author": {
+          "@type": "Person",
+          "name": "Shekar Menon",
+          "jobTitle": "Diamond Expert",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "Kirthi Diamonds",
+            "url": "https://kirthidiamonds.com"
+          }
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Kirthi Diamonds",
+          "url": "https://kirthidiamonds.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://kirthidiamonds.com/logo.png"
+          }
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://kirthidiamonds.com/journal/investment-grade-diamond-jewellery-a-complete-buyer-s-guide-for-india"
+        },
+        "about": [
+          { "@type": "Thing", "name": "Investment Diamonds" },
+          { "@type": "Thing", "name": "Diamond Buying Guide" }
+        ],
+        "keywords": "investment diamonds India, buying investment diamonds, diamond buyer guide"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "The Art of Jewellery Design: Finding Inspiration",
+        "description": "How our jewellery designers find inspiration and transform it into timeless pieces.",
+        "image": "https://kirthidiamonds.com/og-cover.jpg",
+        "datePublished": "2026-05-19",
+        "dateModified": "2026-05-29",
+        "author": {
+          "@type": "Person",
+          "name": "Shekar Menon",
+          "jobTitle": "Diamond Expert",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "Kirthi Diamonds",
+            "url": "https://kirthidiamonds.com"
+          }
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Kirthi Diamonds",
+          "url": "https://kirthidiamonds.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://kirthidiamonds.com/logo.png"
+          }
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://kirthidiamonds.com/journal/the-art-of-jewellery-design-finding-inspiration"
+        },
+        "about": [
+          { "@type": "Thing", "name": "Jewellery Design" },
+          { "@type": "Thing", "name": "Design Inspiration" }
+        ],
+        "keywords": "jewellery design, art of jewellery, bespoke jewellery inspiration"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Diamond Jewellery vs Gold as an Investment in Kerala: What You Need to Know",
+        "description": "An honest, balanced comparison of certified diamond jewellery and gold as investments in Kerala.",
+        "image": "https://kirthidiamonds.com/og-cover.jpg",
+        "datePublished": "2026-05-19",
+        "dateModified": "2026-05-29",
+        "author": {
+          "@type": "Person",
+          "name": "Shekar Menon",
+          "jobTitle": "Diamond Expert",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "Kirthi Diamonds",
+            "url": "https://kirthidiamonds.com"
+          }
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Kirthi Diamonds",
+          "url": "https://kirthidiamonds.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://kirthidiamonds.com/logo.png"
+          }
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://kirthidiamonds.com/journal/diamond-jewellery-vs-gold-as-an-investment-in-kerala-what-you-need-to-know"
+        },
+        "about": [
+          { "@type": "Thing", "name": "Diamond vs Gold Investment" },
+          { "@type": "Thing", "name": "Jewellery Investment" }
+        ],
+        "keywords": "diamond vs gold investment, gold vs diamond Kerala, invest in jewellery"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "The Art of Hand Hammering and Manual Stone Setting: How Kirthi Diamonds Crafts Jewellery Built to Last Generations",
+        "description": "A deep dive into our manual stone setting and hand-hammering process.",
+        "image": "https://kirthidiamonds.com/og-cover.jpg",
+        "datePublished": "2026-05-19",
+        "dateModified": "2026-05-29",
+        "author": {
+          "@type": "Person",
+          "name": "Shekar Menon",
+          "jobTitle": "Diamond Expert",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "Kirthi Diamonds",
+            "url": "https://kirthidiamonds.com"
+          }
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Kirthi Diamonds",
+          "url": "https://kirthidiamonds.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://kirthidiamonds.com/logo.png"
+          }
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://kirthidiamonds.com/journal/the-art-of-hand-hammering-and-manual-stone-setting-how-kirthi-diamonds-crafts-jewellery-built-to-last-generations"
+        },
+        "about": [
+          { "@type": "Thing", "name": "Manual Stone Setting" },
+          { "@type": "Thing", "name": "Hand Hammering" },
+          { "@type": "Thing", "name": "Jewellery Craftsmanship" }
+        ],
+        "keywords": "manual stone setting, hand hammering jewellery, jewellery craftsmanship"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Artisanal Diamond Jewellery vs Mass-Produced: What Is the Real Difference?",
+        "description": "An expert comparison of artisanal and mass-produced diamond jewellery covering stone selection.",
+        "image": "https://kirthidiamonds.com/og-cover.jpg",
+        "datePublished": "2026-05-19",
+        "dateModified": "2026-05-29",
+        "author": {
+          "@type": "Person",
+          "name": "Shekar Menon",
+          "jobTitle": "Diamond Expert",
+          "worksFor": {
+            "@type": "Organization",
+            "name": "Kirthi Diamonds",
+            "url": "https://kirthidiamonds.com"
+          }
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Kirthi Diamonds",
+          "url": "https://kirthidiamonds.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://kirthidiamonds.com/logo.png"
+          }
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://kirthidiamonds.com/journal/artisanal-diamond-jewellery-vs-mass-produced-what-is-the-real-difference"
+        },
+        "about": [
+          { "@type": "Thing", "name": "Artisanal Jewellery" },
+          { "@type": "Thing", "name": "Mass-Produced Jewellery" }
+        ],
+        "keywords": "artisanal vs mass produced diamond jewellery, custom jewellery quality"
+      }
+    ]
+    </script>
+
+    <!-- Open Graph / Social SEO -->
+    <meta
+      property="og:title"
+      content="Kirthi Diamonds | Bespoke Luxury Diamond Jewellery"
+    />
+    <meta
+      property="og:description"
+      content="Kirthi Diamonds: A bespoke diamond house est. 2006. Discover premium, GIA & IGI certified diamond and BIS Hallmarked gold jewellery in Kochi and Calicut."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kirthi Diamonds" />
+    <meta property="og:url" content="https://kirthidiamonds.com" />
+    <meta
+      property="og:image"
+      content="https://kirthidiamonds.com/og-cover.jpg"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@kirthidiamonds" />
+    <meta
+      name="twitter:title"
+      content="Kirthi Diamonds | Bespoke Luxury Diamond Jewellery"
+    />
+    <meta
+      name="twitter:description"
+      content="Kirthi Diamonds: A bespoke diamond house est. 2006. Discover premium, GIA & IGI certified diamond and BIS Hallmarked gold jewellery in Kochi and Calicut."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kirthidiamonds.com/og-cover.jpg"
+    />
+
+    <!-- Google Tag - Stubbed for dev -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-Y471JCFPGK");
+      sessionStorage.setItem("kirthi_visitor_tracked", "true");
+    </script>
+    <!-- Preload Poster Image and Video for LCP (Mobile Performance) -->
+    <!-- Removed to prevent critical request chains if they redirect -->
+      <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+  </head>
+  <body>
+    <div id="root">
+      <div style="position:fixed;inset:0;background:#050505;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:1.5rem;">
+        <span style="color:#D4AF37;font-family:'Inter', sans-serif;font-size:0.75rem;letter-spacing:0.4em;text-transform:uppercase;margin-bottom:2rem;text-align:center;line-height:2;max-width:90%;margin-left:auto;margin-right:auto;">A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975.</span>
+        <div style="display:block;color:#fff;font-family:'Playfair Display', serif;font-style:italic;font-size:clamp(3.5rem, 8vw, 9rem);line-height:0.85;margin:0;letter-spacing:-0.03em;mix-blend-mode:difference;text-align:center;">Our Diamond <br/><span style="font-style:normal;font-weight:300;font-size:clamp(2.75rem, 6vw, 7.5rem);opacity:0.9;">Heritage</span></div>
+      </div>
+    </div>
+    <!-- SEO_LINKS_START -->
+    <div id="seo-links" style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;">
+      <main>
+        <h1>Kirthi Diamonds - Luxury Diamond Jewellery in Kochi & Calicut</h1>
+        <p>A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975.
+        Exclusive boutiques in Kochi and Calicut offering GIA and IGI certified diamonds,
+        BIS Hallmarked gold jewellery, bespoke commissions, and a lifetime exchange policy.</p>
+        <h2>Our Collections</h2>
+        <p>Bridal jewellery, everyday luxury lines, and high-jewellery bespoke acquisitions.
+        Every piece certified, hallmarked, and designed to be inherited.</p>
+        <h2>Visit Our Boutiques</h2>
+        <p>Kochi and Calicut. One-on-one bespoke consultation appointments available.</p>
+        <h2>Certifications and Standards</h2>
+        <p>Every diamond above 0.30 carats at Kirthi Diamonds is certified by the
+          <a href="https://www.gia.edu" rel="noopener noreferrer">
+            Gemological Institute of America (GIA)
+          </a>
+          or the
+          <a href="https://www.igi.org" rel="noopener noreferrer">
+            International Gemological Institute (IGI)
+          </a>,
+          ensuring internationally recognised grading for cut, colour, clarity, and carat weight.
+          All gold jewellery is
+          <a href="https://www.bis.gov.in/hallmarking/" rel="noopener noreferrer">
+            BIS Hallmarked
+          </a>
+          in 18kt and 22kt configurations, guaranteeing purity in accordance with the Bureau of Indian Standards.
+        </p>
+        <nav>
+          <a href="/pages/contact">Contact The Maison</a>
+          <a href="/pages/policies">Policies & Ethics</a>
+          <a href="/pages/diamond-jewellery">Diamond Jewellery Solutions</a>
+        </nav>
+      </main>
+    </div>
+    <!-- SEO_LINKS_END -->
+    <script type="module" src="/src/main.tsx" defer></script>
+  </body>
+</html>

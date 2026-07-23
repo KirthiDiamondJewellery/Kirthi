@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isAdmin() {
+      // Allow the specific user email to act as an admin, or fallback to admins collection
+      return request.auth != null && (request.auth.token.email == 'shekar.v.menon@gmail.com' || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    match /site_content/{contentId} {
+      // Anyone can read site content (public website data)
+      allow read: if true;
+      // Only admins can update site content
+      allow write: if isAdmin();
+    }
+
+    match /site_content_shopProducts/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /site_content_methodologySteps/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /site_content_brideGallery/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /site_content_homeFAQs/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /site_content_faqs/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /site_content_blogPosts/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    match /site_content_journalTrends/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /site_content_heritageItems/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /admins/{userId} {
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow write: if isAdmin();
+    }
+
+    match /analytics/{docId} {
+      allow get: if docId == 'visitors' || isAdmin();
+      allow list: if isAdmin();
+      // Allow anyone to update the visitors document by exactly 1
+      allow update: if docId == 'visitors' &&
+                    request.resource.data.keys().hasAll(['totalVisitors', 'lastUpdate']) &&
+                    request.resource.data.keys().size() == 2 &&
+                    request.resource.data.totalVisitors == resource.data.totalVisitors + 1;
+      // Allow initial creation if it doesn't exist
+      allow create: if docId == 'visitors' &&
+                    request.resource.data.keys().hasAll(['totalVisitors', 'lastUpdate']) &&
+                    request.resource.data.keys().size() == 2 &&
+                    request.resource.data.totalVisitors == 1;
+    }
+
+    match /orders/{orderId} {
+      allow create: if true;
+      allow get: if true;
+      allow list: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /core_web_vitals/{docId} {
+      allow create: if true;
+      allow read: if isAdmin();
+    }
+    match /newsletter_subscribers/{docId} {
+      allow create: if true;
+      allow read: if isAdmin();
+    }
+    match /consultations/{consultationId} {
+      allow create: if true;
+      allow read: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /faq_feedback/{docId} {
+      allow create: if true;
+      allow read: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    match /bridalSubmissions/{submissionId} {
+      allow create: if true;
+      allow read: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}

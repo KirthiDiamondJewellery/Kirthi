@@ -1,0 +1,10 @@
+{
+  "name": "Kirthi Diamonds Bespoke",
+  "description": "The official digital flagship of Kirthi Diamonds. A cinematic exhibition featuring a heritage of artisanal brilliance in Kochi and Calicut. Est. 2006.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
