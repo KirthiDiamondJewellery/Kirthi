@@ -21,6 +21,8 @@ COPY --from=builder --chown=kirthi:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=kirthi:nodejs /app/server.ts ./server.ts
 COPY --from=builder --chown=kirthi:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=kirthi:nodejs /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=kirthi:nodejs /app/src ./src
+COPY --from=builder --chown=kirthi:nodejs /app/firebase-applet-config.json ./firebase-applet-config.json
 USER kirthi
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
