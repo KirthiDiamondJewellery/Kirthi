@@ -239,13 +239,13 @@ For any questions regarding our policies, please contact our Diamond Specialist 
 **Address:** 34/572, By Pass Road, Palarivattom, Kerala 682024  
 **Phone:** +91 98470 86990  
 **WhatsApp:** +91 98470 86990  
-**Hours:** Monday to Saturday, 10:00 AM – 8:00 PM (Closed on Sundays)  
+**Hours:** Monday to Saturday, 10:00 AM – 7:30 PM (Closed on Sundays)  
 
 ## Calicut Boutique
 **Address:** 61/11508A, Opposite Federal Bank, Puthiyara, Kerala 673004  
 **Phone:** +91 98470 86002  
 **WhatsApp:** +91 98470 86002  
-**Hours:** Monday to Saturday, 10:00 AM – 8:00 PM (Closed on Sundays)  
+**Hours:** Monday to Saturday, 10:00 AM – 7:30 PM (Closed on Sundays)  
 
 ## Direct Inquiries
 - **Email:** info@kirthidiamonds.com
@@ -305,7 +305,7 @@ const PAGE_SCHEMAS: Record<string, any[]> = {
       "@id": "https://kirthidiamonds.com/pages/diamond-jewellery",
       "url": "https://kirthidiamonds.com/pages/diamond-jewellery",
       "name": "Diamond Jewellery in Kochi & Calicut — Kirthi Diamonds",
-      "description": "Boutique luxury diamond jewellers in Kochi and Calicut with GIA and IGI certified diamonds, BIS hallmarked gold, lifetime buyback.",
+      "description": "Boutique luxury diamond jewellers in Kochi and Calicut with VVS1 clarity, E/F colour standard, with GIA/IGI certification for diamonds above 0.30 ct., BIS hallmarked gold, lifetime buyback.",
       "isPartOf": { "@type": "WebSite", "url": "https://kirthidiamonds.com" },
       "about": { "@id": "https://kirthidiamonds.com/#organization" }
     },

@@ -15,18 +15,18 @@ const STORES = [
     id: 'kochi',
     name: 'Kochi Boutique',
     address: 'Palarivattom, Kochi, Kerala',
-    location: { lat: 10.006514026736081, lng: 76.31314780185147 },
+    location: { lat: 10.006408370430421, lng: 76.31306197116406 },
     phone: '+91 98470 86990',
-    hours: '10:00 AM - 8:00 PM (Closed on Sundays)',
+    hours: '10:00 AM – 7:30 PM (Closed on Sundays)',
     description: 'Our flagship showroom offering bespoke diamond jewellery commissions and GIA/IGI certified bridal sets.'
   },
   {
     id: 'calicut',
     name: 'Calicut Boutique',
     address: 'Puthiyara, Kozhikode, Kerala',
-    location: { lat: 11.255769028405163, lng: 75.78914260997904 },
+    location: { lat: 11.255821640767728, lng: 75.78919625415867 },
     phone: '+91 98470 86002',
-    hours: '10:00 AM - 8:00 PM (Closed on Sundays)',
+    hours: '10:00 AM – 7:30 PM (Closed on Sundays)',
     description: 'Experience custom bridal diamond collections, expert consultations, and ethical loose solitaires in Calicut.'
   }
 ];

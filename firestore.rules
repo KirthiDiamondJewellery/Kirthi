@@ -40,7 +40,7 @@ service cloud.firestore {
 
     match /site_content_faqs/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
 
     match /site_content_blogPosts/{docId} {

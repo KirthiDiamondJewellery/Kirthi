@@ -760,7 +760,7 @@ function PaginatedArrayEditor({ collectionName, schema, title }: { collectionNam
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center border-b border-white/10 pb-4">
-        <h2 className="text-sm uppercase tracking-[0.3em] font-light">{title} (Page {currentPage + 1})</h2>
+        <h1 className="text-sm uppercase tracking-[0.3em] font-light">{title} (Page {currentPage + 1})</h1>
         <div className="flex items-center space-x-4">
           <button type="button" onClick={saveBatch} disabled={saving} className="flex items-center space-x-2 bg-[#D4AF37] text-black hover:bg-white transition-colors text-xs uppercase tracking-widest px-4 py-2 disabled:opacity-50">
             {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}<span>Save Changes</span>

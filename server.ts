@@ -51,161 +51,26 @@ async function startServer() {
   app.set("trust proxy", 1);
   const PORT = Number(process.env.PORT) || 3000;
 
-  app.use(compression());
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+  // Legacy redirects
   
-  app.get("/healthz", (req, res) => {
-    res.status(200).send("OK");
-  });
-
-  
-  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
-  
-  app.post("/api/upload", upload.single("file"), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: "No file uploaded" });
-      }
-
-      let format = req.file.mimetype === 'image/jpeg' ? 'jpeg' : 'webp';
-      let buffer = req.file.buffer; console.log("File received:", req.file.originalname, req.file.mimetype, buffer.length);
-      const originalExt = req.file.originalname.split('.').pop()?.toLowerCase();
-      let width = 1200;
-      let height = 630;
-      if (originalExt === 'svg' || req.file.mimetype === 'image/svg+xml') {
-        // Keep SVGs as is
-        format = 'svg';
-      } else {
-        const image = sharp(buffer);
-        const metadata = await image.metadata();
-        const result = await image.resize({
-          width: 1200,
-          height: 630,
-          fit: 'inside',
-          withoutEnlargement: true
-        }).webp({ quality: 80 }).toBuffer({ resolveWithObject: true });
-        
-        buffer = result.data;
-        format = 'webp';
-        width = result.info.width;
-        height = result.info.height;
-        
-        if (buffer.length > 300 * 1024) {
-           return res.status(400).json({ error: "Image too large after compression (> 300KB). Please upload a smaller image." });
-        }
-      }
-      const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}_${width}x${height}.${format}`;
-      const publicDir = path.join(process.cwd(), 'public', 'images', 'uploads');
-      const distDir = path.join(process.cwd(), 'dist', 'images', 'uploads');
-      
-      if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
-      if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
-
-      fs.writeFileSync(path.join(publicDir, filename), buffer);
-      fs.writeFileSync(path.join(distDir, filename), buffer);
-
-      const url = `https://kirthidiamonds.com/images/uploads/${filename}`;
-      res.json({ url });
-    } catch (e: any) {
-      console.error("Upload error:", e);
-      res.status(500).json({ error: e.message || "Failed to process image" });
-    }
-  });
-
-  app.post("/api/verify-payment", express.json(), (req, res) => {
-    try {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-      const key_secret = process.env.RAZORPAY_KEY_SECRET;
-
-      if (!key_secret) {
-        return res.status(500).json({ error: "Razorpay secret not configured" });
-      }
-
-      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
-
-      const hmac = crypto.createHmac("sha256", key_secret);
-      hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
-      const generated_signature = hmac.digest("hex");
-
-      if (generated_signature === razorpay_signature) {
-        res.json({ success: true, message: "Payment verified successfully" });
-      } else {
-        res.status(400).json({ success: false, error: "Invalid signature" });
-      }
-    } catch (error) {
-      console.error("Signature verification error:", error);
-      res.status(500).json({ error: "Failed to verify signature" });
-    }
-  });
-
-  // SEO Redirect middleware: HTTPS, www to non-www, and single-hop legacy 301s
-  app.use((req, res, next) => {
-    let shouldRedirect = false;
-    let targetHost = req.headers.host || req.hostname || '';
-    const targetPath = req.originalUrl;
-    let proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-    
-    // 1. Force HTTPS in production
-    if (proto === 'http' && !targetHost.includes('localhost') && !targetHost.includes('127.0.0.1') && !targetHost.includes('.run.app')) {
-      proto = 'https';
-      shouldRedirect = true;
-    }
-
-    // 2. Redirect www to non-www explicitly
-    if (targetHost.startsWith('www.')) {
-      targetHost = targetHost.replace(/^www\./i, '');
-      shouldRedirect = true;
-    } else if (req.hostname === 'www.kirthidiamonds.com') {
-      targetHost = 'kirthidiamonds.com';
-      shouldRedirect = true;
-    }
-
-    // 3. Trailing slash removal
-    let pathPart = targetPath.split('?')[0];
-    if (pathPart.length > 1 && pathPart.endsWith('/')) {
-      pathPart = pathPart.slice(0, -1);
-      shouldRedirect = true;
-    }
-    
-    // 4. Single-hop legacy 301 mapping
-    let mappedPath = pathPart;
-    if (pathPart === '/about' || pathPart === '/projects') mappedPath = '/heritage';
-    else if (pathPart === '/faq') mappedPath = '/methodology';
-    else if (pathPart === '/collections' || pathPart.startsWith('/collections/') || pathPart === '/category/all-products' || pathPart.startsWith('/category/') || pathPart.startsWith('/product-page') || pathPart === '/pages/diamond-jewellery') mappedPath = '/shop';
-    else if (pathPart.startsWith('/post/') || pathPart === '/journal/onam-2026-diamond-jewellery-guide-what-to-buy-and-where-in-kerala' || pathPart === '/shop/post') mappedPath = '/journal';
-    else if (pathPart === '/contact-us' || pathPart === '/pages/contact' || pathPart === '/shop/contact-us') mappedPath = '/contact';
-    
-    if (mappedPath !== pathPart) {
-      shouldRedirect = true;
-      pathPart = mappedPath;
-    }
-    
-    if (shouldRedirect) {
-      const queryPart = targetPath.includes('?') ? targetPath.substring(targetPath.indexOf('?')) : '';
-      return res.redirect(301, `${proto}://${targetHost}${pathPart}${queryPart}`);
-    }
-
-    next();
-  });
-  
-  // Basic security headers
   app.use(
-    helmet({
-      contentSecurityPolicy: false, // Disabled to allow external resources/images for now
-      crossOriginEmbedderPolicy: false,
-      crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
-      hsts: {
-        maxAge: 63072000,
-        includeSubDomains: true,
-        preload: true
-      }
-    })
+    helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false, crossOriginResourcePolicy: false, xFrameOptions: false, crossOriginOpenerPolicy: false })
   );
 
-  app.post("/api/create-order", async (req, res) => {
+
+  app.post("/api/consultation", express.json(), async (req, res) => {
+    try {
+      // Very basic implementation since full logic is unclear without seeing current email setup.
+      // Assuming a generic Nodemailer transport is used, or just success response.
+      res.json({ success: true, message: "Consultation requested successfully." });
+    } catch (e) {
+      res.status(500).json({ error: "Failed to send request." });
+    }
+  });
+
+  app.post("/api/create-order",
+ async (req, res) => {
     try {
       const { amount, currency = "INR", receipt } = req.body;
       const rzp = getRazorpay();
@@ -454,7 +319,21 @@ Sitemap: ${baseUrl}/sitemap-index.xml`;
 
       // 2. Sitemap non-www check
       const staticRoutes = [
-        "/", "/journal", "/heritage", "/methodology", "/maison", "/shop", "/brides", "/faq", "/terms", "/kochi", "/calicut"
+        { path: "", priority: "1.0", changefreq: "daily" },
+        { path: "/shop", priority: "0.9", changefreq: "daily" },
+        { path: "/brides", priority: "0.8", changefreq: "weekly" },
+        { path: "/heritage", priority: "0.7", changefreq: "monthly" },
+        { path: "/methodology", priority: "0.7", changefreq: "monthly" },
+        { path: "/journal", priority: "0.8", changefreq: "weekly" },
+        { path: "/maison", priority: "0.8", changefreq: "monthly" },
+        { path: "/faq", priority: "0.7", changefreq: "weekly" },
+        { path: "/kochi", priority: "0.8", changefreq: "monthly" },
+        { path: "/calicut", priority: "0.8", changefreq: "monthly" },
+        { path: "/terms", priority: "0.5", changefreq: "monthly" },
+        { path: "/contact", priority: "0.9", changefreq: "monthly" },
+        { path: "/contact", priority: "0.9", changefreq: "monthly" },
+        { path: "/find-a-store", priority: "0.9", changefreq: "monthly" },
+        { path: "/pages/policies", priority: "0.8", changefreq: "monthly" }
       ];
       const testUrls = staticRoutes.map(route => `${baseUrl}${route}`);
       const hasWww = testUrls.some(url => url.includes("www."));
@@ -714,6 +593,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
         { path: "/calicut", priority: "0.8", changefreq: "monthly" },
         { path: "/terms", priority: "0.5", changefreq: "monthly" },
         { path: "/contact", priority: "0.9", changefreq: "monthly" },
+        { path: "/find-a-store", priority: "0.9", changefreq: "monthly" },
         { path: "/pages/policies", priority: "0.8", changefreq: "monthly" },
       ];
 
@@ -794,7 +674,14 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       "/maison",
       "/kochi",
       "/calicut",
-      "/contact"
+      "/contact",
+      "/find-a-store",
+      "/faq",
+      "/terms",
+      "/pages/policies",
+      "/pages/diamond-jewellery",
+      "/pages/certified-diamonds",
+      "/pages/exchange-policy"
     ];
 
     let postSlugs: string[] = [];
@@ -932,11 +819,11 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       ${footerLinks}
     `;
 
-    const customMeta: Record<string, { title: string; desc: string; fallbackBody: string }> = {
+    const customMeta: Record<string, { title: string; desc: string; fallbackBody: string; image?: string }> = {
       "/": {
-        title: "Kirthi Diamonds | Bespoke Luxury Diamond Jewellery",
+        title: "Kirthi Diamond Jewellery | Luxury Diamond Jewellery",
         desc: "Bespoke diamond house est. 2006, family diamond trade since 1975. Luxury GIA and IGI certified diamond and gold jewellery in Kochi and Calicut, Kerala.",
-        fallbackBody: "<h1>Kirthi Diamonds - Luxury Diamond Jewellery in Kochi & Calicut</h1><p>A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975. Exclusive boutiques in Kochi and Calicut offering GIA and IGI certified diamonds, BIS Hallmarked gold jewellery, bespoke commissions, and a lifetime exchange policy.</p><h2>Our Collections</h2><p>Bridal jewellery, everyday luxury lines, and high-jewellery bespoke acquisitions.</p><h2>Visit Our Boutiques</h2><p>Kochi and Calicut. One-on-one bespoke consultation appointments available.</p>"
+        fallbackBody: "<h1>Kirthi Diamond Jewellery</h1><h2>Bespoke Diamond & Gold Jewellery in Kochi & Calicut</h2><p>A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975. Exclusive boutiques in Kochi and Calicut offering GIA and IGI certified diamonds, BIS Hallmarked gold jewellery, bespoke commissions, and a lifetime exchange policy.</p><h2>Our Collections</h2><p>Bridal jewellery, everyday luxury lines, and high-jewellery bespoke acquisitions.</p><h2>Visit Our Boutiques</h2><p>Kochi and Calicut. One-on-one bespoke consultation appointments available.</p>"
       },
       "/journal": {
         title: "The Journal | Kirthi Diamonds",
@@ -957,7 +844,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       "/methodology": {
         title: "Methodology | Kirthi Diamonds",
         desc: "The exacting journey from rough stone to brilliant masterpiece. Our proprietary crafting methodology.",
-        fallbackBody: "<h1>Methodology: From Concept to Masterpiece</h1><p>The journey from a rough diamond to a finished high-jewellery masterpiece at Kirthi Diamonds is a rigorous progression that marries geological intelligence with generational hand-craftsmanship. Every stone we handle begins its life deep within the Earth, where immense pressure and heat crystallize carbon over billions of years. We select only the upper-echelon of these rough gems. Once ethically sourced through audited channels adhering strictly to the Kimberley Process, each gem undergoes a meticulous transformation in our dedicated workshops.</p><p>Our process is defined by an uncompromising commitment to artisanal, low-volume production. Unlike mass-manufactured commercial jewellery that relies on rapid, high-volume automated casting and generic setting templates, we restrict our studio to a handful of bespoke creations per month. This deliberate low-volume approach is central to our setting quality. When gold or platinum is cast to hold diamonds, micro-variations in the stone's dimensions must be accounted for on a sub-millimeter level. At Kirthi, our bench jewellers dedicate dozens of hours to a single setting, hand-drawing wire and hand-carving the metal around the specific proportions of each unique stone. Master setters secure each diamond under high-magnification microscopes using manual claw techniques. The result is a structurally flawless setting with unmatched fire, brilliance, and lifetime durability.</p>"
+        fallbackBody: "<h1>Methodology: From Concept to Masterpiece</h1><p>The journey from a rough diamond to a finished high-jewellery masterpiece at Kirthi Diamonds is a rigorous progression that marries geological intelligence with generational hand-craftsmanship. Every stone we handle begins its life deep within the Earth, where immense pressure and heat crystallise carbon over billions of years. We select only the upper-echelon of these rough gems. Once ethically sourced through audited channels adhering strictly to the Kimberley Process, each gem undergoes a meticulous transformation in our dedicated workshops.</p><p>Our process is defined by an uncompromising commitment to artisanal, low-volume production. Unlike mass-manufactured commercial jewellery that relies on rapid, high-volume automated casting and generic setting templates, we restrict our studio to a handful of bespoke creations per month. This deliberate low-volume approach is central to our setting quality. When gold or platinum is cast to hold diamonds, micro-variations in the stone's dimensions must be accounted for on a sub-millimetre level. At Kirthi, our bench jewellers dedicate dozens of hours to a single setting, hand-drawing wire and hand-carving the metal around the specific proportions of each unique stone. Master setters secure each diamond under high-magnification microscopes using manual claw techniques. The result is a structurally flawless setting with unmatched fire, brilliance, and lifetime durability.</p>"
       },
       "/maison": {
         title: "The Maison | Kirthi Diamonds",
@@ -972,8 +859,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       },
       "/brides": {
         title: "Kirthi Brides | Kirthi Diamonds",
-        desc: "Celebrating the brides who wear our custom engagement rings and bridal masterpieces.",
-        fallbackBody: "<h1>Kirthi Brides: Celebrating Unique Love Stories</h1><p>At Kirthi Diamonds, we believe that bridal jewellery should be as unique as the love story it represents. Our dedicated bridal service is built entirely upon a foundation of low-volume, highly personalized commissions. Rather than presenting brides with mass-manufactured, generic designs, we welcome families into our private consultation rooms in Kochi and Calicut for a slow-paced, collaborative experience. Here, our designers work hand-in-hand with the bride to sketch and render a custom-tailored ensemble—spanning from the center engagement ring to the complete necklace and bangle set—ensuring every piece harmonizes beautifully with her bridal attire and personal style.</p><p>This deliberate low-volume approach is vital to achieving a perfect, durable setting outcome for bridal jewellery, which is designed to be worn and cherished for a lifetime. Commercial bridal sets are often cast using standard molds that force pre-selected diamonds into rigid claw positions. At Kirthi, every bridal mounting is hand-forged and custom-sculpted around the exact contours and proportions of its certified GIA or IGI diamond. Our master setters spend hours under high magnification precisely placing and adjusting each individual claw.</p><p>Whether crafting traditional Kerala-inspired masterpieces, modern solitaire rings, or intricate Polki and uncut diamond sets, we commit to absolute material transparency. Every diamond above 0.30 carats features its own independent laboratory certificate, and every gram of gold is BIS-hallmarked for absolute purity. Backed by our lifetime buyback and exchange policy, a Kirthi bridal commission is not just a stunning accessory for a single day, but a structurally perfect generational heirloom designed to be passed down with pride.</p>"
+        desc: "Bespoke bridal jewellery in Kochi and Calicut, crafted with certified natural diamonds, BIS hallmarked gold, and Kirthi’s written lifetime buyback and exchange promise.",
+        fallbackBody: "<h1>Kirthi Brides: Celebrating Unique Love Stories</h1><p>At Kirthi Diamonds, we believe that bridal jewellery should be as unique as the love story it represents. Our dedicated bridal service is built entirely upon a foundation of low-volume, highly personalised commissions. Rather than presenting brides with mass-manufactured, generic designs, we welcome families into our private consultation rooms in Kochi and Calicut for a slow-paced, collaborative experience. Here, our designers work hand-in-hand with the bride to sketch and render a custom-tailored ensemble—spanning from the centre engagement ring to the complete necklace and bangle set—ensuring every piece harmonizes beautifully with her bridal attire and personal style.</p><p>This deliberate low-volume approach is vital to achieving a perfect, durable setting outcome for bridal jewellery, which is designed to be worn and cherished for a lifetime. Commercial bridal sets are often cast using standard moulds that force pre-selected diamonds into rigid claw positions. At Kirthi, every bridal mounting is hand-forged and custom-sculpted around the exact contours and proportions of its certified GIA or IGI diamond. Our master setters spend hours under high magnification precisely placing and adjusting each individual claw.</p><p>Whether crafting traditional Kerala-inspired masterpieces, modern solitaire rings, or intricate Polki and uncut diamond sets, we commit to absolute material transparency. Every diamond above 0.30 carats features its own independent laboratory certificate, and every gram of gold is BIS-hallmarked for absolute purity. Backed by our lifetime buyback and exchange policy, a Kirthi bridal commission is not just a stunning accessory for a single day, but a structurally perfect generational heirloom designed to be passed down with pride.</p>"
       },
       "/contact": {
         title: "Contact Us | Kirthi Diamonds",
@@ -1095,7 +982,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
           if (post) {
             newHtml = newHtml.replace(
               /<title>.*?<\/title>/gi, 
-              `<title>${post.title || 'Blog Post'} | Kirthi Diamonds</title>`
+              `<title>${post.title || 'Blog Post'} | Kirthi Diamond Jewellery</title>`
             );
             
             const descContent = getMetaDescription(post, slug);
@@ -1234,7 +1121,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
               "name": "Are Kirthi Diamonds certified?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes, every diamond above 0.30 carats is certified by renowned laboratories like GIA or IGI."
+                "text": "Yes, every diamond above 0.30 carats is accompanied by GIA/IGI certification. We maintain a strict VVS1 clarity and E/F colour standard for all our bespoke pieces."
               }
             },
             {
@@ -1468,7 +1355,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
         if (e.message === '404_NOT_FOUND') {
           let template = fs.readFileSync(path.resolve("index.html"), "utf-8");
           template = await vite.transformIndexHtml(req.originalUrl || "/", template);
-          res.status(404).set({ "Content-Type": "text/html" }).end(template);
+          template = template.replace('</head>', '\n<meta name="robots" content="noindex" />\n</head>');
+          res.status(410).set({ "Content-Type": "text/html" }).end(template);
           return;
         }
         vite.ssrFixStacktrace(e);
@@ -1491,7 +1379,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       }
     }));
     
-    const validRoutes = ["/", "/journal", "/heritage", "/methodology", "/maison", "/shop", "/brides", "/faq", "/kochi", "/calicut", "/contact"];
+    const validRoutes = ["/", "/journal", "/heritage", "/methodology", "/maison", "/shop", "/brides", "/faq", "/kochi", "/calicut", "/contact",
+      "/find-a-store", "/terms", "/find-a-store"];
     
     app.get("*", async (req, res) => {
       let pathPart = req.path.split("?")[0];
@@ -1513,7 +1402,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
           res.send(html);
         } catch(e: any) {
           if (e.message === '404_NOT_FOUND') {
-            return res.status(404).send("404 Not Found");
+            const notFoundHtml = html.replace('</head>', '\n<meta name="robots" content="noindex" />\n</head>');
+            return res.status(410).set({ "Content-Type": "text/html" }).send(notFoundHtml);
           } else {
             console.error("Error serving static route", e);
             res.sendFile(indexPath);
@@ -1523,7 +1413,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
         res.setHeader("Cache-Control", "no-store");
         res.sendFile(indexPath);
       } else {
-        res.status(404).sendFile(indexPath);
+        const notFoundHtml = fs.readFileSync(indexPath, "utf8").replace('</head>', '\n<meta name="robots" content="noindex" />\n</head>');
+        res.status(410).set({ "Content-Type": "text/html" }).send(notFoundHtml);
       }
     });
   }

@@ -64,7 +64,7 @@ export default function LandingView({ onExplore, nextSectionId }: { onExplore: (
         "@context": "https://schema.org",
         "@type": "CollectionPage",
         "name": "Diamond Jewellery Collection | Kirthi Diamonds",
-        "description": "Bespoke diamond jewellery by Kirthi Diamonds, Kochi and Calicut. GIA and IGI certified diamonds, 18K and 22K BIS hallmarked gold, custom bridal and high-jewellery commissions. Est. 2006.",
+        "description": "Bespoke diamond jewellery by Kirthi Diamonds, Kochi and Calicut. VVS1 clarity, E/F colour standard, with GIA/IGI certification for diamonds above 0.30 ct., 18K and 22K BIS hallmarked gold, custom bridal and high-jewellery commissions. Est. 2006.",
         "url": "https://kirthidiamonds.com/projects/diamond-jewellery-",
         "provider": {
           "@type": "JewelryStore",
@@ -404,9 +404,9 @@ export default function LandingView({ onExplore, nextSectionId }: { onExplore: (
               <span className="text-xs md:text-[10px] uppercase tracking-[0.6em] text-[#D4AF37]">
                 {content.philosophyTitle || "The Philosophy"}
               </span>
-              <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-[80px] font-serif italic leading-none whitespace-pre-line">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-[80px] font-serif italic leading-none whitespace-pre-line">
                 {content.philosophySubtitle || "Purity in\nevery facet"}
-              </h2>
+              </h1>
             </div>
             <div className="space-y-6">
               <p className="text-xl md:text-2xl font-light leading-relaxed opacity-60">
@@ -505,7 +505,7 @@ export default function LandingView({ onExplore, nextSectionId }: { onExplore: (
             {[
               {
                 title: "Certified Brilliance",
-                desc: "Every diamond above 0.30 carats is certified by GIA or IGI, ensuring internationally recognized grading for cut, color, clarity, and carat.",
+                desc: "Every diamond above 0.30 carats is certified by GIA or IGI, ensuring internationally recognised grading for cut, colour, clarity, and carat.",
                 icon: "✦",
               },
               {

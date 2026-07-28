@@ -26,7 +26,7 @@ export default function MaisonView({ onInquiry, onGoHome }: { onInquiry?: () => 
         "alternateName": "Kirthi Diamond Jewellery",
         "url": "https://kirthidiamonds.com",
         "foundingDate": "2006",
-        "description": "Bespoke diamond jewellery house in Kochi and Calicut, Kerala. GIA and IGI certified diamonds, BIS hallmarked 18K and 22K gold, custom bridal commissions, and a lifetime exchange policy. Rooted in a family diamond trade since 1975.",
+        "description": "Bespoke diamond jewellery house in Kochi and Calicut, Kerala. VVS1 clarity, E/F colour standard, with GIA/IGI certification for diamonds above 0.30 ct., BIS hallmarked 18K and 22K gold, custom bridal commissions, and a lifetime exchange policy. Rooted in a family diamond trade since 1975.",
         "hasOfferCatalog": {
           "@type": "OfferCatalog",
           "name": "Kirthi Diamonds Collections",
@@ -122,8 +122,8 @@ export default function MaisonView({ onInquiry, onGoHome }: { onInquiry?: () => 
             },
             "geo": {
               "@type": "GeoCoordinates",
-              "latitude": 10.006514026736081,
-              "longitude": 76.31314780185147
+              "latitude": 10.006408370430421,
+              "longitude": 76.31306197116406
             },
             "openingHoursSpecification": [
               {
@@ -157,8 +157,8 @@ export default function MaisonView({ onInquiry, onGoHome }: { onInquiry?: () => 
             },
             "geo": {
               "@type": "GeoCoordinates",
-              "latitude": 11.255769028405163,
-              "longitude": 75.78914260997904
+              "latitude": 11.255821640767728,
+              "longitude": 75.78919625415867
             },
             "openingHoursSpecification": [
               {
@@ -189,7 +189,7 @@ export default function MaisonView({ onInquiry, onGoHome }: { onInquiry?: () => 
           <div className="space-y-8">
             <div className="space-y-6 md:space-y-4">
               <h4 className="text-xs md:text-[10px] uppercase tracking-[0.5em] text-[#D4AF37]">The Maison</h4>
-              <h2 className="text-4xl md:text-7xl font-serif italic mb-8">A Legacy of Brilliance</h2>
+              <h1 className="text-4xl md:text-7xl font-serif italic mb-8">A Legacy of Brilliance</h1>
             </div>
             <div className="w-20 h-px bg-[#D4AF37]"></div>
             <div className="space-y-6 text-lg font-light leading-relaxed opacity-70 italic">

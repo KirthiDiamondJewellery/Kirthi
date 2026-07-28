@@ -174,7 +174,7 @@ export default function BoutiqueView({ boutiqueId, onInquiry }: BoutiqueViewProp
                   <div className="w-full h-full min-h-[300px]">
                     <Map
                       defaultCenter={{ 
-                        lat: isKochi ? Number(content.kochiLat ?? 10.006514026736081) : Number(content.calicutLat ?? 11.255769028405163), 
+                        lat: isKochi ? Number(content.kochiLat ?? 10.006408370430421) : Number(content.calicutLat ?? 11.255821640767728), 
                         lng: isKochi ? Number(content.kochiLng ?? 76.313041) : Number(content.calicutLng ?? 75.789228) 
                       }}
                       defaultZoom={15}
@@ -185,7 +185,7 @@ export default function BoutiqueView({ boutiqueId, onInquiry }: BoutiqueViewProp
                     >
                       <AdvancedMarker 
                         position={{ 
-                          lat: isKochi ? Number(content.kochiLat ?? 10.006514026736081) : Number(content.calicutLat ?? 11.255769028405163), 
+                          lat: isKochi ? Number(content.kochiLat ?? 10.006408370430421) : Number(content.calicutLat ?? 11.255821640767728), 
                           lng: isKochi ? Number(content.kochiLng ?? 76.313041) : Number(content.calicutLng ?? 75.789228) 
                         }} 
                         title={name} 

@@ -91,7 +91,7 @@ export default function HeritageArchive({ onInquiry, onGoHome }: { onInquiry?: (
           className="space-y-6 md:space-y-4 mb-32 md:mb-48 border-b border-white/10 pb-16"
         >
           <span className="text-xs md:text-[10px] uppercase tracking-[0.5em] text-[#D4AF37]">Archive</span>
-          <h2 className="text-4xl md:text-7xl lg:text-[80px] font-serif italic mb-8">The Heritage</h2>
+          <h1 className="text-4xl md:text-7xl lg:text-[80px] font-serif italic mb-8">The Heritage</h1>
           <div className="max-w-4xl space-y-6 text-sm md:text-base font-light leading-relaxed opacity-75 mt-8 text-justify">
             <p>
               The heritage of Kirthi Diamonds is a story of dedication to the diamond trade, beginning with our family's foundational roots in loose diamond sourcing and distribution in 1975. For over three decades, we supplied some of the country's most prominent jewellery retailers, mastering the complex global supply chain from Antwerp and Surat before establishing our bespoke high-jewellery house in 2006. This deep-seated expertise in gemological grading and direct procurement became the cornerstone of Kirthi, enabling us to curate loose diamonds of exceptional purity and make them accessible directly to discerning collectors.

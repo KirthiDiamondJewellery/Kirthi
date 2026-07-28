@@ -102,7 +102,7 @@ export default function FAQView() {
       <div className="max-w-4xl text-left w-full space-y-12">
         <BreadcrumbNavigation className="relative justify-start px-0 pt-0 pb-0" />
         
-        <h2 className="text-3xl md:text-5xl font-serif italic text-white/90">Frequently Asked Questions</h2>
+        <h1 className="text-3xl md:text-5xl font-serif italic text-white/90">Frequently Asked Questions</h1>
         
         <div className="flex flex-wrap gap-3 mb-8">
           {categories.map(cat => (

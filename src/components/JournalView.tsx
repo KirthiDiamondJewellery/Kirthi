@@ -103,12 +103,12 @@ export default function JournalView({ onInquiry, onGoHome }: { onInquiry?: () =>
       >
         <motion.div variants={itemVariants} className="mb-16">
 
-          <h2 className="text-3xl md:text-5xl lg:text-7xl font-serif italic text-white flex flex-col md:inline-flex md:flex-row md:items-baseline md:space-x-6">
+          <h1 className="text-3xl md:text-5xl lg:text-7xl font-serif italic text-white flex flex-col md:inline-flex md:flex-row md:items-baseline md:space-x-6">
             <span className="opacity-80">Exploring the Art and Science of High Jewellery:</span>
             <span className="text-[#D4AF37] opacity-100 mt-2 md:mt-0">
               Insights from Kirthi Diamonds
             </span>
-          </h2>
+          </h1>
 
           <div className="mt-12 text-sm md:text-lg opacity-80 font-light max-w-3xl leading-relaxed lg:leading-[2] text-[#F5F5F0]">
             <p className="mb-8">

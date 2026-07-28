@@ -82,7 +82,7 @@ export default function AdminAccessControl({ currentUserEmail }: { currentUserEm
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-xl font-serif italic text-white mb-2">Access Control</h2>
+        <h1 className="text-xl font-serif italic text-white mb-2">Access Control</h1>
         <p className="text-xs uppercase tracking-[0.2em] opacity-40">Manage Security Protocols and Personnel</p>
       </div>
 

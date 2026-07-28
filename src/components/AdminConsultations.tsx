@@ -85,7 +85,7 @@ export default function AdminConsultations() {
   return (
     <div className="space-y-8">
       <div className="space-y-2 mb-8">
-         <h2 className="text-2xl font-serif italic text-white/90">Bespoke Inquiries</h2>
+         <h1 className="text-2xl font-serif italic text-white/90">Bespoke Inquiries</h1>
          <p className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-40">Review Commission Requests</p>
       </div>
 

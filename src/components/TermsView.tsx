@@ -14,7 +14,7 @@ export default function TermsView({ onInquiry }: { onInquiry?: () => void }) {
         >
           <div className="space-y-6 md:space-y-4">
             <h4 className="text-xs md:text-[10px] uppercase tracking-[0.5em] text-[#D4AF37]">Legal & Compliance</h4>
-            <h2 className="text-4xl md:text-7xl font-serif italic mb-8">Terms & Conditions</h2>
+            <h1 className="text-4xl md:text-7xl font-serif italic mb-8">Terms & Conditions</h1>
           </div>
           <div className="w-20 h-px bg-[#D4AF37] mx-auto"></div>
           <p className="max-w-2xl mx-auto text-lg font-light leading-relaxed opacity-70 italic whitespace-pre-wrap">
@@ -44,7 +44,7 @@ export default function TermsView({ onInquiry }: { onInquiry?: () => void }) {
                <h3 className="text-2xl font-serif italic">2. Bespoke Commissions</h3>
             </div>
             <p className="text-sm leading-relaxed opacity-80">
-              For bespoke and custom-designed pieces, a non-refundable deposit of 50% is required to commence work, following final CAD approval. Production timelines are estimates and may vary based on the complexity of the design and the global sourcing timeline of the required stones. We do not accept returns on personalized bespoke commissions, but will rework pieces that do not meet the finalized specifications.
+              For bespoke and custom-designed pieces, a non-refundable deposit of 50% is required to commence work, following final CAD approval. Production timelines are estimates and may vary based on the complexity of the design and the global sourcing timeline of the required stones. We do not accept returns on personalised bespoke commissions, but will rework pieces that do not meet the finalized specifications.
             </p>
           </div>
 

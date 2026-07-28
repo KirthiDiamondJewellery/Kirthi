@@ -232,7 +232,7 @@ export default function BlogPostView() {
   if (!post) {
     return (
       <div className="w-full h-screen bg-[#050505] text-[#F5F5F0] flex flex-col items-center justify-center font-serif italic space-y-8">
-        <h2 className="text-3xl md:text-5xl">Post Not Found</h2>
+        <h1 className="text-3xl md:text-5xl">Post Not Found</h1>
         <Link 
           to="/" 
           className="text-sm md:text-[12px] not-italic uppercase tracking-[0.2em] px-8 py-3 border border-white/20 hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all"

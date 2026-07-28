@@ -112,7 +112,7 @@ export default function AdminOrders() {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center border-b border-white/10 pb-4">
-        <h2 className="text-sm uppercase tracking-[0.3em] font-light">Client Acquisitions</h2>
+        <h1 className="text-sm uppercase tracking-[0.3em] font-light">Client Acquisitions</h1>
         <span className="text-xs md:text-[10px] opacity-50 uppercase tracking-widest">{orders.length} Total</span>
       </div>
 

@@ -382,7 +382,7 @@ function ProductDetail({
                    <span className="text-xs md:text-[10px] uppercase tracking-[0.6em] text-[#D4AF37]">Reference Anthology</span>
                    <div className="flex-1 h-px bg-white/10"></div>
                 </div>
-                <h2 className="text-4xl md:text-6xl lg:text-[80px] font-serif italic leading-[0.9]">{product.name}</h2>
+                <h1 className="text-4xl md:text-6xl lg:text-[80px] font-serif italic leading-[0.9]">{product.name}</h1>
                 <div className="flex items-baseline space-x-8">
                   <p className="text-3xl md:text-4xl lg:text-5xl font-light tracking-widest text-[#D4AF37]">₹{product.price.toLocaleString('en-IN')}</p>
                   <span className="text-xs md:text-[10px] uppercase tracking-widest opacity-20">Private VAT Included</span>
@@ -1531,11 +1531,11 @@ function SizingChartModal({ onClose, type }: { onClose: () => void, type: 'Ring'
             <p className="text-sm md:text-[11px] font-light leading-relaxed text-white/60 text-center max-w-[250px]">
               {method === 'diameter' ? (
                 type === 'Ring' 
-                  ? "Place a well-fitting ring over a ruler or tape measure. Measure the inside diameter in millimeters." 
+                  ? "Place a well-fitting ring over a ruler or tape measure. Measure the inside diameter in millimetres." 
                   : "Measure the inside diameter of a bangle that fits you perfectly. Do not measure the outside edges."
               ) : (
                 type === 'Ring'
-                  ? "Wrap a piece of string or paper around your finger. Mark where it overlaps and measure the length in millimeters."
+                  ? "Wrap a piece of string or paper around your finger. Mark where it overlaps and measure the length in millimetres."
                   : "Wrap a string or measuring tape tightly around the widest part of your hand (knuckles) to find your circumference."
               )}
             </p>
@@ -1900,7 +1900,7 @@ export default function ShopExperience({ onInquiry, onGoHome }: { onInquiry?: ()
             "name": "What collections does Kirthi Diamonds offer?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Kirthi Diamonds offers bridal diamond jewellery, engagement rings and wedding bands, custom masterpieces and bespoke designs, GIA and IGI certified diamonds, and BIS hallmarked gold. Collections range from everyday elegance to high-jewellery bridal pieces and heirloom commissions."
+              "text": "Kirthi Diamonds offers bridal diamond jewellery, engagement rings and wedding bands, custom masterpieces and bespoke designs, VVS1 clarity, E/F colour standard, with GIA/IGI certification for diamonds above 0.30 ct., and BIS hallmarked gold. Collections range from everyday elegance to high-jewellery bridal pieces and heirloom commissions."
             }
           },
           {

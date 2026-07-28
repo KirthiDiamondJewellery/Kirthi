@@ -41,7 +41,7 @@ export default function AdminSEO({ formData, setFormData }: AdminSEOProps) {
   return (
     <div className="space-y-12">
       <div className="space-y-2 mb-8">
-        <h2 className="text-2xl font-serif italic text-white/90">SEO Management</h2>
+        <h1 className="text-2xl font-serif italic text-white/90">SEO Management</h1>
         <p className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-40">Manage Page Titles and Meta Descriptions</p>
       </div>
 

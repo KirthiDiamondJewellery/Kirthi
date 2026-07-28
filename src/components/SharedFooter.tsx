@@ -57,7 +57,7 @@ export function SharedFooter() {
             "url": "https://kirthidiamonds.com/",
             "logo": "/logo.png",
             "foundingDate": "2006",
-            "description": "A bespoke diamond house established 2006, rooted in a family diamond trade since 1975. GIA and IGI certified diamonds, BIS Hallmarked gold, boutiques in Kochi and Calicut."
+            "description": "A bespoke diamond house established 2006, rooted in a family diamond trade since 1975. VVS1 clarity, E/F colour standard, with GIA/IGI certification for diamonds above 0.30 ct., BIS Hallmarked gold, boutiques in Kochi and Calicut."
           }
         ]
       }) }} />
@@ -123,12 +123,12 @@ export function SharedFooter() {
             <li>
               <a href="/kochi" className="block text-white/80 hover:text-[#D4AF37] transition-colors mb-2">Kochi Boutique</a>
               34/572, By Pass Road, Palarivattom, Kochi, Kerala, India
-              <br/><span className="text-white/50 block mt-1">Mon–Sat 10:00 AM – 8:00 PM<br/>Closed on Sundays</span>
+              <br/><span className="text-white/50 block mt-1">Mon–Sat 10:00 AM – 7:30 PM<br/>Closed on Sundays</span>
             </li>
             <li>
               <a href="/calicut" className="block text-white/80 hover:text-[#D4AF37] transition-colors mb-2">Calicut Boutique</a>
               61/11508A, Opposite Federal Bank, Puthiyara, Kozhikode, Kerala, India
-              <br/><span className="text-white/50 block mt-1">Mon–Sat 10:00 AM – 8:00 PM<br/>Closed on Sundays</span>
+              <br/><span className="text-white/50 block mt-1">Mon–Sat 10:00 AM – 7:30 PM<br/>Closed on Sundays</span>
             </li>
           </ul>
         </div>

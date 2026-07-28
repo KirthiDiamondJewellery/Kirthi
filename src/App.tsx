@@ -198,9 +198,9 @@ function InquiryModal({
                 <h4 className="text-xs md:text-[10px] uppercase tracking-[0.5em] text-[#D4AF37]">
                   Private Inquiry
                 </h4>
-                <h2 className="text-2xl md:text-4xl lg:text-5xl font-serif italic">
+                <h1 className="text-2xl md:text-4xl lg:text-5xl font-serif italic">
                   Bespoke Arrangement
-                </h2>
+                </h1>
               </div>
 
               <div className="space-y-8">
@@ -1015,7 +1015,7 @@ export default function App() {
       {/* Hidden Site Index for SEO/Crawlers */}
       <nav className="sr-only" aria-label="Site Navigation">
         {SECTIONS.map((section) => (
-          <a key={`seo-${section.id}`} href={section.id === 'home' ? '/' : section.id === 'contact' ? '/pages/contact' : `/${section.id}`}>
+          <a key={`seo-${section.id}`} href={section.id === 'home' ? '/' : `/${section.id}`}>
             {section.title}
           </a>
         ))}
@@ -1389,7 +1389,7 @@ export default function App() {
                   </span>
                   {SECTIONS.map((section, idx) => (
                     <motion.a
-                      href={section.id === 'home' ? '/' : section.id === 'contact' ? '/pages/contact' : `/${section.id}`}
+                      href={section.id === 'home' ? '/' : `/${section.id}`}
                       key={section.id}
                       initial={{ opacity: 0, x: -30 }}
                       animate={{ opacity: 1, x: 0 }}

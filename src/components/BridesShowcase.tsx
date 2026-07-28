@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+
 import { motion, AnimatePresence } from 'motion/react';
 import { BRIDE_GALLERY } from '../constants';
 import { useContent } from '../contexts/ContentContext';
@@ -225,7 +226,7 @@ export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: ()
         "@context": "https://schema.org",
         "@type": "Service",
         "name": "Kirthi Brides - Bespoke Bridal Diamond Jewellery",
-        "description": "Fully bespoke bridal diamond jewellery crafted to commission by Kirthi Diamonds. bespoke consultations at Kochi and Calicut boutiques. GIA and IGI certified diamonds, BIS hallmarked gold, lifetime exchange policy.",
+        "description": "Fully bespoke bridal diamond jewellery crafted to commission by Kirthi Diamonds. bespoke consultations at Kochi and Calicut boutiques. VVS1 clarity, E/F colour standard, with GIA/IGI certification for diamonds above 0.30 ct., BIS hallmarked gold, lifetime exchange policy.",
         "provider": {
           "@type": "JewelryStore",
           "@id": "https://kirthidiamonds.com/#organization",
@@ -353,17 +354,64 @@ export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: ()
       <div className="max-w-6xl w-full pt-[140px] md:pt-[200px] pb-32 md:pb-48">
         <div className="text-center mb-24">
           <h4 className="text-xs md:text-[10px] uppercase tracking-[0.5em] text-[#D4AF37] mb-4">Bespoke Bridal Jewellery & Diamond Masterpieces</h4>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif italic mb-8">Bridal Stories: Celebrating Unique Love Stories with Kirthi Diamonds</h2>
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif italic mb-8">Bespoke Bridal Jewellery, Made to Be Inherited</h1>
           <div className="max-w-4xl mx-auto space-y-6 text-sm md:text-base font-light leading-relaxed opacity-85 text-justify">
             <p>
-              At Kirthi Diamonds, we believe that bridal jewellery should be as unique as the love story it represents. Our dedicated bridal service is built entirely upon a foundation of low-volume, highly personalized commissions. Rather than presenting brides with mass-manufactured, generic designs, we welcome families into our private consultation rooms in Kochi and Calicut for a slow-paced, collaborative experience. Here, our designers work hand-in-hand with the bride to sketch and render a custom-tailored ensemble—spanning from the center engagement ring to the complete necklace and bangle set—ensuring every piece harmonizes beautifully with her bridal attire and personal style.
+              A Kirthi bridal creation begins with a private consultation, not a catalogue selection. Each piece is designed around your story, your ceremony, and the diamond itself - shaped with the precision of our family diamond heritage and finished by artisans who understand the weight of a wedding jewel.
             </p>
             <p>
-              This deliberate low-volume approach is vital to achieving a perfect, durable setting outcome for bridal jewellery, which is designed to be worn and cherished for a lifetime. Commercial bridal sets are often cast using standard molds that force pre-selected diamonds into rigid claw positions. This cookie-cutter method creates micro-stress points in the metal and frequently leads to loose stones or compromised brilliance. At Kirthi, every bridal mounting is hand-forged and custom-sculpted around the exact contours and proportions of its certified GIA or IGI diamond. Our master setters spend hours under high magnification precisely placing and adjusting each individual claw. This painstaking technique ensures the diamonds sit securely with balanced tension while opening the stone to maximum ambient light, releasing the ultimate fire, brilliance, and scintillation.
+              From sculptural diamond chokers to refined bridal necklaces and engagement rings, every Kirthi piece is crafted with certified natural diamonds and BIS hallmarked gold. The result is jewellery with presence, permanence, and the intimacy of something made only for you.
+            </p>
+            <h3 className="text-xl md:text-2xl font-serif italic mt-8 mb-4 text-center">A Lifetime Promise, Written with Every Piece</h3>
+            <p>
+              True luxury should carry certainty. Every Kirthi bridal creation is supported by our written lifetime buyback and exchange policy, documented clearly at purchase.
             </p>
             <p>
-              Whether crafting traditional Kerala-inspired masterpieces, modern solitaire rings, or intricate Polki and uncut diamond sets, we commit to absolute material transparency. Every diamond above 0.30 carats features its own independent laboratory certificate, and every gram of gold is BIS-hallmarked for absolute purity. Backed by our lifetime buyback and exchange policy, a Kirthi bridal commission is not just a stunning accessory for a single day, but a structurally perfect generational heirloom designed to be passed down with pride.
+              Your certified diamonds are assessed with reference to their original certificate and prevailing valuation terms, while gold is exchanged against weight and the prevailing gold rate. This gives your bridal jewellery a life beyond the wedding day - as a treasured heirloom, a store of value, and a piece of family history.
             </p>
+            <div className="text-center pt-4">
+              <a 
+                href="/pages/policies" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.history.pushState(null, "", "/pages/policies");
+                  window.dispatchEvent(new Event("popstate"));
+                }}
+                className="inline-block border-b border-[#D4AF37] text-[#D4AF37] hover:text-white hover:border-white transition-colors pb-1"
+              >
+                View the lifetime buyback and exchange policy
+              </a>
+            </div>
+          </div>
+          
+          {/* Premium trust strip */}
+          <div className="mt-16 pt-16 border-t border-white/10">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-center max-w-5xl mx-auto">
+              <div className="space-y-2">
+                <span className="block text-[#D4AF37] text-xl mb-3">⟡</span>
+                <span className="text-xs md:text-sm tracking-wider uppercase font-light text-white/80 block">Family diamond heritage since 1975</span>
+              </div>
+              <div className="space-y-2">
+                <span className="block text-[#D4AF37] text-xl mb-3">⟡</span>
+                <span className="text-xs md:text-sm tracking-wider uppercase font-light text-white/80 block">Bespoke bridal house established in 2006</span>
+              </div>
+              <div className="space-y-2">
+                <span className="block text-[#D4AF37] text-xl mb-3">⟡</span>
+                <span className="text-xs md:text-sm tracking-wider uppercase font-light text-white/80 block">Certified natural diamonds</span>
+              </div>
+              <div className="space-y-2">
+                <span className="block text-[#D4AF37] text-xl mb-3">⟡</span>
+                <span className="text-xs md:text-sm tracking-wider uppercase font-light text-white/80 block">BIS hallmarked gold</span>
+              </div>
+              <div className="space-y-2">
+                <span className="block text-[#D4AF37] text-xl mb-3">⟡</span>
+                <span className="text-xs md:text-sm tracking-wider uppercase font-light text-white/80 block">Private bridal consultations in Kochi and Calicut</span>
+              </div>
+              <div className="space-y-2">
+                <span className="block text-[#D4AF37] text-xl mb-3">⟡</span>
+                <span className="text-xs md:text-sm tracking-wider uppercase font-light text-white/80 block">Written lifetime buyback and exchange promise</span>
+              </div>
+            </div>
           </div>
           <p className="max-w-2xl mx-auto text-sm md:text-base font-light leading-relaxed italic opacity-50 mt-10">
             A tribute to the exceptional stories and masterpieces created for our patrons' most precious moments.
@@ -407,13 +455,21 @@ export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: ()
           whileInView={{ opacity: 1 }}
           className="mt-32 text-center py-20 border-t border-white/5 pb-32"
         >
-          <button
-            onClick={() => setIsSubmitModalOpen(true)}
-            className="mb-12 px-8 py-4 border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-colors text-xs md:text-[10px] uppercase tracking-[0.3em]"
+          <h3 className="text-2xl md:text-4xl font-serif italic mb-6">Made for the wedding. Kept for generations.</h3>
+          <p className="max-w-2xl mx-auto text-sm md:text-base font-light leading-relaxed opacity-80 mb-12">
+            Create your bridal jewellery through a private Kirthi consultation, with certified natural diamonds, BIS hallmarked gold, and a written lifetime buyback and exchange promise documented at purchase.
+          </p>
+          <a 
+            href="/contact"
+            onClick={(e) => {
+              e.preventDefault();
+              window.history.pushState(null, "", "/contact");
+              window.dispatchEvent(new Event("popstate"));
+            }}
+            className="mb-12 inline-block px-8 py-4 border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-colors text-xs md:text-[10px] uppercase tracking-[0.3em]"
           >
-            Submit Your Story
-          </button>
-          <h4 className="text-xs md:text-[10px] uppercase tracking-[0.5em] opacity-40 mb-12 block">Every Diamond Is A Promise</h4>
+            Book a Consultation
+          </a>
         </motion.div>
       </div>
 
