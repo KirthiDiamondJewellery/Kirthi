@@ -49,7 +49,7 @@ function getRazorpay(): Razorpay {
 async function startServer() {
   const app = express();
   app.set("trust proxy", 1);
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = 3000;
 
 
   // Legacy redirects
@@ -684,13 +684,21 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       "/pages/exchange-policy"
     ];
 
-    let postSlugs: string[] = [];
+    
+        let postSlugs: string[] = [];
     if (db) {
       try {
         const postsSnap = await getDocs(collection(db, "site_content_blogPosts"));
         postsSnap.forEach(doc => {
           const d = doc.data();
-          const slug = d.id || (d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
+          const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
+          if (slug) postSlugs.push(slug);
+        });
+
+        const trendsSnap = await getDocs(collection(db, "site_content_journalTrends"));
+        trendsSnap.forEach(doc => {
+          const d = doc.data();
+          const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
           if (slug) postSlugs.push(slug);
         });
       } catch (e) {
