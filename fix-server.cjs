@@ -1,10 +1,10 @@
 const fs = require('fs');
-let server = fs.readFileSync('server.ts', 'utf8');
+let content = fs.readFileSync('server.ts', 'utf8');
 
-server = server.replace(
-  `{ path: "/contact",      "/find-a-store", priority: "0.9", changefreq: "monthly" },`,
-  `{ path: "/contact", priority: "0.9", changefreq: "monthly" },
-        { path: "/find-a-store", priority: "0.9", changefreq: "monthly" },`
+// Replace const PORT = 3000; with process.env.PORT
+content = content.replace(
+  'const PORT = 3000;',
+  'const PORT = Number(process.env.PORT) || 3000;'
 );
 
-fs.writeFileSync('server.ts', server);
+fs.writeFileSync('server.ts', content);
