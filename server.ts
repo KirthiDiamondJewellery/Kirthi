@@ -734,7 +734,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       const metaRegex = /<meta\s+([^>]*?)>/gi;
       let found = false;
       const replaced = sourceHtml.replace(metaRegex, (match, attrs) => {
-        const attrRegex = new RegExp(`${attrName}\\s*=\\s*["']?${attrValue}["']?`, 'i');
+        const attrRegex = new RegExp(`${attrName}\\s*=\\s*["']?${attrValue}["']?(?:\\s|>|$)`, 'i');
         if (attrRegex.test(attrs)) {
           found = true;
           const contentRegex = /content\s*=\s*["']?([^"']*)["']?/i;
@@ -828,8 +828,13 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
     `;
 
     const customMeta: Record<string, { title: string; desc: string; fallbackBody: string; image?: string }> = {
+      "/shop": {
+        title: "The Boutique | Kirthi Diamonds",
+        desc: "Explore our collections of bespoke diamond jewellery, engagement rings, and bridal masterpieces.",
+        fallbackBody: "<h1>The Boutique</h1><h2>Our Collections</h2><p>Bespoke diamond jewellery, engagement rings, and bridal masterpieces.</p>"
+      },
       "/": {
-        title: "Kirthi Diamond Jewellery | Luxury Diamond Jewellery",
+        title: "Kirthi Diamonds | Bespoke Diamond Jewellery in Kochi & Calicut",
         desc: "Bespoke diamond house est. 2006, family diamond trade since 1975. Luxury GIA and IGI certified diamond and gold jewellery in Kochi and Calicut, Kerala.",
         fallbackBody: "<h1>Kirthi Diamond Jewellery</h1><h2>Bespoke Diamond & Gold Jewellery in Kochi & Calicut</h2><p>A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975. Exclusive boutiques in Kochi and Calicut offering GIA and IGI certified diamonds, BIS Hallmarked gold jewellery, bespoke commissions, and a lifetime exchange policy.</p><h2>Our Collections</h2><p>Bridal jewellery, everyday luxury lines, and high-jewellery bespoke acquisitions.</p><h2>Visit Our Boutiques</h2><p>Kochi and Calicut. One-on-one bespoke consultation appointments available.</p>"
       },
@@ -893,12 +898,12 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       "/kochi": {
         title: "Kochi Boutique | Kirthi Diamonds",
         desc: "Visit our Kochi boutique at Palarivattom for a bespoke diamond jewellery consultation. Explore GIA & IGI certified solitaires and bridal masterpieces.",
-        fallbackBody: "<h1>Kirthi Diamonds Kochi Boutique</h1><p>34/572, By Pass Road, Palarivattom, Kochi, Kerala. By appointment boutique visits for bespoke bridal jewellery and certified diamonds.</p>"
+        fallbackBody: "<h1>Kirthi Diamonds Kochi Boutique</h1><p>34/572, By Pass Road, Palarivattom, Kochi, Kerala. Opening Hours: Mon–Sat 10:00–19:30. By appointment boutique visits for bespoke bridal jewellery and certified diamonds.</p>"
       },
       "/calicut": {
         title: "Calicut Boutique | Kirthi Diamonds",
         desc: "Visit our Calicut boutique at Puthiyara for a bespoke diamond jewellery consultation. Explore GIA & IGI certified solitaires and bridal masterpieces.",
-        fallbackBody: "<h1>Kirthi Diamonds Calicut Boutique</h1><p>61/11508A, Opposite Federal Bank, Puthiyara, Kozhikode, Kerala. By appointment boutique visits for bespoke bridal jewellery and certified diamonds.</p>"
+        fallbackBody: "<h1>Kirthi Diamonds Calicut Boutique</h1><p>61/11508A, Opposite Federal Bank, Puthiyara, Kozhikode, Kerala. Opening Hours: Mon–Sat 09:30–19:30. By appointment boutique visits for bespoke bridal jewellery and certified diamonds.</p>"
       }
     };
 
@@ -999,6 +1004,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
             
             newHtml = replaceMetaTag(newHtml, "name", "description", desc);
             newHtml = replaceMetaTag(newHtml, "property", "og:title", title);
+            newHtml = replaceMetaTag(newHtml, "property", "og:type", "article");
             newHtml = replaceMetaTag(newHtml, "property", "og:description", desc);
             newHtml = replaceMetaTag(newHtml, "name", "twitter:title", title);
             newHtml = replaceMetaTag(newHtml, "name", "twitter:description", desc);
@@ -1041,6 +1047,12 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
               }]
             }; 
             const breadcrumbCategoryName = post.category || categoryName;
+            
+            
+            const faqSchemaForArticle = generateFAQSchema(parsedContent);
+            if (faqSchemaForArticle) {
+              newHtml = newHtml.replace('</head>', `\n<script type="application/ld+json">\n${JSON.stringify(faqSchemaForArticle, null, 2)}\n</script>\n</head>`);
+            }
             
             const breadcrumbSchema = {
               "@context": "https://schema.org",
@@ -1117,7 +1129,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
             newHtml = replaceMetaTag(newHtml, "property", "og:image:height", ogH);
 
 
-      newHtml = newHtml.replace(/<!-- SEO_LINKS_START -->[\s\S]*?<!-- SEO_LINKS_END -->/, '');
+      const fallbackHtml = `<!-- SEO_LINKS_START --><div id="seo-links" style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;">${buildFallback(meta.fallbackBody)}</div><!-- SEO_LINKS_END -->`;
+      newHtml = newHtml.replace(/<!-- SEO_LINKS_START -->[\s\S]*?<!-- SEO_LINKS_END -->/, fallbackHtml);
       
       if (pathPart === "/faq" || pathPart === "/methodology") {
         const faqSchema = {
