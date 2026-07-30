@@ -7,12 +7,14 @@ import dotenv from "dotenv";
 import compression from "compression";
 import helmet from "helmet";
 import crypto from "crypto";
-import { initializeApp } from "firebase/app";
-import { getFirestore, initializeFirestore, collection, getDocs, doc, getDoc, orderBy, query, limit, onSnapshot } from "firebase/firestore";
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+
 import fs from "fs";
 import { weaveLinks } from "./src/lib/linkWeaver";
 import { generateFAQSchema } from "./src/utils/seo";
 import { hardcodedPosts } from "./src/utils/fallbackPosts";
+import { PRODUCTS } from "./src/constants";
 import { getMetaDescription } from "./src/utils/meta";
 import { marked } from "marked";
 
@@ -27,10 +29,16 @@ try {
 
 let db: any = null;
 if (firebaseConfig) {
-  const firebaseApp = initializeApp(firebaseConfig);
-  db = initializeFirestore(firebaseApp, {
-    experimentalForceLongPolling: true
-  }, firebaseConfig.firestoreDatabaseId);
+  try {
+    initializeApp({
+      projectId: firebaseConfig.projectId
+    });
+    db = getFirestore(firebaseConfig.firestoreDatabaseId || "(default)");
+    console.log("Firebase Admin initialized successfully with project:", firebaseConfig.projectId, "and DB:", firebaseConfig.firestoreDatabaseId || '(default)');
+    console.log("Firestore database path connectivity:", db.collection("site_content_shopProducts").path);
+  } catch (e) {
+    console.error("Firebase Admin initialization error:", e);
+  }
 }
 
 let razorpayClient: Razorpay | null = null;
@@ -375,7 +383,7 @@ Sitemap: ${baseUrl}/sitemap-index.xml`;
     if (db) {
       try {
         const fetchItems = async (col: string) => {
-          const snap = await getDocs(collection(db, col));
+          const snap = await db.collection(col).get();
           return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         };
 
@@ -390,11 +398,11 @@ Sitemap: ${baseUrl}/sitemap-index.xml`;
           .filter((p: any) => !["The Art of the Perfect Cut", "2026 High Jewellery Trends", "Bespoke Masterpieces: A Case Study"].includes(p.title))
           .map((p: any) => {
           const slug = p.title ? p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : encodeURIComponent(p.id);
-          return `- [${p.title}](https://kirthidiamonds.com/journal/${slug})`;
+          return `- [${p.title}](${canonicalBaseUrl}/journal/${slug})`;
         }).join("\n");
         
         shopProductsText = products.map((p: any) => {
-          return `- [${p.name}](https://kirthidiamonds.com/shop?product=${encodeURIComponent(p.id)})`;
+          return `- [${p.name}](${canonicalBaseUrl}/shop?product=${encodeURIComponent(p.id)})`;
         }).join("\n");
         
         heritageItemsText = heritage.map((h: any) => {
@@ -416,12 +424,12 @@ Kirthi Diamonds is a luxury diamond jewellery brand rooted in a family heritage 
 
 ## Core Pages
 - [Homepage](https://kirthidiamonds.com/) - Brand homepage, showroom overview, trust pillars, and collections entry point
-- [The Boutique](https://kirthidiamonds.com/shop) - Collections and services overview
+- [The Boutique](${canonicalBaseUrl}/shop) - Collections and services overview
 - [Kirthi Brides](https://kirthidiamonds.com/brides) - Bridal diamond jewellery, engagement rings, wedding bands, and custom bridal commissions
 - [The Heritage](https://kirthidiamonds.com/heritage) - Brand heritage and family history
 - [Our Methodology](https://kirthidiamonds.com/methodology) - Craftsmanship process, certification, hallmarking, and quality standards
 - [The Maison](https://kirthidiamonds.com/maison) - Showroom and boutique locations
-- [The Journal](https://kirthidiamonds.com/journal) - Editorial content, diamond mastery, and design philosophy
+- [The Journal](${canonicalBaseUrl}/journal) - Editorial content, diamond mastery, and design philosophy
 - [Contact](https://kirthidiamonds.com/contact) - Showroom contact details and enquiry information
 
 ## Locations
@@ -526,8 +534,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
 
       if (db) {
         try {
-          const snap = await getDocs(collection(db, "site_content_blogPosts"));
-          const trendsSnap = await getDocs(collection(db, "site_content_journalTrends"));
+          const snap = await db.collection("site_content_blogPosts").get();
+          const trendsSnap = await db.collection("site_content_journalTrends").get();
           const posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
           const trends = trendsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
           [...posts, ...trends].forEach((post: any) => {
@@ -609,7 +617,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       if (db) {
         const fetchItems = async (col: string) => {
           try {
-            const snap = await getDocs(collection(db, col));
+            const snap = await db.collection(col).get();
             return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           } catch (e) {
             console.error(`Error fetching ${col} for sitemap`, e);
@@ -688,14 +696,14 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
         let postSlugs: string[] = [];
     if (db) {
       try {
-        const postsSnap = await getDocs(collection(db, "site_content_blogPosts"));
+        const postsSnap = await db.collection("site_content_blogPosts").get();
         postsSnap.forEach(doc => {
           const d = doc.data();
           const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
           if (slug) postSlugs.push(slug);
         });
 
-        const trendsSnap = await getDocs(collection(db, "site_content_journalTrends"));
+        const trendsSnap = await db.collection("site_content_journalTrends").get();
         trendsSnap.forEach(doc => {
           const d = doc.data();
           const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
@@ -717,7 +725,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
     }
 
     for (const slug of postSlugs) {
-      xml += `  <url>\n    <loc>https://kirthidiamonds.com/journal/${slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n  </url>\n`;
+      xml += `  <url>\n    <loc>${canonicalBaseUrl}/journal/${slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n  </url>\n`;
     }
 
     xml += `</urlset>`;
@@ -730,6 +738,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
   });
 
   async function injectSEO(html: string, pathPart: string): Promise<string> {
+    const canonicalBaseUrl = process.env.BASE_URL || 'https://kirthidiamonds.com';
     const replaceMetaTag = (sourceHtml: string, attrName: "property" | "name", attrValue: string, newContent: string): string => {
       const metaRegex = /<meta\s+([^>]*?)>/gi;
       let found = false;
@@ -842,7 +851,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
         title: "The Journal | Kirthi Diamonds",
         desc: "Insights, artisanal stories, and complete guides to diamond valuation in India.",
         fallbackBody: "<h1>The Journal</h1><p>Insights into artisanal diamond jewellery and investment grade solitaires.</p>",
-        image: "https://kirthidiamonds.com/journal-cover.jpg"
+        image: "${canonicalBaseUrl}/journal-cover.jpg"
       },
       "/heritage": {
         title: "The Heritage | Kirthi Diamonds",
@@ -873,7 +882,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       "/brides": {
         title: "Kirthi Brides | Kirthi Diamonds",
         desc: "Bespoke bridal jewellery in Kochi and Calicut, crafted with certified natural diamonds, BIS hallmarked gold, and Kirthi’s written lifetime buyback and exchange promise.",
-        fallbackBody: "<h1>Kirthi Brides: Celebrating Unique Love Stories</h1><p>At Kirthi Diamonds, we believe that bridal jewellery should be as unique as the love story it represents. Our dedicated bridal service is built entirely upon a foundation of low-volume, highly personalised commissions. Rather than presenting brides with mass-manufactured, generic designs, we welcome families into our private consultation rooms in Kochi and Calicut for a slow-paced, collaborative experience. Here, our designers work hand-in-hand with the bride to sketch and render a custom-tailored ensemble—spanning from the centre engagement ring to the complete necklace and bangle set—ensuring every piece harmonizes beautifully with her bridal attire and personal style.</p><p>This deliberate low-volume approach is vital to achieving a perfect, durable setting outcome for bridal jewellery, which is designed to be worn and cherished for a lifetime. Commercial bridal sets are often cast using standard moulds that force pre-selected diamonds into rigid claw positions. At Kirthi, every bridal mounting is hand-forged and custom-sculpted around the exact contours and proportions of its certified GIA or IGI diamond. Our master setters spend hours under high magnification precisely placing and adjusting each individual claw.</p><p>Whether crafting traditional Kerala-inspired masterpieces, modern solitaire rings, or intricate Polki and uncut diamond sets, we commit to absolute material transparency. Every diamond above 0.30 carats features its own independent laboratory certificate, and every gram of gold is BIS-hallmarked for absolute purity. Backed by our lifetime buyback and exchange policy, a Kirthi bridal commission is not just a stunning accessory for a single day, but a structurally perfect generational heirloom designed to be passed down with pride.</p>"
+        fallbackBody: "<h1>Kirthi Brides: Celebrating Unique Love Stories</h1><p>At Kirthi Diamonds, we believe that bridal jewellery should be as unique as the love story it represents. Our dedicated bridal service is built entirely upon a foundation of low-volume, highly personalised commissions. Rather than presenting brides with mass-manufactured, generic designs, we welcome families into our bespoke consultation rooms in Kochi and Calicut for a slow-paced, collaborative experience. Here, our designers work hand-in-hand with the bride to sketch and render a custom-tailored ensemble—spanning from the centre engagement ring to the complete necklace and bangle set—ensuring every piece harmonizes beautifully with her bridal attire and personal style.</p><p>This deliberate low-volume approach is vital to achieving a perfect, durable setting outcome for bridal jewellery, which is designed to be worn and cherished for a lifetime. Commercial bridal sets are often cast using standard moulds that force pre-selected diamonds into rigid claw positions. At Kirthi, every bridal mounting is hand-forged and custom-sculpted around the exact contours and proportions of its certified GIA or IGI diamond. Our master setters spend hours under high magnification precisely placing and adjusting each individual claw.</p><p>Whether crafting traditional Kerala-inspired masterpieces, modern solitaire rings, or intricate Polki and uncut diamond sets, we commit to absolute material transparency. Every diamond above 0.30 carats features its own independent laboratory certificate, and every gram of gold is BIS-hallmarked for absolute purity. Backed by our lifetime buyback and exchange policy, a Kirthi bridal commission is not just a stunning accessory for a single day, but a structurally perfect generational heirloom designed to be passed down with pride.</p>"
       },
       "/contact": {
         title: "Contact Us | Kirthi Diamonds",
@@ -898,12 +907,38 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       "/kochi": {
         title: "Kochi Boutique | Kirthi Diamonds",
         desc: "Visit our Kochi boutique at Palarivattom for a bespoke diamond jewellery consultation. Explore GIA & IGI certified solitaires and bridal masterpieces.",
-        fallbackBody: "<h1>Kirthi Diamonds Kochi Boutique</h1><p>34/572, By Pass Road, Palarivattom, Kochi, Kerala. Opening Hours: Mon–Sat 10:00–19:30. By appointment boutique visits for bespoke bridal jewellery and certified diamonds.</p>"
+        fallbackBody: `<h1>Diamond Jewellery in Kochi | Kirthi Diamonds</h1>
+<p>Situated in the vibrant heart of Kerala's commercial capital, Kirthi Diamonds' Kochi boutique offers an exclusive sanctuary for those seeking investment-grade, bespoke diamond jewellery. Located conveniently at 34/572, By Pass Road, Palarivattom, our Kochi showroom is designed to provide a serene and unhurried environment, entirely focused on personalised consultations and artisanal creation. We believe that acquiring a natural diamond is a significant milestone, and our Kochi design team is dedicated to guiding you through every aspect of the 4Cs, certification, and custom setting designs.</p>
+<p>Our Kochi boutique specializes in creating generational heirlooms, ranging from bespoke engagement rings and bridal masterpieces to timeless everyday luxury pieces. Every natural diamond exceeding 0.30 carats in our collection is strictly accompanied by independent certification from either the Gemological Institute of America (GIA) or the International Gemological Institute (IGI). Furthermore, every piece of gold jewellery is BIS-hallmarked for absolute purity. By focusing on a low-volume, meticulously crafted approach, our bench jewellers ensure that each setting maximizes the fire, brilliance, and longevity of the stone.</p>
+<p>We invite you to experience our quiet luxury and commitment to ethical sourcing first-hand. Whether you are looking to design a unique bridal ensemble or searching for a brilliant solitaire, our experts in Kochi are ready to collaborate with you.</p>
+<h2>Kochi Showroom Details</h2>
+<address>
+  <strong>Kirthi Diamonds Kochi</strong><br>
+  34/572, By Pass Road, Palarivattom<br>
+  Kochi, Kerala 682024<br>
+  India<br>
+  <a href="tel:+914842316688">Phone: +91 484 231 6688</a>
+</address>
+<p><strong>Opening Hours:</strong> Monday–Saturday 10:00 – 19:00 (Closed on Sundays)</p>
+<p>To arrange a bespoke consultation with our diamond experts, please <a href="https://kirthidiamonds.com/contact">visit our contact page</a>.</p>`
       },
       "/calicut": {
         title: "Calicut Boutique | Kirthi Diamonds",
         desc: "Visit our Calicut boutique at Puthiyara for a bespoke diamond jewellery consultation. Explore GIA & IGI certified solitaires and bridal masterpieces.",
-        fallbackBody: "<h1>Kirthi Diamonds Calicut Boutique</h1><p>61/11508A, Opposite Federal Bank, Puthiyara, Kozhikode, Kerala. Opening Hours: Mon–Sat 09:30–19:30. By appointment boutique visits for bespoke bridal jewellery and certified diamonds.</p>"
+        fallbackBody: `<h1>Diamond Jewellery in Calicut | Kirthi Diamonds</h1>
+<p>Located in the historic and culturally rich city of Kozhikode, Kirthi Diamonds' Calicut boutique stands as a beacon of artisanal excellence and quiet luxury in northern Kerala. Situated at 61/11508A, Opposite Federal Bank in Puthiyara, our Calicut showroom invites patrons into a refined environment where the art of bespoke diamond jewellery can be experienced at a deliberate, relaxed pace. We reject the high-volume retail model in favour of one-on-one consultations, allowing our clients to deeply understand the craftsmanship and quality of their investments.</p>
+<p>Our Calicut showroom presents a curated selection of GIA and IGI certified natural diamonds, seamlessly integrated into exquisite, custom-forged settings. Whether you desire a classic solitaire engagement ring, a complete bespoke bridal parure, or a unique modern statement piece, our dedicated design team in Calicut works closely with you to bring your vision to life. We maintain an uncompromising commitment to material transparency—every diamond is ethically sourced and rigorously graded, and all gold is BIS-hallmarked to guarantee absolute purity.</p>
+<p>Driven by a passion for perfection, our master setters craft each piece to ensure optimal light return and structural durability, ensuring your jewellery becomes a cherished generational heirloom backed by our lifetime buyback and exchange guarantee.</p>
+<h2>Calicut Showroom Details</h2>
+<address>
+  <strong>Kirthi Diamonds Calicut</strong><br>
+  61/11508A, Opposite Federal Bank, Puthiyara<br>
+  Kozhikode, Kerala 673004<br>
+  India<br>
+  <a href="tel:+914952725461">Phone: +91 495 272 5461</a>
+</address>
+<p><strong>Opening Hours:</strong> Monday–Saturday 10:00 – 19:00 (Closed on Sundays)</p>
+<p>To arrange a bespoke consultation with our diamond experts, please <a href="https://kirthidiamonds.com/contact">visit our contact page</a>.</p>`
       }
     };
 
@@ -955,31 +990,32 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
           let categoryName = "The Publication";
 
           if (db) {
-            const postsCollection = collection(db, "site_content_blogPosts");
-            const trendsCollection = collection(db, "site_content_journalTrends");
-            const snapshot = await getDocs(postsCollection);
-            const trendsSnapshot = await getDocs(trendsCollection);
-            
-            snapshot.forEach(doc => {
-              const data = doc.data();
-              const pSlug = (data.title || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || doc.id;
-              if (pSlug === slug || doc.id === slug) {
-                post = { id: doc.id, ...data };
-              }
-            });
-            
-            if (!post) {
-              trendsSnapshot.forEach(doc => {
+            const postsCollection = db.collection("site_content_blogPosts");
+            const trendsCollection = db.collection("site_content_journalTrends");
+            try {
+              const snapshot = await postsCollection.get();
+              snapshot.forEach(doc => {
                 const data = doc.data();
                 const pSlug = (data.title || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || doc.id;
                 if (pSlug === slug || doc.id === slug) {
                   post = { id: doc.id, ...data };
-                  categoryName = "Trends";
                 }
               });
+              if (!post) {
+                const trendsSnapshot = await trendsCollection.get();
+                trendsSnapshot.forEach(doc => {
+                  const data = doc.data();
+                  const pSlug = (data.title || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || doc.id;
+                  if (pSlug === slug || doc.id === slug) {
+                    post = { id: doc.id, ...data };
+                    categoryName = "Trends";
+                  }
+                });
+              }
+            } catch (err) {
+              console.error("DB Fetch Error for article:", err.message);
             }
           }
-
           if (!post) {
             const fallbackPost = hardcodedPosts.find(p => p.id === slug);
             if (fallbackPost) {
@@ -1049,6 +1085,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
             const breadcrumbCategoryName = post.category || categoryName;
             
             
+            const parsedContent = await marked.parse(weaveLinks(post.content || '', post.id || slug));
             const faqSchemaForArticle = generateFAQSchema(parsedContent);
             if (faqSchemaForArticle) {
               newHtml = newHtml.replace('</head>', `\n<script type="application/ld+json">\n${JSON.stringify(faqSchemaForArticle, null, 2)}\n</script>\n</head>`);
@@ -1068,27 +1105,26 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
                   "@type": "ListItem",
                   "position": 2,
                   "name": "Journal",
-                  "item": "https://kirthidiamonds.com/journal"
+                  "item": "${canonicalBaseUrl}/journal"
                 },
                 {
                   "@type": "ListItem",
                   "position": 3,
                   "name": breadcrumbCategoryName,
-                  "item": "https://kirthidiamonds.com/journal"
+                  "item": "${canonicalBaseUrl}/journal"
                 },
                 {
                   "@type": "ListItem",
                   "position": 4,
                   "name": post.title,
-                  "item": `https://kirthidiamonds.com/journal/${slug}`
+                  "item": `${canonicalBaseUrl}/journal/${slug}`
                 }
               ]
             };
             
             newHtml = newHtml.replace('</head>', `\n<!-- pipeline-test-2026-07-21 -->\n<script type="application/ld+json">\n${JSON.stringify(schema, null, 2)}\n</script>\n<script type="application/ld+json">\n${JSON.stringify(breadcrumbSchema, null, 2)}\n</script>\n</head>`);
             
-            const parsedContent = await marked.parse(weaveLinks(post.content || '', post.id || slug));
-            const fallbackContent = `
+                        const fallbackContent = `
               <article>
                 <h1>${post.title}</h1>
                 <img src="${img}" alt="${post.title}" />
@@ -1129,10 +1165,151 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
             newHtml = replaceMetaTag(newHtml, "property", "og:image:height", ogH);
 
 
-      const fallbackHtml = `<!-- SEO_LINKS_START --><div id="seo-links" style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;">${buildFallback(meta.fallbackBody)}</div><!-- SEO_LINKS_END -->`;
+      
+      let dynamicFallbackBody = meta.fallbackBody;
+      let posts = [];
+      let trends = [];
+      let products = [];
+      if (db) {
+        try {
+          if (pathPart === "/journal") {
+            const snap = await db.collection("site_content_blogPosts").get();
+            const trendsSnap = await db.collection("site_content_journalTrends").get();
+            posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            trends = trendsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          } else if (pathPart === "/shop") {
+            const snap = await db.collection("site_content_shopProducts").get();
+            products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          }
+        } catch (e) {
+          console.error("Error fetching dynamic SEO content:", e);
+        }
+      }
+      
+      if (pathPart === "/journal") {
+        if (posts.length === 0 && trends.length === 0) {
+           posts = hardcodedPosts;
+        }
+        if (posts.length > 0 || trends.length > 0) {
+          dynamicFallbackBody += '<h2>Journal Entries</h2><ul>';
+        }
+        [...posts, ...trends].forEach(post => {
+          const slug = post.title ? post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : encodeURIComponent(post.id);
+          dynamicFallbackBody += `<li><a href="${canonicalBaseUrl}/journal/${slug}">${post.title}</a></li>`;
+        });
+        if (posts.length > 0 || trends.length > 0) {
+          dynamicFallbackBody += '</ul>';
+        }
+      } else if (pathPart === "/shop") {
+        if (products.length === 0) {
+          products = PRODUCTS;
+        }
+        if (products.length > 0) {
+          dynamicFallbackBody += '<h2>Products</h2><ul>';
+        }
+        products.forEach(product => {
+          dynamicFallbackBody += `<li><a href="${canonicalBaseUrl}/shop?product=${encodeURIComponent(product.id)}">${product.name}</a></li>`;
+        });
+        if (products.length > 0) {
+          dynamicFallbackBody += '</ul>';
+        }
+      }
+      const fallbackHtml = `<!-- SEO_LINKS_START --><div id="seo-links" style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;">${buildFallback(dynamicFallbackBody)}</div><!-- SEO_LINKS_END -->`;
+
       newHtml = newHtml.replace(/<!-- SEO_LINKS_START -->[\s\S]*?<!-- SEO_LINKS_END -->/, fallbackHtml);
       
+      
+      // Inject global Organization Schema
+      const orgSchema = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Kirthi Diamonds",
+        "url": "https://kirthidiamonds.com/",
+        "logo": "https://kirthidiamonds.com/logo.png",
+        "sameAs": [
+          "https://www.instagram.com/kirthidiamonds",
+          "https://www.facebook.com/kirthidiamonds"
+        ]
+      };
+      newHtml = newHtml.replace('</head>', `
+<script type="application/ld+json" id="schema-organization">
+${JSON.stringify(orgSchema, null, 2)}
+</script>
+</head>`);
+      
+      const kochiSchema = {
+        "@context": "https://schema.org",
+        "@type": "JewelryStore",
+        "name": "Kirthi Diamonds Kochi",
+        "image": "https://kirthidiamonds.com/og-cover.jpg",
+        "url": "https://kirthidiamonds.com/kochi",
+        "telephone": "+91 484 231 6688",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "3rd Cross Road, Panampilly Nagar",
+          "addressLocality": "Kochi",
+          "addressRegion": "Kerala",
+          "postalCode": "682036",
+          "addressCountry": "IN"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 9.9654,
+          "longitude": 76.2965
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            "opens": "10:00",
+            "closes": "19:00"
+          }
+        ]
+      };
+      
+      const calicutSchema = {
+        "@context": "https://schema.org",
+        "@type": "JewelryStore",
+        "name": "Kirthi Diamonds Calicut",
+        "image": "https://kirthidiamonds.com/og-cover.jpg",
+        "url": "https://kirthidiamonds.com/calicut",
+        "telephone": "+91 495 272 5461",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Puthiyara",
+          "addressLocality": "Kozhikode",
+          "addressRegion": "Kerala",
+          "postalCode": "673004",
+          "addressCountry": "IN"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 11.2588,
+          "longitude": 75.7804
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            "opens": "10:00",
+            "closes": "19:00"
+          }
+        ]
+      };
+      
+      if (pathPart === "/" || pathPart === "/contact" || pathPart === "/kochi" || pathPart === "/calicut") {
+         newHtml = newHtml.replace('</head>', `
+<script type="application/ld+json" id="schema-kochi-boutique">
+${JSON.stringify(kochiSchema, null, 2)}
+</script>
+<script type="application/ld+json" id="schema-calicut-boutique">
+${JSON.stringify(calicutSchema, null, 2)}
+</script>
+</head>`);
+      }
+
       if (pathPart === "/faq" || pathPart === "/methodology") {
+
         const faqSchema = {
           "@context": "https://schema.org",
           "@type": "FAQPage",
@@ -1168,12 +1345,12 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
         const itemListSchema = {
           "@context": "https://schema.org",
           "@type": "ItemList",
-          "@id": "https://kirthidiamonds.com/shop#catalogue",
+          "@id": "${canonicalBaseUrl}/shop#catalogue",
           "name": "Kirthi Diamonds - The Boutique Collection",
           "description": "Explore the full range of GIA and IGI certified diamond jewellery and BIS hallmarked gold collections at Kirthi Diamonds.",
           "itemListElement": [
-             { "@type": "ListItem", "position": 1, "item": "https://kirthidiamonds.com/shop" },
-             { "@type": "ListItem", "position": 2, "item": "https://kirthidiamonds.com/shop" }
+             { "@type": "ListItem", "position": 1, "item": "${canonicalBaseUrl}/shop" },
+             { "@type": "ListItem", "position": 2, "item": "${canonicalBaseUrl}/shop" }
           ]
         };
         newHtml = newHtml.replace('</head>', `\n<script type="application/ld+json">\n${JSON.stringify(itemListSchema)}\n</script>\n</head>`);
@@ -1181,7 +1358,6 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
     }
 
     // Replace canonical tag & og:url
-    const canonicalBaseUrl = 'https://kirthidiamonds.com';
     let canonicalPathUrl = canonicalBaseUrl;
     if (pathPart === '/' || pathPart === '') {
       canonicalPathUrl += '/';
@@ -1256,7 +1432,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
   let globalBrandingData: any = null;
   if (db) {
     try {
-      const docSnap = await getDoc(doc(db, "site_content", "global"));
+      const docSnap = await db.collection("site_content").doc("global").get();
       if (docSnap.exists()) {
         const data = docSnap.data();
         globalBrandingData = {
@@ -1343,7 +1519,52 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
 
 
 
+  
+  app.get('/sitemap.xml', async (req, res) => {
+    let urls = [
+      'https://kirthidiamonds.com/',
+      '${canonicalBaseUrl}/shop',
+      '${canonicalBaseUrl}/journal',
+      'https://kirthidiamonds.com/brides',
+      'https://kirthidiamonds.com/heritage',
+      'https://kirthidiamonds.com/methodology',
+      'https://kirthidiamonds.com/maison',
+      'https://kirthidiamonds.com/contact',
+      'https://kirthidiamonds.com/kochi',
+      'https://kirthidiamonds.com/calicut'
+    ];
+    
+    if (db) {
+      try {
+        const snap = await db.collection("site_content_blogPosts").get();
+        const trendsSnap = await db.collection("site_content_journalTrends").get();
+        const posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const trends = trendsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        [...posts, ...trends].forEach(post => {
+          const slug = post.title ? post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : encodeURIComponent(post.id);
+          urls.push(`${canonicalBaseUrl}/journal/${slug}`);
+        });
+      } catch (e) {
+        console.error("Error fetching articles for sitemap", e);
+      }
+    }
+    
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(url => `  <url>\n    <loc>${url}</loc>\n  </url>`).join('\n')}
+</urlset>`;
+    
+    res.header('Content-Type', 'application/xml');
+    res.send(sitemap);
+  });
+  
+  app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send('User-agent: *\nAllow: /\n\nSitemap: https://kirthidiamonds.com/sitemap.xml');
+  });
+
   if (process.env.NODE_ENV !== "production") {
+
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },

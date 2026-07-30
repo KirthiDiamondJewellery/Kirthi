@@ -1,12 +1,8 @@
 # =============================================================================
 # Kirthi Diamonds — Cloud Build pipeline
-# Commit this file at the REPO ROOT (same level as the Dockerfile),
-# replacing the existing cloudbuild.yaml, then push to main.
-# Builds the Docker image, pushes to Artifact Registry, deploys to Cloud Run.
 # =============================================================================
 
 steps:
-  # 1. Build the image using the repo's existing Dockerfile
   - id: build
     name: gcr.io/cloud-builders/docker
     args:
@@ -17,7 +13,14 @@ steps:
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/kirthi:latest
       - .
 
-  # 2. Push both tags
+  - id: pre-validate
+    name: node:22-alpine
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        apk add --no-cache bash
+        ./pre-deploy.sh
   - id: push
     name: gcr.io/cloud-builders/docker
     args:
@@ -25,9 +28,6 @@ steps:
       - --all-tags
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/kirthi
 
-  # 3. Deploy the freshly built image to the existing Cloud Run service.
-  #    This swaps ONLY the image — existing env vars, secrets, domain
-  #    mapping, and scaling settings on the service are preserved.
   - id: deploy
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
     entrypoint: gcloud
@@ -40,6 +40,16 @@ steps:
       - --platform=managed
       - --allow-unauthenticated
       - --port=8080
+
+  - id: validate
+    name: node:22-alpine
+    entrypoint: sh
+    args: 
+      - -c
+      - |
+        echo "Waiting 5 seconds for traffic to shift..."
+        sleep 5
+        node validate-deploy.cjs
 
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/kirthi:$COMMIT_SHA
