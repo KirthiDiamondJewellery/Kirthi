@@ -39,14 +39,15 @@ steps:
 
   - id: validate-candidate
     name: node:22-alpine
-    entrypoint: bash
+    entrypoint: sh
     args:
       - -c
       - |
-        apk add --no-cache bash
-        CANDIDATE_URL=$(cat /workspace/candidate_url.txt)
-        echo "Validating Candidate URL: $CANDIDATE_URL"
-        ./pre-deploy.sh "$CANDIDATE_URL"
+        set -e
+        apk add --no-cache bash curl
+        CANDIDATE_URL=$$(cat /workspace/candidate_url.txt)
+        echo "Validating Candidate URL: $$CANDIDATE_URL"
+        EXPECTED_HOST=https://kirthidiamonds.com STRICT=$${STRICT_MODE:-0} bash ./pre-deploy.sh "$$CANDIDATE_URL"
 
   - id: shift-traffic
     name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
