@@ -1,10 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
-echo "Starting local server for pre-deploy validation..."
-PORT=3010 BASE_URL="http://localhost:3010" node dist/server.cjs > /dev/null 2>&1 &
-SERVER_PID=$!
-sleep 5
-echo "Running validation script..."
-BASE_URL="http://localhost:3010" node validate-deploy.cjs
-echo "Validation passed. Shutting down local server..."
-kill $SERVER_PID
+
+if [ -z "$1" ]; then
+  echo "Error: CANDIDATE_URL not provided."
+  exit 1
+fi
+
+export BASE_URL="$1"
+echo "Running validation script against $BASE_URL..."
+node validate-deploy.cjs
+echo "Validation passed."
