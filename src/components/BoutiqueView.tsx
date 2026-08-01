@@ -6,7 +6,7 @@ import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps
 import { SharedFooter } from './SharedFooter';
 
 const GOOGLE_MAPS_API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
+  (typeof process !== "undefined" && process.env?.GOOGLE_MAPS_PLATFORM_KEY) ||
   (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
   (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
   '';
@@ -26,15 +26,15 @@ export default function BoutiqueView({ boutiqueId, onInquiry }: BoutiqueViewProp
   const address = isKochi 
     ? "34/572, By Pass Road, Palarivattom\nKochi, Kerala 682025" 
     : "61/11508A, Opposite Federal Bank, Puthiyara\nKozhikode, Kerala 673004";
-  const hours = isKochi ? "Mon – Sat: 10:00am – 7:30pm\nClosed on Sundays" : "Mon – Sat: 10:00am – 7:30pm\nClosed on Sundays";
+  const hours = isKochi ? "Mon – Sat: 10:00 – 19:00\nClosed on Sundays" : "Mon – Sat: 09:30 – 19:30\nClosed on Sundays";
   const mapsLink = isKochi 
     ? "https://maps.google.com/?q=Kirthi+Diamonds+Kochi" 
     : "https://maps.google.com/?q=Kirthi+Diamonds+Calicut";
   
-  const phone = "+91 98470 86990";
+  const phone = isKochi ? "+91 98470 86990" : "+91 98470 86002";
   const email = "info@kirthidiamonds.com";
 
-  const schemaOpens = "10:00";
+  const schemaOpens = isKochi ? "10:00" : "09:30";
   const schemaCloses = "19:00";
   const SCHEMA_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 

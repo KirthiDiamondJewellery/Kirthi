@@ -63,7 +63,7 @@ export default function BoutiqueLocalView({ location }: { location: 'kochi' | 'c
           <div className="space-y-12">
             <div>
               <h1 className="text-4xl md:text-6xl font-serif italic mb-6 leading-tight">
-                Kirthi Diamonds, {isKochi ? 'Kochi' : 'Calicut'}
+                Diamond Jewellery in {isKochi ? 'Kochi' : 'Calicut'} | Kirthi Diamonds {isKochi ? 'Palarivattom' : 'Puthiyara'}
               </h1>
               <div className="text-sm md:text-base font-light leading-relaxed opacity-80 max-w-xl space-y-4">
                 <p>
@@ -99,7 +99,7 @@ export default function BoutiqueLocalView({ location }: { location: 'kochi' | 'c
               <h4 className="text-xl font-serif italic text-[#D4AF37]">Boutique Details</h4>
               <div className="text-sm font-light leading-relaxed opacity-80">
                 <p>{isKochi ? '34/572, By Pass Road, Palarivattom, Kochi, Kerala' : '61/11508A, Opposite Federal Bank, Puthiyara, Calicut, Kerala'}</p>
-                <p className="mt-2">Hours: Mon–Sat {isKochi ? '10:00–19:30' : '10:00–19:30'}</p>
+                <p className="mt-2">Hours: Mon–Sat {isKochi ? '10:00–19:00' : '09:30–19:30'} (Closed Sundays)</p>
                 <p className="mt-2">
                   <a href={`tel:${isKochi ? '+919847086990' : '+919847086002'}`} className="hover:text-[#D4AF37] transition-colors inline-block mr-4">Call: {isKochi ? '+919847086990' : '+919847086002'}</a>
                   <a href={`https://wa.me/${isKochi ? '919847086990' : '919847086002'}?text=Hello%2C%20I%20would%20like%20to%20arrange%20a%20bespoke%20consultation%20at%20Kirthi%20Diamonds.`} target="_blank" rel="noopener noreferrer" className="hover:text-[#D4AF37] transition-colors">WhatsApp Us</a>

@@ -9,6 +9,7 @@ import JournalView from './components/JournalView';
 import PageView from './components/PageView';
 import BoutiqueLocalView from './components/BoutiqueLocalView';
 import ContactView from './components/ContactView';
+import StoreLocatorView from './components/StoreLocatorView';
 
 import './index.css';
 
@@ -67,6 +68,7 @@ createRoot(document.getElementById('root')!).render(
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/faq" element={<FAQView />} />
+            <Route path="/find-a-store" element={<StoreLocatorView />} />
             
             <Route path="/contact" element={<ContactView />} />
             <Route path="/kochi" element={<BoutiqueLocalView location="kochi" />} />

@@ -97,7 +97,7 @@ export const SECTIONS: Section[] = [
     title: 'The Heritage',
     seoTitle: 'Kirthi Diamonds Heritage | Bespoke Diamond House Since 1975, Kochi',
     subtitle: 'Archive',
-    description: "The story of Kirthi Diamonds is woven deeply into the fabric of time. Established as a bespoke diamond house in 2006, our roots trace back to a family diamond trade that began in 1975. This rich heritage forms the foundation of every masterpiece we create. We are not merely jewellers; we are custodians of a legacy that values uncompromising quality and enduring elegance over fleeting trends. From our exclusive boutiques in Kochi and Calicut, we have served discerning patrons who appreciate the subtle luxury of authentic craftsmanship. Our journey is defined by a steadfast commitment to transparency, demonstrated by our strict adherence to independent GIA and IGI certification for all our significant diamonds, and BIS Hallmarking for our gold settings. Because we operate on a bespoke, low-volume model, we preserve the intimacy of the traditional jeweller-patron relationship. Each piece in our archive represents a milestone—both for the client who commissioned it and for the artisan who forged it. We invite you to explore this heritage of brilliance. [Note to Brand Team: Insert a brief historical anecdote here about the founding family's earliest diamond procurement trips or a defining early commission that set the standard for Kirthi's quality].",
+    description: "The story of Kirthi Diamonds is woven deeply into the fabric of time. Established as a bespoke diamond house in 2006, our roots trace back to a family diamond trade that began in 1975. In that year, our grandfather set up a diamond cutting factory in Irinjalakuda, Kerala—the first of its kind in South India for cutting diamonds. Our masterfully cut stones reached clients globally, from Japan to the United States. This rich heritage forms the foundation of every masterpiece we create. We are custodians of a legacy that values uncompromising quality and enduring elegance. From our exclusive boutiques in Kochi and Calicut, we serve discerning patrons who appreciate the subtle luxury of authentic craftsmanship. Our journey is defined by a steadfast commitment to transparency, demonstrated by our strict adherence to independent GIA and IGI certification for all significant diamonds, and BIS Hallmarking for our gold settings. Because we operate on a bespoke, low-volume model, we preserve the intimacy of the traditional jeweller-patron relationship. Each piece in our archive represents a milestone—both for the client who commissioned it and for the artisan who forged it. We invite you to explore this heritage of brilliance.",
     index: '02 / 08',
     location: 'Kerala, India',
     image: '',
@@ -116,7 +116,11 @@ export const SECTIONS: Section[] = [
     id: 'maison',
     title: 'The Maison',
     subtitle: 'Company',
-    description: "Established in 2006 and built upon a family heritage in the diamond trade dating back to 1975, Kirthi Diamonds operates as a premier boutique house dedicated to the preservation of high jewellery as an art form. From our main design atelier to our exclusive boutiques in Kochi and Calicut, we reject the commercialized, high-throughput model of modern retailing in favor of deliberate, low-volume, artisanal craftsmanship. We believe that true luxury cannot be mass-produced; it requires time, intimacy, and an uncompromising focus on singular creations. \n\nBy maintaining a strict limit on our workshop output, we ensure that every creation receives the undivided attention of our master bench jewellers. This philosophy directly influences the setting outcomes of our jewellery. Our artisans individually forge BIS-hallmarked 18kt and 22kt gold mounts to fit the precise, unique physical characteristics of each GIA or IGI certified diamond. We operate primarily by appointment, offering a slow-paced, advisory-led environment where clients collaborate directly with our design team. Through our transparent sourcing and legendary lifetime buyback policy, Kirthi Diamonds stands as a sanctuary of trust and artistic integrity. The design of the interiors of the showroom is inspired by painting of florals and is hand painted to give the same textural quality, reflecting our dedication to art.",
+    seoTitle: 'High Jewellery Boutique Kochi | Kirthi Diamonds Maison',
+    description: `Established in 2006 and built upon a family heritage in the diamond trade dating back to 1975, Kirthi Diamonds operates as a premier high jewellery boutique in Kochi and Calicut dedicated to the preservation of diamond craftsmanship as an art form. We reject the commercialized, high-throughput model of modern retailing in favor of deliberate, low-volume, artisanal craftsmanship. True luxury cannot be mass-produced; it requires time, intimacy, and an uncompromising focus on singular creations.
+
+By maintaining a strict limit on our workshop output, we ensure that every creation receives the undivided attention of our master bench jewellers. This philosophy directly influences the setting outcomes of our jewellery. Our artisans individually forge BIS-hallmarked 18kt and 22kt gold mounts to fit the precise, unique physical characteristics of each GIA or IGI certified diamond. We operate offering a slow-paced, advisory-led environment where clients collaborate directly with our design team. Through our transparent sourcing and legendary lifetime buyback policy, Kirthi Diamonds stands as a sanctuary of trust and artistic integrity. The design of the interiors of the showroom is inspired by painting of florals and is hand painted to give the same textural quality, reflecting our dedication to art. As a high jewellery boutique in Kochi, we ensure that every piece is an heirloom designed to transcend generations.`,
+
     index: '04 / 08',
     location: 'A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975',
     image: '',
@@ -134,22 +138,37 @@ export const SECTIONS: Section[] = [
   {
     id: 'brides',
     title: 'Our Patrons',
-    seoTitle: 'Bridal Stories: Celebrating Unique Love Stories with Kirthi Diamonds',
+    seoTitle: 'Bespoke Bridal Jewellery Kerala | Kirthi Diamonds Brides',
     subtitle: 'Stories',
-    description: "Kirthi Brides represent the pinnacle of our bespoke commissioning process. For nearly two decades, since our formal establishment in 2006, we have had the distinct privilege of crafting the foundational heirlooms for countless new beginnings. We understand that an engagement ring or bridal suite is not merely a purchase; it is a profoundly personal symbol of enduring commitment. That is why our approach to bridal jewellery is inherently consultative, never transactional. From our quiet boutiques in Kochi and Calicut, our design team works one-on-one with patrons to understand their unique vision, guiding them through the nuances of VVS1 clarity, E/F colour standard, with GIA/IGI certification for diamonds above 0.30 ct..\n\nBecause our production is strictly low-volume, we dedicate the necessary time and intimacy to ensure that every bridal commission is as unique as the love story it represents. Our master artisans meticulously hand-forge each setting in BIS-hallmarked gold or platinum, securing the centre stone with absolute precision. The result is a bespoke masterpiece designed to be worn, cherished, and eventually passed down through generations. Understanding and deciphering a customers requirement and creating a beautiful creation which talks about both the brand and the bride in question is the main challenge we passionately embrace.",
+    description: `Kirthi Brides represent the pinnacle of our bespoke bridal jewellery in Kerala. For nearly two decades, since our formal establishment in 2006, we have had the distinct privilege of crafting the foundational heirlooms for countless new beginnings. We understand that an engagement ring or bridal suite is not merely a purchase; it is a profoundly personal symbol of enduring commitment. That is why our approach to bridal jewellery is inherently consultative, never transactional. From our quiet boutiques in Kochi and Calicut, our design team works one-on-one with patrons to understand their unique vision, guiding them through the nuances of VVS1 clarity, E/F colour standard, with GIA/IGI certification for diamonds above 0.30 ct.
+
+Our master artisans meticulously map designs to the individual stones, hand-forging each setting in BIS-hallmarked gold or platinum, and securing the centre stone with absolute precision. We maintain a steadfast focus on heirloom preservation over seasonal trends. The result is a bespoke masterpiece designed to be worn, cherished, and eventually passed down through generations. Understanding and deciphering a customer's requirement and creating a beautiful creation which talks about both the brand and the bride in question is the main challenge we passionately embrace.`,
+
     index: '06 / 08',
     location: 'Calicut Boutique',
     image: '',
   },
+  
   {
     id: 'contact',
+
     title: 'Contact',
     subtitle: 'Appointments',
     description: 'Book a bespoke consultation with our diamond specialists in Kochi or Calicut.',
     index: '07 / 08',
     location: 'Boutiques',
     image: '',
-  }
+  },
+  {
+    id: 'bespoke',
+    title: 'Bespoke',
+    seoTitle: 'Bespoke Diamond Commissions | Kirthi Diamonds',
+    subtitle: 'Consultation',
+    description: "Information on commissioning bespoke diamond and gold jewellery at Kirthi Diamonds Kochi and Calicut.",
+    index: '08 / 08',
+    location: 'Kerala, India',
+    image: '',
+  },
 ];
 
 export const HERITAGE_ITEMS: HeritageItem[] = [
@@ -157,7 +176,7 @@ export const HERITAGE_ITEMS: HeritageItem[] = [
     id: 'heritage-1975',
     year: '1975',
     title: 'Foundational Roots',
-    description: 'Our family\'s diamond trade begins, establishing deep relationships in Antwerp and Surat for loose diamond sourcing and distribution, setting the standard for uncompromising quality.',
+    description: 'Our grandfather established the first diamond cutting factory of its kind in South India, located in Irinjalakuda, Kerala. Our masterfully cut diamonds were sought after globally, with clients spanning from Japan to the United States.',
     image: ''
   },
   {
@@ -178,45 +197,38 @@ export const HERITAGE_ITEMS: HeritageItem[] = [
 
 export const METHODOLOGY_STEPS: MethodologyStep[] = [
   {
-    id: 'concept',
-    title: 'Concept & Ideation',
-    description: 'The journey begins with a spark. Our creative directors interpret narratives of light into foundational jewellery concepts.',
+    id: 'stone-selection',
+    title: '1. Stone Selection',
+    subtitle: 'Sourced to the Certificate',
+    description: 'Every diamond is hand-selected against its individual GIA or IGI certificate. We evaluate the cut parameters, fluorescence, and inclusions, choosing only those stones that meet our strict tolerances for brilliance and structural integrity.',
     image: '',
   },
   {
-    id: 'drawing',
-    title: 'Traditional Drawing',
-    description: 'Gouache rendering on matte paper allows us to visualize the interplay of light and shadow before a single cut is made.',
-    image: ""
+    id: 'design-adaptation',
+    title: '2. Design Adaptation',
+    subtitle: 'Proportioned to the Stone',
+    description: 'Unlike commercial settings drawn to generic sizes, our designs are adapted to the exact dimensions and proportions of the specific stone we have selected, down to hundredths of a millimetre.',
+    image: ''
   },
   {
-    id: 'cad',
-    title: 'CAD Modelling',
-    description: 'Translating artistry into digital precision. Advanced 3D mapping computes the exact structural mathematics of the piece.',
+    id: 'fabrication',
+    title: '3. Hand Fabrication',
+    subtitle: 'Wax, Casting & Wire',
+    description: 'The foundation of the piece is built. Depending on the complexity of the design, our artisans use hand-finished wax and precision casting, or build the structure directly from sheet and drawn wire.',
     image: '',
-  },
-  {
-    id: 'casting',
-    title: 'Precision Casting',
-    description: 'The precious metal is heated to its essence and cast into wax-printed molds to ensure a flawless foundation.',
-    image: '',
-  },
-  {
-    id: 'filing',
-    title: 'Expert Filing',
-    description: 'Artisans meticulously file and refine the raw casting, smoothing every curve to perfection.',
-    image: ""
   },
   {
     id: 'setting',
-    title: 'Gemstone Setting',
-    description: 'Master setters secure each stone under microscopes, ensuring maximal security and light exposure.',
+    title: '4. Master Setting',
+    subtitle: 'Magnified Precision',
+    description: 'The master setter mounts the stone under loupe magnification. We use no generic templates; each prong is individually cut, shaped, and burnished precisely to the individual stone to ensure absolute security and maximum light exposure.',
     image: '',
   },
   {
-    id: 'polishing',
-    title: 'Grand Polishing',
-    description: 'The final act. A multi-stage polishing process that reveals the mirror-like finish of the Kirthi signature.',
+    id: 'finishing',
+    title: '5. Polish & Presentation',
+    subtitle: 'Final Inspection',
+    description: 'The piece undergoes a final polish and rigorous quality control inspection against both the original design rendering and the diamond certificate, before its final presentation at the boutique.',
     image: ""
   }
 ];

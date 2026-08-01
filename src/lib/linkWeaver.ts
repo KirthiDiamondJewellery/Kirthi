@@ -3,10 +3,11 @@ export function weaveLinks(content: string, id: string): string {
   let newContent = content;
 
   // Apply copy corrections
-  newContent = newContent.replace(/presented in a private viewing at the boutique\./gi, "presented at a one-on-one consultation at the boutique.");
-  newContent = newContent.replace(/taken in person or via private appointment\./gi, "taken in person or by consultation appointment.");
+  newContent = newContent.replace(/presented in a private viewing at the boutique\./gi, "presented at a quiet unveiling at the boutique.");
+  newContent = newContent.replace(/taken in person or via private appointment\./gi, "taken in person or by appointment.");
   newContent = newContent.replace(/\bconcierge\b/gi, "atelier");
   newContent = newContent.replace(/\bprivate viewing\b/gi, "one-on-one consultation");
+  newContent = newContent.replace(/This is held in our private appointment space at Kochi or Calicut\./gi, "This is held in a reserved consultation space at our Kochi or Calicut boutique.");
   newContent = newContent.replace(/\bprivate appointment\b/gi, "consultation appointment");
   newContent = newContent.replace(/\.\s+one-on-one/g, ". One-on-one");
   

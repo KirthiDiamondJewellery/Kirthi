@@ -105,8 +105,7 @@ export const FastImage = forwardRef<HTMLImageElement, FastImageProps>(({
     return undefined;
   };
 
-  const isUnsplash = src && (src.includes('unsplash.com') || src.includes('images.unsplash'));
-  if (!src || src.trim() === '' || isUnsplash) {
+  if (!src || src.trim() === '') {
     return (
       <div className={`relative flex items-center justify-center overflow-hidden w-full h-full bg-[#050505] ${containerClassName || ''}`}>
         <img

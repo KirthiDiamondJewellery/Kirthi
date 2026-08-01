@@ -29,6 +29,7 @@ import HeritageArchive from "./components/HeritageArchive";
 import TermsView from "./components/TermsView";
 import { FastImage } from "./components/FastImage";
 import SavoirFaire from "./components/SavoirFaire";
+import BespokeView from "./components/BespokeView";
 import MaisonView from "./components/MaisonView";
 import ShopExperience from "./components/ShopExperience";
 import BridesShowcase from "./components/BridesShowcase";
@@ -444,10 +445,10 @@ export default function App() {
       } else if (pathname === "/terms") {
         setViewMode("terms");
       } else if (pathname === "/kochi" || pathname === "/kochi/") {
-        setViewMode("boutique");
+        setViewMode("local");
         setBoutiqueId("kochi");
       } else if (pathname === "/calicut" || pathname === "/calicut/") {
-        setViewMode("boutique");
+        setViewMode("local");
         setBoutiqueId("calicut");
       } else if (pathname === "/find-a-store" || pathname === "/find-a-store/") {
         setViewMode("locator");
@@ -457,8 +458,7 @@ export default function App() {
         if (pathPart.endsWith('/')) {
             pathPart = pathPart.slice(0, -1);
         }
-        const sectionId = (pathPart && pathPart !== "") ? pathPart : null;
-        
+        let sectionId = (pathPart && pathPart !== "") ? pathPart : null;
         if (sectionId) {
           const sections = content?.sections || SECTIONS;
           const idx = sections.findIndex(s => s.id === sectionId || (sectionId === "shop" && s.isShop) || (sectionId === "boutique" && s.isShop));
@@ -474,10 +474,10 @@ export default function App() {
              }
              
              // If section is not found, fallback to home but let App render
-             setCurrentIndex(0);
+             const homeIdx = (content?.sections || SECTIONS).findIndex((s: any) => s.id === "home"); setCurrentIndex(homeIdx !== -1 ? homeIdx : 0);
           }
         } else {
-          setCurrentIndex(0);
+          const homeIdx = (content?.sections || SECTIONS).findIndex((s: any) => s.id === "home"); setCurrentIndex(homeIdx !== -1 ? homeIdx : 0);
         }
       }
     };
@@ -487,19 +487,28 @@ export default function App() {
     return () => {
       window.removeEventListener("popstate", handleLocationChange);
     };
-  }, [setViewMode, content?.sections, content?.blogPosts, setCurrentIndex, setBoutiqueId]);
+  }, [setViewMode, content, content?.blogPosts, setCurrentIndex, setBoutiqueId]);
 
-    useEffect(() => {
-    const handleOpenConsultation = () => setIsContactOpen(true);
+  useEffect(() => {
+    const handleOpenConsultation = () => {
+      window.history.pushState(null, "", "/contact");
+      setViewMode("app");
+      const contactIndex = (content?.sections || SECTIONS).findIndex(s => s.id === "contact");
+      if (contactIndex !== -1) {
+        setCurrentIndex(contactIndex);
+      } else {
+        window.location.href = "/contact";
+      }
+    };
     window.addEventListener("open-consultation", handleOpenConsultation);
     return () => window.removeEventListener("open-consultation", handleOpenConsultation);
-  }, [setIsContactOpen]);
+  }, [setViewMode, content, setCurrentIndex]);
 
   // Update URL on section change
   useEffect(() => {
     if (viewMode !== 'app') return;
     if (window.location.pathname.startsWith('/admin')) return;
-    const currentSection = content?.sections?.[currentIndex] || SECTIONS[currentIndex];
+    const currentSection = (content?.sections || SECTIONS)[currentIndex];
     if (currentSection) {
        const newPath = currentSection.id === 'home' ? '/' : `/${currentSection.id}`;
        const currentPath = window.location.pathname;
@@ -507,7 +516,7 @@ export default function App() {
           window.history.pushState(null, '', newPath);
        }
     }
-  }, [currentIndex, viewMode, content?.sections]);
+  }, [currentIndex, viewMode, content]);
 
   useEffect(() => {
     const recordVisit = async () => {
@@ -546,13 +555,13 @@ export default function App() {
   const nextSection = useCallback(() => {
     triggerHaptic();
     setDirection(1);
-    setCurrentIndex((currentIndex + 1) % SECTIONS.length);
+    setCurrentIndex((currentIndex + 1) % (content?.sections || SECTIONS).length);
   }, [currentIndex, setCurrentIndex, setDirection, triggerHaptic]);
 
   const prevSection = useCallback(() => {
     triggerHaptic();
     setDirection(-1);
-    setCurrentIndex((currentIndex - 1 + SECTIONS.length) % SECTIONS.length);
+    setCurrentIndex((currentIndex - 1 + (content?.sections || SECTIONS).length) % (content?.sections || SECTIONS).length);
   }, [currentIndex, setCurrentIndex, setDirection, triggerHaptic]);
 
   const goToSection = useCallback((index: number) => {
@@ -563,12 +572,20 @@ export default function App() {
   }, [currentIndex, setCurrentIndex, setDirection, setIsMenuOpen, triggerHaptic]);
 
   const handleInquiry = useCallback(() => {
-    setIsContactOpen(true);
-  }, [setIsContactOpen]);
+    window.history.pushState(null, "", "/contact");
+    setViewMode("app");
+    const contactIndex = (content?.sections || SECTIONS).findIndex(s => s.id === "contact");
+    if (contactIndex !== -1) {
+      setCurrentIndex(contactIndex);
+    } else {
+      window.location.href = "/contact";
+    }
+  }, [setViewMode, content, setCurrentIndex]);
 
   const handleGoHome = useCallback(() => {
-    goToSection(0);
-  }, [goToSection]);
+    const homeIndex = (content?.sections || SECTIONS).findIndex((s: any) => s.id === "home");
+    goToSection(homeIndex !== -1 ? homeIndex : 0);
+  }, [goToSection, content]);
 
   const sectionsList = content?.sections || SECTIONS;
   const currentSectionsLength = sectionsList.length;
@@ -614,7 +631,7 @@ export default function App() {
       let rawDescContent = "A bespoke diamond house est. 2006, rooted in a family diamond trade since 1975. Discover GIA & IGI certified diamonds in Kochi and Calicut.";
 
       if (viewMode === "page") {
-        if (canonicalPath === '/contact' || canonicalPath === '/pages/contact') {
+        if (canonicalPath === '/contact' || canonicalPath === '/contact') {
           targetTitle = "Contact | Kirthi Diamonds";
           rawDescContent = "Get in touch to schedule a one-on-one bespoke consultation at our Kochi or Calicut showrooms.";
         } else if (canonicalPath === '/pages/policies') {
@@ -904,10 +921,7 @@ export default function App() {
             </header>
             <TermsView onInquiry={() => setIsContactOpen(true)} />
           </div>
-          <ConsultationModal
-            isOpen={isContactOpen}
-            onClose={() => setIsContactOpen(false)}
-          />
+          
         </Suspense>
       </ErrorBoundary>
     );
@@ -918,10 +932,17 @@ export default function App() {
       <ErrorBoundary onRetry={() => window.location.reload()}>
         <Suspense fallback={<LoadingFallback />}>
           <PageView />
-          <ConsultationModal
-            isOpen={isContactOpen}
-            onClose={() => setIsContactOpen(false)}
-          />
+          
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
+  if (viewMode === "local" && (boutiqueId === "kochi" || boutiqueId === "calicut")) {
+    return (
+      <ErrorBoundary onRetry={() => window.location.reload()}>
+        <Suspense fallback={<LoadingFallback />}>
+          <BoutiqueLocalView location={boutiqueId} />
         </Suspense>
       </ErrorBoundary>
     );
@@ -952,10 +973,7 @@ export default function App() {
             </header>
             <MemoizedBoutiqueView boutiqueId={boutiqueId} onInquiry={() => setIsContactOpen(true)} />
           </div>
-          <ConsultationModal
-            isOpen={isContactOpen}
-            onClose={() => setIsContactOpen(false)}
-          />
+          
         </Suspense>
       </ErrorBoundary>
     );
@@ -986,10 +1004,7 @@ export default function App() {
             </header>
             <StoreLocatorView onInquiry={() => setIsContactOpen(true)} />
           </div>
-          <ConsultationModal
-            isOpen={isContactOpen}
-            onClose={() => setIsContactOpen(false)}
-          />
+          
         </Suspense>
       </ErrorBoundary>
     );
@@ -1051,7 +1066,7 @@ export default function App() {
           initial={{ y: -20 }}
           animate={{ y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          onClick={(e) => { e.preventDefault(); goToSection(0); }}
+          onClick={(e) => { e.preventDefault(); handleGoHome(); }}
           className="flex flex-col items-center cursor-pointer pointer-events-auto justify-center w-1/3"
         >
           {content?.logoUrl ? (
@@ -1110,8 +1125,8 @@ export default function App() {
             onClick={(e) => {
               e.preventDefault();
               goToSection(
-                content?.sections?.findIndex((s) => s.isShop) ||
-                  SECTIONS.findIndex((s) => s.isShop),
+                content?.findIndex((s) => s.isShop) ||
+                  (content?.sections || SECTIONS).findIndex((s) => s.isShop),
               );
             }}
             className="flex items-center justify-center space-x-3 md:space-x-4 md:space-x-6 group min-h-[44px] min-w-[44px] p-2 -mr-2 cursor-pointer"
@@ -1130,7 +1145,7 @@ export default function App() {
       </header>
 
       {/* Dynamic Breadcrumbs */}
-      <BreadcrumbNavigation currentSection={currentSection} onHomeClick={() => goToSection(0)} />
+      <BreadcrumbNavigation currentSection={currentSection} onHomeClick={handleGoHome} />
 
       {/* Enhanced Side Navigation */}
       <a
@@ -1259,7 +1274,14 @@ export default function App() {
                     <MemoizedHeritageArchive onInquiry={handleInquiry} onGoHome={handleGoHome} />
                   ) : currentSection.id === "terms" ? (
                     <MemoizedTermsView onInquiry={handleInquiry} />
+                  
+                  ) : currentSection.id === "bespoke" ? (
+                    <BespokeView 
+                      onContact={handleInquiry} 
+                      onGoHome={handleGoHome} 
+                    />
                   ) : currentSection.id === "methodology" ? (
+
                     <MemoizedSavoirFaire onInquiry={handleInquiry} onGoHome={handleGoHome} />
                   ) : currentSection.id === "maison" ? (
                     <MemoizedMaisonView onInquiry={handleInquiry} onGoHome={handleGoHome} />
@@ -1387,7 +1409,7 @@ export default function App() {
                   <span className="text-xs md:text-[10px] uppercase tracking-[0.6em] text-[#D4AF37]/60 mb-6">
                     Manifesto
                   </span>
-                  {SECTIONS.map((section, idx) => (
+                  {(content?.sections || SECTIONS).map((section, idx) => (
                     <motion.a
                       href={section.id === 'home' ? '/' : `/${section.id}`}
                       key={section.id}
@@ -1425,7 +1447,7 @@ export default function App() {
                     href="/find-a-store"
                     initial={{ opacity: 0, x: -30 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 + SECTIONS.length * 0.08 }}
+                    transition={{ delay: 0.1 + (content?.sections || SECTIONS).length * 0.08 }}
                     onClick={(e) => {
                       e.preventDefault();
                       window.history.pushState(null, "", "/find-a-store");
@@ -1435,7 +1457,7 @@ export default function App() {
                     className="group flex items-center text-left py-3 md:py-1 -my-3 md:-my-1 cursor-pointer"
                   >
                     <span className="text-xs md:text-[10px] font-sans mr-8 opacity-20 group-hover:opacity-100 group-hover:text-[#D4AF37] transition-all">
-                      0{SECTIONS.length + 1}
+                      0{(content?.sections || SECTIONS).length + 1}
                     </span>
                     <span
                       className={`text-3xl md:text-6xl font-serif italic transition-all relative ${
@@ -1654,10 +1676,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <ConsultationModal
-        isOpen={isContactOpen}
-        onClose={() => setIsContactOpen(false)}
-      />
+      
       <InfoModal
         type={activeInfoModal}
         onClose={() => setActiveInfoModal(null)}
@@ -1767,7 +1786,7 @@ export default function App() {
         "@type": "ContactPage",
         "@id": "https://kirthidiamonds.com/contact#page",
         "name": "Contact Kirthi Diamonds",
-        "description": "Kirthi Diamonds creates bespoke, direct-sourced diamond masterpieces for discerning brides and collectors, avoiding retail markups through our bespoke consultation experience. Get in touch to schedule a bespoke consultation at our Kochi showroom at 34/572, By Pass Road, Palarivattom (Mon-Sat 10:00-19:30) or Calicut showroom at 61/11508A, Opposite Federal Bank, Puthiyara (Mon-Sat 10:00-19:30). Call +91 98470 86990.",
+        "description": "Kirthi Diamonds creates bespoke, direct-sourced diamond masterpieces for discerning brides and collectors, avoiding retail markups through our bespoke consultation experience. Get in touch to schedule a bespoke consultation at our Kochi showroom at 34/572, By Pass Road, Palarivattom (Mon-Sat 10:00–19:00, Closed Sundays) or Calicut showroom at 61/11508A, Opposite Federal Bank, Puthiyara (Mon-Sat 09:30–19:30, Closed Sundays). Call +91 98470 86990.",
         "url": "https://kirthidiamonds.com/contact",
         "mainEntity": [
           { "@id": "https://kirthidiamonds.com/#kochi" },

@@ -130,7 +130,13 @@ export default function MaisonView({ onInquiry, onGoHome }: { onInquiry?: () => 
                 "@type": "OpeningHoursSpecification",
                 "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
                 "opens": "10:00",
-                "closes": "20:00"
+                "closes": "19:00"
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": "Sunday",
+                "opens": "00:00",
+                "closes": "00:00"
               }
             ],
             "parentOrganization": {
@@ -164,8 +170,14 @@ export default function MaisonView({ onInquiry, onGoHome }: { onInquiry?: () => 
               {
                 "@type": "OpeningHoursSpecification",
                 "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-                "opens": "10:00",
-                "closes": "20:00"
+                "opens": "09:30",
+                "closes": "19:30"
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": "Sunday",
+                "opens": "00:00",
+                "closes": "00:00"
               }
             ],
             "parentOrganization": {

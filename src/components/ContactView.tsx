@@ -108,7 +108,7 @@ export default function ContactView() {
                 <h4 className="text-xl font-serif italic text-[#D4AF37]">Kochi</h4>
                 <div className="text-sm font-light leading-relaxed opacity-80">
                   <p>34/572, By Pass Road, Palarivattom, Kochi, Kerala 682024.</p>
-                  <p className="mt-2">Hours: Mon–Sat 10:00–19:30 (Closed on Sundays).</p>
+                  <p className="mt-2">Hours: Mon–Sat 10:00–19:00 (Closed on Sundays).</p>
                   <p className="mt-2 flex gap-4">
                     <a href="tel:+919847086990" className="hover:text-[#D4AF37] transition-colors underline underline-offset-4">Call Store</a>
                     
@@ -120,7 +120,7 @@ export default function ContactView() {
                 <h4 className="text-xl font-serif italic text-[#D4AF37]">Calicut</h4>
                 <div className="text-sm font-light leading-relaxed opacity-80">
                   <p>61/11508A, Opposite Federal Bank, Puthiyara, Kozhikode, Kerala 673004.</p>
-                  <p className="mt-2">Hours: Mon–Sat 10:00–19:30 (Closed on Sundays).</p>
+                  <p className="mt-2">Hours: Mon–Sat 09:30–19:30 (Closed on Sundays).</p>
                   <p className="mt-2 flex gap-4">
                     <a href="tel:+919847086002" className="hover:text-[#D4AF37] transition-colors underline underline-offset-4">Call Store</a>
                     
@@ -133,7 +133,7 @@ export default function ContactView() {
                 <div className="text-sm font-light leading-relaxed opacity-80 space-y-4">
                   <p>Email: <a href="mailto:info@kirthidiamonds.com" className="hover:text-[#D4AF37] transition-colors underline underline-offset-4">info@kirthidiamonds.com</a></p>
                   <p>
-                    <a href="https://wa.me/919847086998?text=Hello%2C%20I%20would%20like%20to%20arrange%20a%20bespoke%20consultation%20at%20Kirthi%20Diamond%20Jewellery." target="_blank" rel="noopener noreferrer" className="inline-block py-3 px-6 bg-[#D4AF37] text-black text-xs uppercase tracking-[0.2em] font-medium hover:bg-white transition-colors">
+                    <a href="https://wa.me/919847086990?text=Hello%2C%20I%20would%20like%20to%20arrange%20a%20bespoke%20consultation%20at%20Kirthi%20Diamond%20Jewellery." target="_blank" rel="noopener noreferrer" className="inline-block py-3 px-6 bg-[#D4AF37] text-black text-xs uppercase tracking-[0.2em] font-medium hover:bg-white transition-colors">
                       WhatsApp Us
                     </a>
                   </p>

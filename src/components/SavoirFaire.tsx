@@ -2,28 +2,20 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useContent } from '../contexts/ContentContext';
 import { FastImage } from './FastImage';
-import { HeadlessVideoPlayer } from './HeadlessVideoPlayer';
+import { VideoFacade } from './VideoFacade';
 import { SharedFooter } from './SharedFooter';
 
 export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () => void, onGoHome?: () => void }) {
   const { content } = useContent();
   const steps = content.methodologySteps || [];
-  
-  const processVideoUrl = (url: string | undefined) => {
-    if (!url) return url;
-    if (url.includes('dropbox.com')) {
-      return url.replace('dl=0', 'raw=1').replace('dl=1', 'raw=1');
-    }
-    if (url.includes('drive.google.com/file/d/')) {
-        const fileId = url.split('/file/d/')[1].split('/')[0];
-        return `https://drive.google.com/file/d/${fileId}/preview`;
-    }
-    return url;
-  };
-  
-  const videoUrl = processVideoUrl(content.methodologyVideoUrl);
+      
+  const pageVideo = content.pageVideos?.find(v => v.id === 'methodology');
+  const videoUrl = content.methodologyVideoUrl || 'https://youtu.be/cGrZrg3_BQw';
+  const videoIdMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i);
+  const videoIdStr = videoIdMatch ? videoIdMatch[1] : "cGrZrg3_BQw";
   
   const [expandedStep, setExpandedStep] = useState<string | null>(null);
+
 
   const toggleExpand = (id: string, index: number) => {
     const key = id || String(index);
@@ -32,54 +24,59 @@ export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () =>
   
   return (
     <div className="w-full h-full flex flex-col items-center justify-start overflow-y-auto custom-scrollbar relative">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Methodology & Craftsmanship | Kirthi Diamonds",
+        "description": "The journey from rough diamond to finished high-jewellery masterpiece at Kirthi Diamonds, involving geological intelligence, artisanal crafting, and precision setting.",
+        "url": "https://kirthidiamonds.com/methodology"
+      },
+      {
         "@context": "https://schema.org",
         "@type": "HowTo",
-        "name": "How Kirthi Diamonds Crafts Bespoke Diamond Jewellery",
-        "description": "The proprietary crafting methodology used by Kirthi Diamonds, from ethically sourced rough stone to finished masterpiece.",
+        "name": "The Kirthi Diamonds Methodology",
+        "description": "Our rigorous progression that marries geological intelligence with generational hand-craftsmanship to create bespoke high-jewellery masterpieces.",
         "step": [
           {
             "@type": "HowToStep",
-            "name": "Diamond Sourcing and Certification",
-            "text": "Every diamond above 0.30 carats is ethically sourced and certified by GIA or IGI, ensuring internationally recognised grading for cut, colour, clarity, and carat weight before it enters our workshop."
+            "name": "Stone Selection",
+            "text": "Every diamond is hand-selected against its individual GIA or IGI certificate."
           },
           {
             "@type": "HowToStep",
-            "name": "Design and Commission",
-            "text": "Each bespoke commission begins with a bespoke consultation at our Kochi or Calicut boutique. Our designers translate the client's vision into detailed sketches and CAD renderings for approval."
+            "name": "Design Adaptation",
+            "text": "Designs are adapted to the exact dimensions and proportions of the specific stone."
           },
           {
             "@type": "HowToStep",
-            "name": "Master Craftsmanship",
-            "text": "Our artisans employ both time-honoured techniques including hand-hammering and manual stone setting, and avant-garde precision tooling to craft each piece."
+            "name": "Hand Fabrication",
+            "text": "The foundation is built using hand-finished wax and precision casting or from sheet and drawn wire."
           },
           {
             "@type": "HowToStep",
-            "name": "Hallmarking and Quality Verification",
-            "text": "Every finished piece is tested and stamped with the BIS Hallmark, guaranteeing gold purity in 18K and 22K alloy configurations."
+            "name": "Master Setting",
+            "text": "The master setter mounts the stone under loupe magnification with individually cut prongs."
           },
           {
             "@type": "HowToStep",
-            "name": "Documentation and Archive",
-            "text": "Every Kirthi piece is fully documented and entered into our permanent archive, with certification papers provided to the client at handover."
+            "name": "Polish & Presentation",
+            "text": "Final polish and rigorous quality control inspection before presentation."
           }
-        ],
-        "tool": [
-          { "@type": "HowToTool", "name": "GIA Certification" },
-          { "@type": "HowToTool", "name": "IGI Certification" },
-          { "@type": "HowToTool", "name": "BIS Hallmarking" }
         ]
-      }) }} />
-
-      {videoUrl && (
-        <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="w-full h-full absolute inset-0 z-0 bg-black">
-            <HeadlessVideoPlayer url={videoUrl} brightnessClass="brightness-75" />
-          </div>
-          <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505] z-10 pointer-events-none" />
-        </div>
-      )}
+      },
+      ...(videoUrl ? [{
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        "name": pageVideo?.title || "Kirthi Diamonds Methodology",
+        "description": pageVideo?.description || "The proprietary crafting methodology used by Kirthi Diamonds.",
+        "thumbnailUrl": videoIdStr ? `https://img.youtube.com/vi/${videoIdStr}/maxresdefault.jpg` : "",
+        "uploadDate": pageVideo?.uploadDate || "2024-01-01T08:00:00+08:00",
+        "duration": pageVideo?.duration || "PT5M",
+        "embedUrl": videoIdStr ? `https://www.youtube-nocookie.com/embed/${videoIdStr}` : ""
+      }] : [])
+    ]) }} />
+      
 
       <div className={`relative z-20 w-full flex flex-col items-center ${videoUrl ? '' : 'bg-[#050505]'}`}>
         {videoUrl && (
@@ -90,11 +87,14 @@ export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () =>
                 <h1 className="text-5xl md:text-7xl lg:text-[100px] font-serif italic text-white drop-shadow-2xl leading-none">Kirthi Diamonds Methodology: From Concept to Masterpiece</h1>
                 <div className="h-px w-32 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto mt-16 mb-12 opacity-80" />
                 <p className="text-sm md:text-base tracking-[0.15em] text-white/90 leading-[2.2] drop-shadow-xl max-w-4xl mx-auto font-light mb-6 text-justify">
-                  The journey from a rough diamond to a finished high-jewellery masterpiece at Kirthi Diamonds is a rigorous progression that marries geological intelligence with generational hand-craftsmanship. Every stone we handle begins its life deep within the Earth, where immense pressure and heat crystallise carbon over billions of years. We select only the upper-echelon of these rough gems—prioritizing those with exceptional lattice purity, Internally Flawless to VVS1 clarity, and colourless grades (E/F on the GIA scale). Once ethically sourced through audited channels adhering strictly to the Kimberley Process, each gem undergoes a meticulous transformation in our dedicated workshops.
+                  The journey from a rough diamond to a finished high-jewellery masterpiece at Kirthi Diamonds is a rigorous progression that marries geological intelligence with generational hand-craftsmanship. This legacy of excellence dates back to 1975, when our grandfather established the first diamond cutting factory of its kind in South India, located in Irinjalakuda, Kerala. From this pioneering facility, our masterfully cut stones reached clients globally, from Japan to the United States. Today, we continue this tradition by selecting only the upper-echelon of rough gems—prioritizing those with exceptional lattice purity, Internally Flawless to VVS1 clarity, and colourless grades (E/F on the GIA scale). Once ethically sourced through audited channels adhering strictly to the Kimberley Process, each gem undergoes a meticulous transformation in our dedicated workshops.
                 </p>
                 <p className="text-sm md:text-base tracking-[0.15em] text-white/90 leading-[2.2] drop-shadow-xl max-w-4xl mx-auto font-light text-justify">
                   Our process is defined by an uncompromising commitment to artisanal, low-volume production. Unlike mass-manufactured commercial jewellery that relies on rapid, high-volume automated casting and generic setting templates, we restrict our studio to a handful of bespoke creations per month. This deliberate low-volume approach is central to our setting quality. When gold or platinum is cast to hold diamonds, micro-variations in the stone's dimensions must be accounted for on a sub-millimetre level. In commercial factories, stones are pressed into pre-moulded settings, creating micro-tensions that compromise structural integrity and limit the diamond's light refraction. At Kirthi, our bench jewellers dedicate dozens of hours to a single setting, hand-drawing wire and hand-carving the metal around the specific proportions of each unique stone. Master setters secure each diamond under high-magnification microscopes using manual claw techniques, ensuring perfect, non-destructive pressure and exposing the maximum possible surface area to ambient light. The result is a structurally flawless setting with unmatched fire, brilliance, and lifetime durability.
                 </p>
+                <div className="mt-16 w-full">
+                   <VideoFacade videoId={videoIdStr} title="Kirthi Diamonds Methodology" />
+                </div>
               </div>
             </div>
           </section>
@@ -108,11 +108,14 @@ export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () =>
               <h2 className="text-3xl md:text-5xl lg:text-7xl font-serif italic text-white/90">Kirthi Diamonds Methodology: From Concept to Masterpiece</h2>
               <div className="h-px w-24 bg-gradient-to-r from-transparent via-[#D4AF37]/50 to-transparent mx-auto mt-8 mb-8" />
               <p className="text-sm tracking-[0.15em] text-white/70 leading-relaxed mb-6 text-justify">
-                The journey from a rough diamond to a finished high-jewellery masterpiece at Kirthi Diamonds is a rigorous progression that marries geological intelligence with generational hand-craftsmanship. Every stone we handle begins its life deep within the Earth, where immense pressure and heat crystallise carbon over billions of years. We select only the upper-echelon of these rough gems—prioritizing those with exceptional lattice purity, Internally Flawless to VVS1 clarity, and colourless grades (E/F on the GIA scale). Once ethically sourced through audited channels adhering strictly to the Kimberley Process, each gem undergoes a meticulous transformation in our dedicated workshops.
+                The journey from a rough diamond to a finished high-jewellery masterpiece at Kirthi Diamonds is a rigorous progression that marries geological intelligence with generational hand-craftsmanship. This legacy of excellence dates back to 1975, when our grandfather established the first diamond cutting factory of its kind in South India, located in Irinjalakuda, Kerala. From this pioneering facility, our masterfully cut stones reached clients globally, from Japan to the United States. Today, we continue this tradition by selecting only the upper-echelon of rough gems—prioritizing those with exceptional lattice purity, Internally Flawless to VVS1 clarity, and colourless grades (E/F on the GIA scale). Once ethically sourced through audited channels adhering strictly to the Kimberley Process, each gem undergoes a meticulous transformation in our dedicated workshops.
               </p>
               <p className="text-sm tracking-[0.15em] text-white/70 leading-relaxed text-justify">
                 Our process is defined by an uncompromising commitment to artisanal, low-volume production. Unlike mass-manufactured commercial jewellery that relies on rapid, high-volume automated casting and generic setting templates, we restrict our studio to a handful of bespoke creations per month. This deliberate low-volume approach is central to our setting quality. When gold or platinum is cast to hold diamonds, micro-variations in the stone's dimensions must be accounted for on a sub-millimetre level. In commercial factories, stones are pressed into pre-moulded settings, creating micro-tensions that compromise structural integrity and limit the diamond's light refraction. At Kirthi, our bench jewellers dedicate dozens of hours to a single setting, hand-drawing wire and hand-carving the metal around the specific proportions of each unique stone. Master setters secure each diamond under high-magnification microscopes using manual claw techniques, ensuring perfect, non-destructive pressure and exposing the maximum possible surface area to ambient light. The result is a structurally flawless setting with unmatched fire, brilliance, and lifetime durability.
               </p>
+              <div className="mt-16 w-full">
+                 <VideoFacade videoId={videoIdStr} title="Kirthi Diamonds Methodology" />
+              </div>
             </div>
           </div>
         )}

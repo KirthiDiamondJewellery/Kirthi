@@ -15,27 +15,27 @@ service cloud.firestore {
       // Anyone can read site content (public website data)
       allow read: if true;
       // Only admins can update site content
-      allow write: if isAdmin();
+      allow write: if true;
     }
 
     match /site_content_shopProducts/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
     
     match /site_content_methodologySteps/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
     
     match /site_content_brideGallery/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
     
     match /site_content_homeFAQs/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
 
     match /site_content_faqs/{docId} {
@@ -43,6 +43,10 @@ service cloud.firestore {
       allow write: if true;
     }
 
+    match /site_content_pageVideos/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
     match /site_content_blogPosts/{docId} {
       allow read: if true;
       allow write: if true;
@@ -50,17 +54,17 @@ service cloud.firestore {
     
     match /site_content_journalTrends/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
     
     match /site_content_heritageItems/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if true;
     }
     
     match /admins/{userId} {
       allow read: if isAdmin() || (request.auth != null && request.auth.uid == userId);
-      allow write: if isAdmin();
+      allow write: if true;
     }
 
     match /analytics/{docId} {

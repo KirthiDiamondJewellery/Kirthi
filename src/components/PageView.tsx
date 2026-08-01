@@ -13,7 +13,7 @@ const pagesContent = {
   "diamond-jewellery": `
 # Diamond Jewellery in Kochi — Kirthi Diamonds Palarivattom Boutique
 
-**Kirthi Diamonds is a bespoke diamond house est. 2006, rooted in a family diamond trade since 1975, based at 34/572 By Pass Road, Palarivattom.** Every loose diamond we sell above 0.30 carats is GIA or IGI certified, every gram of gold is BIS hallmarked at 18kt or 22kt purity, and every Kirthi creation carries our lifetime buyback and exchange policy. We are open Monday to Saturday, 10:00am to 7:30pm.
+**Kirthi Diamonds is a bespoke diamond house est. 2006, rooted in a family diamond trade since 1975, based at 34/572 By Pass Road, Palarivattom.** Every loose diamond we sell above 0.30 carats is GIA or IGI certified, every gram of gold is BIS hallmarked at 18kt or 22kt purity, and every Kirthi creation carries our lifetime buyback and exchange policy. We are open Monday to Saturday, 10:00–19:00.
 
 ## Why Kirthi is one of the best diamond jewellers in Kochi
 
@@ -40,7 +40,7 @@ Walking into a Kirthi appointment is not the same as walking onto a high-street 
 ## Visit the Kochi boutique
 
 **Address:** 34/572 By Pass Road, Palarivattom, Kochi, Kerala 682024  
-**Hours:** Monday – Saturday, 10:00am – 7:30pm  
+**Hours:** Monday – Saturday, 10:00–19:00  
 **Phone:** +91 98470 86990  
 **WhatsApp:** +91 98470 86990  
 **Instagram / Facebook / Twitter:** @kirthidiamonds
@@ -113,8 +113,8 @@ BIS (Bureau of Indian Standards) hallmarking is the parallel certification for t
 
 ## Visit either boutique to inspect certified inventory
 
-**Kochi:** 34/572 By Pass Road, Palarivattom, Kochi, Kerala 682024 · Mon–Sat 10:00–19:30 · +91 98470 86990  
-**Calicut:** 61/11508A, opposite Federal Bank, Puthiyara, Kozhikode, Kerala 673004 · Mon–Sat 10:00–19:30 · +91 98470 86002
+**Kochi:** 34/572 By Pass Road, Palarivattom, Kochi, Kerala 682024 · Mon–Sat 10:00–19:00 (Closed Sundays) · +91 98470 86990  
+**Calicut:** 61/11508A, opposite Federal Bank, Puthiyara, Kozhikode, Kerala 673004 · Mon–Sat 09:30–19:30 (Closed Sundays) · +91 98470 86002
 
 ## Key facts (for structured data)
 
@@ -185,8 +185,8 @@ There is no minimum holding period. A piece purchased today can be brought back 
 
 ## Visit either boutique to exercise the policy
 
-**Kochi:** 34/572 By Pass Road, Palarivattom · Mon–Sat 10:00–19:30 · +91 98470 86990  
-**Calicut:** 61/11508A, opposite Federal Bank, Puthiyara · Mon–Sat 10:00–19:30 · +91 98470 86002
+**Kochi:** 34/572 By Pass Road, Palarivattom · Mon–Sat 10:00–19:00 (Closed Sundays) · +91 98470 86990  
+**Calicut:** 61/11508A, opposite Federal Bank, Puthiyara, Kozhikode, Kerala 673004 · Mon–Sat 09:30–19:30 (Closed Sundays) · +91 98470 86002
 
 ## Key facts (for structured data)
 
@@ -239,13 +239,13 @@ For any questions regarding our policies, please contact our Diamond Specialist 
 **Address:** 34/572, By Pass Road, Palarivattom, Kerala 682024  
 **Phone:** +91 98470 86990  
 **WhatsApp:** +91 98470 86990  
-**Hours:** Monday to Saturday, 10:00 AM – 7:30 PM (Closed on Sundays)  
+**Hours:** Monday to Saturday, 10:00–19:00 (Closed on Sundays)  
 
 ## Calicut Boutique
 **Address:** 61/11508A, Opposite Federal Bank, Puthiyara, Kerala 673004  
 **Phone:** +91 98470 86002  
 **WhatsApp:** +91 98470 86002  
-**Hours:** Monday to Saturday, 10:00 AM – 7:30 PM (Closed on Sundays)  
+**Hours:** Monday to Saturday, 09:30 AM – 7:30 PM (Closed on Sundays)  
 
 ## Direct Inquiries
 - **Email:** info@kirthidiamonds.com
@@ -330,7 +330,7 @@ const PAGE_SCHEMAS: Record<string, any[]> = {
         "@type": "OpeningHoursSpecification",
         "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
         "opens": "10:00",
-        "closes": "19:30"
+        "closes": "19:00"
       }],
       "parentOrganization": { "@id": "https://kirthidiamonds.com/#organization" }
     },
@@ -346,7 +346,7 @@ const PAGE_SCHEMAS: Record<string, any[]> = {
       "@context": "https://schema.org",
       "@type": "FAQPage",
       "mainEntity": [
-        { "@type": "Question", "name": "Where is Kirthi Diamonds in Kochi?", "acceptedAnswer": { "@type": "Answer", "text": "34/572 By Pass Road, Palarivattom, Kochi, Kerala 682024. Open Monday to Saturday, 10:00am to 7:30pm. Phone +91 98470 86990." } },
+        { "@type": "Question", "name": "Where is Kirthi Diamonds in Kochi?", "acceptedAnswer": { "@type": "Answer", "text": "34/572 By Pass Road, Palarivattom, Kochi, Kerala 682024. Open Monday to Saturday, 10:00–19:00. Phone +91 98470 86990." } },
         { "@type": "Question", "name": "Are Kirthi Diamonds pieces in Kochi certified?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every loose diamond above 0.30 carats is GIA or IGI certified, and every gold component is BIS hallmarked at 18kt or 22kt purity." } },
         { "@type": "Question", "name": "Does the Kochi boutique offer a buyback policy?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every Kirthi creation includes a lifetime buyback and exchange policy written on the invoice." } }
       ]

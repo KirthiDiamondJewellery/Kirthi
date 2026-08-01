@@ -1,63 +1,90 @@
-import fs from 'fs';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, initializeFirestore, collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { initializeApp, cert } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+import fs from "fs";
 
-const config = JSON.parse(fs.readFileSync('firebase-applet-config.json', 'utf8'));
-const app = initializeApp(config);
-const db = initializeFirestore(app, {}, config.firestoreDatabaseId);
-
-const descriptions = {
-  "investment-grade-diamond-jewellery-a-complete-buyer-s-guide-for-india": "What makes a diamond investment-grade? Certification, cut, carat thresholds, and resale economics for Indian buyers — a practical guide from Kirthi Diamonds.",
-  "diamond-jewellery-vs-gold-as-an-investment-in-kerala-what-you-need-to-know": "Diamonds or gold? How making charges, buyback policies, and resale value compare for Kerala buyers weighing jewellery as a long-term store of value.",
-  "gia-vs-igi-certified-diamonds-which-should-you-choose-when-buying-in-india": "GIA and IGI grade diamonds differently in subtle ways. What each certificate tells you, how they compare on rigour and price, and which suits your purchase.",
-  "antique-diamond-jewellery-designs-for-traditional-kerala-weddings": "Traditional Kerala wedding jewellery, reinterpreted: antique diamond designs for Hindu, Christian, and Muslim ceremonies, and how bespoke commissions work.",
-  "artisanal-diamond-jewellery-vs-mass-produced-what-is-the-real-difference": "Individually certified stones, hand-cut settings, and lifetime accountability — the four practical differences between artisanal and mass-produced jewellery."
-};
+// Initialize Firebase Admin
+const serviceAccount = JSON.parse(fs.readFileSync('firebase-applet-config.json', 'utf8'));
+const app = initializeApp({
+  credential: cert(serviceAccount),
+});
+const db = getFirestore(app);
 
 async function run() {
-  const snaps = await getDocs(collection(db, 'site_content_blogPosts'));
-  for (const d of snaps.docs) {
-    const data = d.data();
-    const pSlug = (data.title || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || d.id;
-    
-    let updates = {};
-    if (descriptions[pSlug]) {
-      updates.metaDescription = descriptions[pSlug];
+  const globalRef = db.collection('site_content').doc('global');
+  const globalDoc = await globalRef.get();
+  
+  if (globalDoc.exists) {
+    let data = globalDoc.data();
+    let updated = false;
+
+    // Homepage CTA
+    if (data.sections) {
+      data.sections.forEach(sec => {
+        if (sec.id === 'home' && sec.subtitle) {
+           // update tagline
+           sec.subtitle = sec.subtitle.replace("diamond mastery jewellery since", "diamond mastery, since");
+           sec.description = sec.description.replace("diamond mastery jewellery since", "diamond mastery, since");
+           updated = true;
+        }
+      });
     }
-    
-    if (data.images && data.images.includes('data:image')) {
-      // Clear data URIs
-      updates.images = [];
-      updates.image = "";
-    }
-    if (data.image && data.image.includes('data:image')) {
-      updates.image = "";
-    }
-    
-    // Task 4 copy fixes
-    if (data.content) {
-      let newContent = data.content;
-      if (pSlug === "artisanal-diamond-jewellery-vs-mass-produced-what-is-the-real-difference") {
-        newContent = newContent.replace(
-          "polished by hand, inspected against the original design and certificate, and presented in a private viewing at the boutique.",
-          "polished by hand, inspected against the original design and certificate, and presented at a one-on-one consultation at the boutique."
-        );
-        newContent = newContent.replace(
-          "Every piece on display is artisanally finished; bespoke commissions are taken in person or via private appointment.",
-          "Every piece on display is artisanally finished; bespoke commissions are taken in person or by consultation appointment."
-        );
-      }
-      if (newContent !== data.content) {
-        updates.content = newContent;
-      }
-    }
-    
-    if (Object.keys(updates).length > 0) {
-      console.log(`Updating doc ${d.id}...`);
-      await updateDoc(doc(db, 'site_content_blogPosts', d.id), updates);
+
+    if (updated) {
+      await globalRef.update({ sections: data.sections });
+      console.log('Updated global sections');
     }
   }
+
+  // Articles
+  const blogRef = db.collection('site_content_blogPosts');
+  const blogDocs = await blogRef.get();
+  for (const doc of blogDocs.docs) {
+    let data = doc.data();
+    let updated = false;
+
+    // artisanal-diamond-jewellery-vs-mass-produced-what-is-the-real-difference
+    if (data.id === 'artisanal-diamond-jewellery-vs-mass-produced-what-is-the-real-difference' || doc.id === 'artisanal-diamond-jewellery-vs-mass-produced-what-is-the-real-difference') {
+       if (data.content && data.content.includes('presented in a private viewing')) {
+           data.content = data.content.replace(/presented in a private viewing/g, 'presented at a quiet unveiling');
+           updated = true;
+       }
+       if (data.content && data.content.includes('private appointment.')) {
+           data.content = data.content.replace(/private appointment\./g, 'appointment.');
+           updated = true;
+       }
+    }
+    
+    // antique-diamond-jewellery-designs-for-traditional-kerala-weddings
+    if (data.id === 'antique-diamond-jewellery-designs-for-traditional-kerala-weddings' || doc.id === 'antique-diamond-jewellery-designs-for-traditional-kerala-weddings') {
+       if (data.content && data.content.includes('private appointment space')) {
+           data.content = data.content.replace(/This is held in our private appointment space at Kochi or Calicut\./g, 'This is held in a reserved consultation space at our Kochi or Calicut boutique.');
+           updated = true;
+       }
+    }
+    
+    // Banned words replace
+    const bannedRegex = /concierge|private concierge|private viewing|private-viewing|private appointment|priority access|hurry|limited time|don't miss|offer ends/gi;
+    if (data.content && bannedRegex.test(data.content)) {
+        data.content = data.content.replace(bannedRegex, (match) => {
+            const lower = match.toLowerCase();
+            if (lower.includes('private viewing') || lower.includes('private-viewing')) return 'quiet unveiling';
+            if (lower.includes('private appointment')) return 'appointment';
+            if (lower.includes('concierge')) return 'design team';
+            return '';
+        });
+        updated = true;
+    }
+
+    if (updated) {
+      await doc.ref.update({ content: data.content });
+      console.log(`Updated article ${doc.id}`);
+    }
+  }
+
+  // Remove onam link from journal hub (not needed in DB, it's about the link on the page, wait, the hub lists all blog posts? No, Journal hub dynamically lists articles from DB, we might need to change its category or unpublish it?)
+  // Actually, wait, let's look at how the journal hub is built.
+
   console.log("Done");
-  process.exit(0);
 }
-run();
+
+run().catch(console.error);

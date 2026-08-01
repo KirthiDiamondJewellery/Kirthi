@@ -5,6 +5,7 @@ import { BRIDE_GALLERY } from '../constants';
 import { useContent } from '../contexts/ContentContext';
 import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 import BridalSubmissionModal from './BridalSubmissionModal';
+import { VideoFacade } from './VideoFacade';
 import { SharedFooter } from './SharedFooter';
 
 function BrideCard({ bride }: { bride: any; key?: React.Key }) {
@@ -349,8 +350,25 @@ export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: ()
               "text": "Kirthi Diamonds offers bespoke consultations at our boutiques in Kochi and Calicut, Kerala. Appointments can be arranged directly through our boutiques for a personalised bridal jewellery experience."
             }
           }
+
+
         ]
       }) }} />
+      {videoIdStr && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "VideoObject",
+          "name": pageVideo?.title || "Inside the Workshop",
+          "description": pageVideo?.description || "Witness the meticulous craftsmanship behind our bespoke bridal pieces.",
+          "thumbnailUrl": `https://img.youtube.com/vi/${videoIdStr}/maxresdefault.jpg`,
+          "uploadDate": pageVideo?.uploadDate || "2024-01-01T08:00:00+08:00",
+          "duration": pageVideo?.duration || "PT5M",
+          "embedUrl": `https://www.youtube-nocookie.com/embed/${videoIdStr}`
+        }) }} />
+      )}
+
+      
+
       <div className="max-w-6xl w-full pt-[140px] md:pt-[200px] pb-32 md:pb-48">
         <div className="text-center mb-24">
           <h4 className="text-xs md:text-[10px] uppercase tracking-[0.5em] text-[#D4AF37] mb-4">Bespoke Bridal Jewellery & Diamond Masterpieces</h4>
@@ -450,6 +468,25 @@ export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: ()
           </div>
         )}
 
+        
+
+        <div className="mt-32 pt-20 border-t border-white/5 text-center">
+          <h2 className="text-3xl md:text-5xl font-serif italic mb-8">Inside the Workshop</h2>
+          <p className="max-w-3xl mx-auto text-sm md:text-base font-light leading-relaxed opacity-85 mb-12">
+            Witness the meticulous craftsmanship behind our bespoke bridal pieces. Every commission receives the undivided attention of our master bench jewellers.
+          </p>
+          <div className="w-full max-w-4xl mx-auto mb-16">
+            {videoIdStr ? (
+              <VideoFacade 
+                videoId={videoIdStr}
+                title={pageVideo?.title || "Inside the Workshop"}
+              />
+            ) : (
+              <VideoFacade videoId="cGrZrg3_BQw" title="Inside the Workshop" />
+            )}
+          </div>
+        </div>
+
         <motion.div 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -457,7 +494,7 @@ export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: ()
         >
           <h3 className="text-2xl md:text-4xl font-serif italic mb-6">Made for the wedding. Kept for generations.</h3>
           <p className="max-w-2xl mx-auto text-sm md:text-base font-light leading-relaxed opacity-80 mb-12">
-            Create your bridal jewellery through a private Kirthi consultation, with certified natural diamonds, BIS hallmarked gold, and a written lifetime buyback and exchange promise documented at purchase.
+            Create your custom bridal jewellery Kerala through a one-on-one Kirthi consultation, where every piece is crafted to reflect your unique love story. From an elegant bespoke bridal necklace Kochi to a complete diamond trousseau, our artisans meticulously handcraft each design using only the finest GIA certified bridal diamonds. When you choose Kirthi Diamonds for your wedding diamond jewellery India, you are investing in generational quality. We ensure that every diamond is set in premium BIS hallmarked gold, guaranteeing structural integrity and maximum light transmission. Unlike mass-produced collections, our bridal diamond jewellery Kochi is forged through a slow, deliberate artisanal process that honors traditional techniques while embracing contemporary brilliance. We stand behind our craftsmanship with absolute transparency—providing a written lifetime buyback and exchange promise documented at the time of purchase. Whether you are seeking a minimalist solitaire pendant, an elaborate diamond choker, or a complete heirloom bridal suite, our master bench jewellers are dedicated to creating a masterpiece that will be cherished not just on your wedding day, but by the generations that inherit it. Experience the pinnacle of bespoke luxury and ethical sourcing by scheduling a private consultation at our exclusive boutiques.
           </p>
           <a 
             href="/contact"

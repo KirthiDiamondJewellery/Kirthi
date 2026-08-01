@@ -1259,7 +1259,7 @@ export default function AdminView() {
   }, [contentLoading, content]);
 
   const [saving, setSaving] = useState(false);
-  const [tab, setTab] = useState<'access' | 'global' | 'blogs' | 'trends' | 'contact_page' | 'shop' | 'heritage' | 'maison' | 'brides' | 'submissions' | 'consultations' | 'orders' | 'analytics' | 'exchange' | 'seo'>('analytics');
+  const [tab, setTab] = useState<'access' | 'global' | 'blogs' | 'trends' | 'contact_page' | 'shop' | 'heritage' | 'maison' | 'brides' | 'submissions' | 'consultations' | 'orders' | 'analytics' | 'exchange' | 'seo' | 'videos' | 'videos'>('analytics');
 
   if (loading || (user && !adminCheckDone)) return <div className="p-20 text-center">Loading security protocols...</div>;
 
@@ -2053,6 +2053,9 @@ export default function AdminView() {
           <AdminOrders />
         )}
 
+        {tab === 'videos' && (
+          <AdminVideos />
+        )}
         {tab === 'seo' && (
           <AdminSEO formData={formData} setFormData={setFormData} />
         )}

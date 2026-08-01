@@ -160,9 +160,7 @@ export default function JournalView({ onInquiry, onGoHome }: { onInquiry?: () =>
                           ? post.images[0]
                           : "/logo.png";
                           
-                        if (gridImgSrc.includes('unsplash.com') || gridImgSrc.includes('images.unsplash')) {
-                          gridImgSrc = "/logo.png";
-                        }
+                        
                         
                         const isLogo = gridImgSrc === "/logo.png";
                         return (

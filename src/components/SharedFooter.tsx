@@ -23,7 +23,11 @@ export function SharedFooter() {
             "openingHoursSpecification": [{
               "@type": "OpeningHoursSpecification",
               "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
-              "opens": "10:00", "closes": "19:30"
+              "opens": "10:00", "closes": "19:00"
+            }, {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": "Sunday",
+              "opens": "00:00", "closes": "00:00"
             }],
             "priceRange": "$$",
             "parentOrganization": { "@id": "https://kirthidiamonds.com/#org" }
@@ -34,7 +38,7 @@ export function SharedFooter() {
             "name": "Kirthi Diamonds — Calicut",
             "image": "https://kirthidiamonds.com/og-cover.jpg",
             "url": "https://kirthidiamonds.com/",
-            "telephone": "+919847086990",
+            "telephone": "+919847086002",
             "address": {
               "@type": "PostalAddress",
               "streetAddress": "61/11508A, Opposite Federal Bank, Puthiyara",
@@ -45,7 +49,11 @@ export function SharedFooter() {
             "openingHoursSpecification": [{
               "@type": "OpeningHoursSpecification",
               "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
-              "opens": "10:00", "closes": "19:30"
+              "opens": "09:30", "closes": "19:30"
+            }, {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": "Sunday",
+              "opens": "00:00", "closes": "00:00"
             }],
             "priceRange": "$$",
             "parentOrganization": { "@id": "https://kirthidiamonds.com/#org" }
@@ -107,6 +115,8 @@ export function SharedFooter() {
             <h4 className="text-xs md:text-[10px] uppercase tracking-widest text-[#D4AF37]">Information</h4>
             <ul className="space-y-4 text-xs font-light text-white/40 mt-6 flex flex-col items-start">
               <li><a href="/shop" className="hover:text-white transition-colors">Diamond Jewellery</a></li>
+              <li><a href="/bespoke" className="hover:text-white transition-colors">Bespoke Bridal</a></li>
+              <li><a href="/methodology" className="hover:text-white transition-colors">Methodology</a></li>
               <li><a href="/pages/certified-diamonds" className="hover:text-white transition-colors">Certified Diamonds</a></li>
               <li><a href="/pages/exchange-policy" className="hover:text-white transition-colors">Buyback & Exchange</a></li>
               <li><a href="/pages/policies" className="hover:text-white transition-colors">Policies & Ethics</a></li>
@@ -123,12 +133,12 @@ export function SharedFooter() {
             <li>
               <a href="/kochi" className="block text-white/80 hover:text-[#D4AF37] transition-colors mb-2">Kochi Boutique</a>
               34/572, By Pass Road, Palarivattom, Kochi, Kerala, India
-              <br/><span className="text-white/50 block mt-1">Mon–Sat 10:00 AM – 7:30 PM<br/>Closed on Sundays</span>
+              <br/><span className="text-white/50 block mt-1">Mon–Sat 10:00 AM – 7:00 PM<br/>Closed on Sundays</span>
             </li>
             <li>
               <a href="/calicut" className="block text-white/80 hover:text-[#D4AF37] transition-colors mb-2">Calicut Boutique</a>
               61/11508A, Opposite Federal Bank, Puthiyara, Kozhikode, Kerala, India
-              <br/><span className="text-white/50 block mt-1">Mon–Sat 10:00 AM – 7:30 PM<br/>Closed on Sundays</span>
+              <br/><span className="text-white/50 block mt-1">Mon–Sat 09:30 AM – 7:30 PM<br/>Closed on Sundays</span>
             </li>
           </ul>
         </div>

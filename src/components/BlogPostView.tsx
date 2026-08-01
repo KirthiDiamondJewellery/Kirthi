@@ -34,7 +34,7 @@ const ARTICLE_FAQS: Record<string, Array<{ question: string; answer: string }>> 
     },
     {
       question: "Where can I view antique-style Kerala wedding diamond jewellery in person?",
-      answer: "At Kirthi Diamonds Kochi (34/572 By Pass Road, Palarivattom, Mon–Sat 10am–7:30pm) and Calicut (61/11508A, opposite Federal Bank, Puthiyara, Mon–Sat 10:00am–7:30pm). Heritage consultations for bridal commissions are by appointment."
+      answer: "At Kirthi Diamonds Kochi (34/572 By Pass Road, Palarivattom, Mon–Sat 10:00–19:00) and Calicut (61/11508A, opposite Federal Bank, Puthiyara, Mon–Sat 09:30–19:30). Heritage consultations for bridal commissions are by appointment."
     }
   ],
   "id-khdjfej42": [
@@ -56,7 +56,7 @@ const ARTICLE_FAQS: Record<string, Array<{ question: string; answer: string }>> 
     },
     {
       question: "Where can I view antique-style Kerala wedding diamond jewellery in person?",
-      answer: "At Kirthi Diamonds Kochi (34/572 By Pass Road, Palarivattom, Mon–Sat 10am–7:30pm) and Calicut (61/11508A, opposite Federal Bank, Puthiyara, Mon–Sat 10:00am–7:30pm). Heritage consultations for bridal commissions are by appointment."
+      answer: "At Kirthi Diamonds Kochi (34/572 By Pass Road, Palarivattom, Mon–Sat 10:00–19:00) and Calicut (61/11508A, opposite Federal Bank, Puthiyara, Mon–Sat 09:30–19:30). Heritage consultations for bridal commissions are by appointment."
     }
   ]
 };

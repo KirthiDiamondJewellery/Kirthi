@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { APIProvider, Map, AdvancedMarker, Pin, useAdvancedMarkerRef, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 import { MapPin, Phone, Clock, Navigation } from 'lucide-react';
 
 const API_KEY =
   (typeof process !== 'undefined' && process.env?.GOOGLE_MAPS_PLATFORM_KEY) ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
+  (import.meta as unknown as Record<string, any>).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
+  (globalThis as unknown as Record<string, any>).GOOGLE_MAPS_PLATFORM_KEY ||
   '';
 const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
 
@@ -17,7 +17,7 @@ const STORES = [
     address: 'Palarivattom, Kochi, Kerala',
     location: { lat: 10.006408370430421, lng: 76.31306197116406 },
     phone: '+91 98470 86990',
-    hours: '10:00 AM – 7:30 PM (Closed on Sundays)',
+    hours: '10:00 AM – 7:00 PM (Closed on Sundays)',
     description: 'Our flagship showroom offering bespoke diamond jewellery commissions and GIA/IGI certified bridal sets.'
   },
   {
@@ -26,7 +26,7 @@ const STORES = [
     address: 'Puthiyara, Kozhikode, Kerala',
     location: { lat: 11.255821640767728, lng: 75.78919625415867 },
     phone: '+91 98470 86002',
-    hours: '10:00 AM – 7:30 PM (Closed on Sundays)',
+    hours: '09:30 AM – 7:30 PM (Closed on Sundays)',
     description: 'Experience custom bridal diamond collections, expert consultations, and ethical loose solitaires in Calicut.'
   }
 ];
