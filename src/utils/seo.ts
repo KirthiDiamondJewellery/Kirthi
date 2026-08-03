@@ -63,23 +63,80 @@ export function updateSiteSEO(props: SEOProps) {
   injectSchema(orgSchema, 'org-schema');
 
   // 3. LocalBusiness Schema
-  const localBizSchema = {
-    "@context": "https://schema.org",
-    "@type": "JewelryStore",
-    "name": "Kirthi Diamonds",
-    "image": "https://kirthidiamonds.com/og-cover.jpg",
-    "@id": "https://kirthidiamonds.com",
-    "url": "https://kirthidiamonds.com",
-    "telephone": "+919847086990",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "34/572, By Pass Road, Palarivattom",
-      "addressLocality": "Kochi",
-      "addressRegion": "KL",
-      "postalCode": "682024",
-      "addressCountry": "IN"
+  const localBizSchema = [
+    {
+      "@context": "https://schema.org",
+      "@type": "JewelryStore",
+      "name": "Kirthi Diamonds — Kochi",
+      "image": "https://kirthidiamonds.com/og-cover.jpg",
+      "@id": "https://kirthidiamonds.com/#kochi",
+      "url": "https://kirthidiamonds.com",
+      "telephone": "+919847086990",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "34/572, By Pass Road, Palarivattom",
+        "addressLocality": "Kochi",
+        "addressRegion": "KL",
+        "postalCode": "682024",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 10.0062763,
+        "longitude": 76.3130727
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          "opens": "10:00",
+          "closes": "19:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Sunday",
+          "opens": "00:00",
+          "closes": "00:00"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "JewelryStore",
+      "name": "Kirthi Diamonds — Calicut",
+      "image": "https://kirthidiamonds.com/og-cover.jpg",
+      "@id": "https://kirthidiamonds.com/#calicut",
+      "url": "https://kirthidiamonds.com",
+      "telephone": "+919847086002",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "61/11508A, Opposite Federal Bank, Puthiyara",
+        "addressLocality": "Kozhikode",
+        "addressRegion": "KL",
+        "postalCode": "673004",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 11.2555165,
+        "longitude": 75.7891748
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          "opens": "09:30",
+          "closes": "19:30"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Sunday",
+          "opens": "00:00",
+          "closes": "00:00"
+        }
+      ]
     }
-  };
+  ];
   injectSchema(localBizSchema, 'localbiz-schema');
 
   // 4. Breadcrumb Schema
