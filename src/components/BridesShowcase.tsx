@@ -217,9 +217,14 @@ function BrideCard({ bride }: { bride: any; key?: React.Key }) {
 
 export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: () => void, onGoHome?: () => void }) {
   console.log("Rendering BridesShowcase");
-  const { content } = useContent();
+    const { content } = useContent();
   const gallery = content.brideGallery || [];
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  
+  const pageVideo = content.pageVideos?.find(v => v.id === 'brides') || content.pageVideos?.find(v => v.id === 'methodology');
+  const videoUrl = content.methodologyVideoUrl || 'https://youtu.be/cGrZrg3_BQw';
+  const videoIdMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i);
+  const videoIdStr = videoIdMatch ? videoIdMatch[1] : "cGrZrg3_BQw";
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-start px-4 sm:px-6 md:px-28 overflow-y-auto custom-scrollbar">

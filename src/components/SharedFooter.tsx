@@ -18,7 +18,13 @@ export function SharedFooter() {
               "streetAddress": "34/572, By Pass Road, Palarivattom",
               "addressLocality": "Kochi",
               "addressRegion": "Kerala",
+              "postalCode": "682024",
               "addressCountry": "IN"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 10.0062763,
+              "longitude": 76.3130727
             },
             "openingHoursSpecification": [{
               "@type": "OpeningHoursSpecification",
@@ -44,7 +50,13 @@ export function SharedFooter() {
               "streetAddress": "61/11508A, Opposite Federal Bank, Puthiyara",
               "addressLocality": "Calicut",
               "addressRegion": "Kerala",
+              "postalCode": "673004",
               "addressCountry": "IN"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 11.2555165,
+              "longitude": 75.7891748
             },
             "openingHoursSpecification": [{
               "@type": "OpeningHoursSpecification",
@@ -133,12 +145,12 @@ export function SharedFooter() {
             <li>
               <a href="/kochi" className="block text-white/80 hover:text-[#D4AF37] transition-colors mb-2">Kochi Boutique</a>
               34/572, By Pass Road, Palarivattom, Kochi, Kerala, India
-              <br/><span className="text-white/50 block mt-1">Mon–Sat 10:00 AM – 7:00 PM<br/>Closed on Sundays</span>
+              <br/><span className="text-white/50 block mt-1">Mon–Sat 10:00 AM – 7:00 PM<br/>SUNDAY CLOSED<br/><a href="tel:+919847086990" className="hover:text-[#D4AF37]">+91 98470 86990</a></span>
             </li>
             <li>
               <a href="/calicut" className="block text-white/80 hover:text-[#D4AF37] transition-colors mb-2">Calicut Boutique</a>
               61/11508A, Opposite Federal Bank, Puthiyara, Kozhikode, Kerala, India
-              <br/><span className="text-white/50 block mt-1">Mon–Sat 09:30 AM – 7:30 PM<br/>Closed on Sundays</span>
+              <br/><span className="text-white/50 block mt-1">Mon–Sat 09:30 AM – 7:30 PM<br/>SUNDAY CLOSED<br/><a href="tel:+919847086002" className="hover:text-[#D4AF37]">+91 98470 86002</a></span>
             </li>
           </ul>
         </div>

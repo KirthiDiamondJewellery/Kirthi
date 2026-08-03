@@ -326,12 +326,63 @@ const PAGE_SCHEMAS: Record<string, any[]> = {
         "postalCode": "682024",
         "addressCountry": "IN"
       },
-      "openingHoursSpecification": [{
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
-        "opens": "10:00",
-        "closes": "19:00"
-      }],
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 10.0062763,
+        "longitude": 76.3130727
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+          "opens": "10:00",
+          "closes": "19:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Sunday",
+          "opens": "00:00",
+          "closes": "00:00"
+        }
+      ],
+      "parentOrganization": { "@id": "https://kirthidiamonds.com/#organization" }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "JewelryStore",
+      "@id": "https://kirthidiamonds.com/#calicut",
+      "name": "Kirthi Diamonds Calicut",
+      "image": "https://kirthidiamonds.com/og-cover.jpg",
+      "url": "https://kirthidiamonds.com/pages/diamond-jewellery",
+      "telephone": "+919847086002",
+      "priceRange": "$$$$",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "61/11508A, Opposite Federal Bank, Puthiyara",
+        "addressLocality": "Kozhikode",
+        "addressRegion": "Kerala",
+        "postalCode": "673004",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 11.2555165,
+        "longitude": 75.7891748
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+          "opens": "09:30",
+          "closes": "19:30"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Sunday",
+          "opens": "00:00",
+          "closes": "00:00"
+        }
+      ],
       "parentOrganization": { "@id": "https://kirthidiamonds.com/#organization" }
     },
     {
