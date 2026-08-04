@@ -58,9 +58,13 @@ async function startServer() {
   const app = express();
   app.set("trust proxy", 1);
 
-const uploadDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+const uploadDir = process.env.UPLOAD_DIR || path.join('/tmp', 'uploads');
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn('Upload directory unavailable:', err.message);
 }
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
