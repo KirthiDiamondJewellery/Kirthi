@@ -458,7 +458,7 @@ export default function App() {
         if (pathPart.endsWith('/')) {
             pathPart = pathPart.slice(0, -1);
         }
-        let sectionId = (pathPart && pathPart !== "") ? pathPart : null;
+        const sectionId = (pathPart && pathPart !== "") ? pathPart : null;
         if (sectionId) {
           const sections = content?.sections || SECTIONS;
           const idx = sections.findIndex(s => s.id === sectionId || (sectionId === "shop" && s.isShop) || (sectionId === "boutique" && s.isShop));

@@ -5,7 +5,7 @@ import { useContent } from '../contexts/ContentContext';
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 import { SharedFooter } from './SharedFooter';
 
-const GOOGLE_MAPS_API_KEY = (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || 'AIzaSyC4ZbG7rnVzVii9emSze23mJwSQ33rlFE0';
+const GOOGLE_MAPS_API_KEY = (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || '';
 const hasValidKey = Boolean(GOOGLE_MAPS_API_KEY) && GOOGLE_MAPS_API_KEY !== 'YOUR_API_KEY';
 
 interface BoutiqueViewProps {
@@ -152,18 +152,14 @@ export default function BoutiqueView({ boutiqueId, onInquiry }: BoutiqueViewProp
             <div className="relative aspect-[16/10] w-full border border-white/10 rounded-sm overflow-hidden bg-black/60 group hover:border-[#D4AF37]/30 transition-all">
               {hasValidKey ? (
                 mapError ? (
-                  <iframe 
-                    src={isKochi ? 
-                      "https://maps.google.com/maps?q=Kirthi%20Diamonds,%20Kochi&t=&z=15&ie=UTF8&iwloc=&output=embed" : 
-                      "https://maps.google.com/maps?q=Kirthi%20Diamonds,%20Calicut&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                    }
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0, minHeight: '300px' }}
-                    allowFullScreen={false}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
+                  <iframe
+                  title={`Kirthi Diamonds ${name} Map`}
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${isKochi ? Number(content.kochiLng ?? 76.313041) - 0.01 : Number(content.calicutLng ?? 75.789228) - 0.01},${isKochi ? Number(content.kochiLat ?? 10.006408) - 0.01 : Number(content.calicutLat ?? 11.2558216) - 0.01},${isKochi ? Number(content.kochiLng ?? 76.313041) + 0.01 : Number(content.calicutLng ?? 75.789228) + 0.01},${isKochi ? Number(content.kochiLat ?? 10.006408) + 0.01 : Number(content.calicutLat ?? 11.2558216) + 0.01}&layer=mapnik&marker=${isKochi ? Number(content.kochiLat ?? 10.006408) : Number(content.calicutLat ?? 11.2558216)},${isKochi ? Number(content.kochiLng ?? 76.313041) : Number(content.calicutLng ?? 75.789228)}`}
+                  className="w-full h-full border-0 filter invert-[90%] hue-rotate-[180deg] opacity-80 group-hover:opacity-100 transition-opacity duration-500"
+                  allowFullScreen={true}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
                 ) : (
                   <APIProvider apiKey={GOOGLE_MAPS_API_KEY} version="weekly" onError={() => setMapError(true)}>
   
@@ -196,7 +192,7 @@ export default function BoutiqueView({ boutiqueId, onInquiry }: BoutiqueViewProp
               ) : (
                 <iframe
                   title={`Kirthi Diamonds ${name} Map`}
-                  src={`https://maps.google.com/maps?q=Kirthi%20Diamonds%20${isKochi ? 'Kochi' : 'Calicut'}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${isKochi ? Number(content.kochiLng ?? 76.313041) - 0.01 : Number(content.calicutLng ?? 75.789228) - 0.01},${isKochi ? Number(content.kochiLat ?? 10.006408) - 0.01 : Number(content.calicutLat ?? 11.2558216) - 0.01},${isKochi ? Number(content.kochiLng ?? 76.313041) + 0.01 : Number(content.calicutLng ?? 75.789228) + 0.01},${isKochi ? Number(content.kochiLat ?? 10.006408) + 0.01 : Number(content.calicutLat ?? 11.2558216) + 0.01}&layer=mapnik&marker=${isKochi ? Number(content.kochiLat ?? 10.006408) : Number(content.calicutLat ?? 11.2558216)},${isKochi ? Number(content.kochiLng ?? 76.313041) : Number(content.calicutLng ?? 75.789228)}`}
                   className="w-full h-full border-0 filter invert-[90%] hue-rotate-[180deg] opacity-80 group-hover:opacity-100 transition-opacity duration-500"
                   allowFullScreen={true}
                   loading="lazy"
