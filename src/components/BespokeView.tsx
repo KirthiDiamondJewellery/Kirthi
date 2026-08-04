@@ -2,12 +2,17 @@ import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { SharedFooter } from './SharedFooter';
 import { updateSiteSEO } from '../utils/seo';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { useContent } from '../contexts/ContentContext';
 import { HeadlessVideoPlayer } from './HeadlessVideoPlayer';
 
 export default function BespokeView({ onContact, onGoHome }: { onContact?: () => void, onGoHome?: () => void }) {
   const { content: siteContent } = useContent();
   const pageVideo = siteContent.pageVideos?.find(v => v.id === "bespoke");
+
+  const isMobile = useIsMobile();
+  const videoUrlToUse = (isMobile && pageVideo?.mobileVideoUrl) ? pageVideo.mobileVideoUrl : (pageVideo?.videoUrl || pageVideo?.youtubeUrl);
+
   useEffect(() => {
     updateSiteSEO({
       title: "Bespoke Diamond Commissions | Kirthi Diamonds",
@@ -69,11 +74,11 @@ export default function BespokeView({ onContact, onGoHome }: { onContact?: () =>
         </section>
 
         
-        {pageVideo && (pageVideo.videoUrl || pageVideo.youtubeUrl) && (
+        {pageVideo && videoUrlToUse && (
           <section className="pt-8">
             <h2 className="text-2xl font-serif text-[#D4AF37] mb-6">Inside the Workshop</h2>
             <div className="w-full aspect-video border border-white/10 relative">
-              <HeadlessVideoPlayer url={pageVideo.videoUrl || pageVideo.youtubeUrl} brightnessClass="brightness-[0.8]" />
+              <HeadlessVideoPlayer url={videoUrlToUse} brightnessClass="brightness-[0.8]" />
             </div>
           </section>
         )}

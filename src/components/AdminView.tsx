@@ -72,6 +72,7 @@ export const compressImage = (file: File): Promise<string> => {
   });
 };
 
+
 export const uploadImage = async (file: File): Promise<string> => {
   let finalFile = file;
   if (file.type !== 'image/svg+xml' && file.type !== 'image/gif') {
@@ -85,32 +86,10 @@ export const uploadImage = async (file: File): Promise<string> => {
     }
   }
 
-  const formData = new FormData();
-  formData.append('file', finalFile);
-  
-  const res = await fetch('/api/upload', {
-    method: 'POST',
-    body: formData
-  });
-  
-  if (!res.ok) {
-    let errorMsg = "Failed to upload image";
-    try {
-       const text = await res.text();
-       if (res.status === 413) {
-         errorMsg = "Image is too large (max 1MB). Compression failed. Please use a smaller image.";
-       } else {
-         const errorObj = JSON.parse(text);
-         errorMsg = errorObj.error || errorMsg;
-       }
-    } catch(e: any) {
-       // Ignore JSON parse errors for HTML responses
-    }
-    throw new Error(errorMsg);
-  }
-  
-  const data = await res.json();
-  return data.url;
+  const storageRef = ref(storage, `uploads/${Date.now()}_${finalFile.name}`);
+  const snapshot = await uploadBytes(storageRef, finalFile);
+  const downloadURL = await getDownloadURL(snapshot.ref);
+  return downloadURL;
 };
 
 function ImageUpload({ value, onChange }: { value: string, onChange: (val: string) => void }) {
@@ -1696,7 +1675,8 @@ export default function AdminView() {
     { id: 'orders', label: 'Client Orders' },
     { id: 'exchange', label: 'Exchange Rates' },
     { id: 'seo', label: 'SEO Management' },
-    { id: 'access', label: 'Access Control' }
+    { id: 'access', label: 'Access Control' },
+    { id: 'videos', label: 'Video Managers' }
   ] as const;
 
   return (

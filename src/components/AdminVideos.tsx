@@ -19,6 +19,7 @@ export function AdminVideos() {
   
   const [videoData, setVideoData] = useState({
     videoUrl: '',
+    mobileVideoUrl: '',
     posterUrl: '',
     title: '',
     description: '',
@@ -36,6 +37,7 @@ export function AdminVideos() {
         const data = snap.data() as any;
         setVideoData({
           videoUrl: data.videoUrl || data.youtubeUrl || '',
+          mobileVideoUrl: data.mobileVideoUrl || '',
           posterUrl: data.posterUrl || '',
           title: data.title || '',
           description: data.description || '',
@@ -43,7 +45,7 @@ export function AdminVideos() {
           duration: data.duration || ''
         });
       } else {
-        setVideoData({ videoUrl: '', posterUrl: '', title: '', description: '', uploadDate: '', duration: '' });
+        setVideoData({ videoUrl: '', mobileVideoUrl: '', posterUrl: '', title: '', description: '', uploadDate: '', duration: '' });
       }
     } catch (e) {
       console.error(e);
@@ -122,6 +124,12 @@ export function AdminVideos() {
               )}
               
               <div>
+                <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Mobile Video URL (Optional)</label>
+                <input type="text" value={videoData.mobileVideoUrl} onChange={e => setVideoData({...videoData, mobileVideoUrl: e.target.value})} placeholder="e.g., optimized mp4 or drive url" className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white transition-colors" disabled={saving} />
+                {videoData.mobileVideoUrl && <p className="text-xs text-green-500/70 mt-2 truncate">Current: {videoData.mobileVideoUrl}</p>}
+              </div>
+
+              <div>
                 <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Video URL (YouTube, Vimeo, Google Drive)</label>
                 <input type="text" value={videoData.videoUrl} onChange={e => setVideoData({...videoData, videoUrl: e.target.value})} placeholder="e.g., https://youtube.com/watch?v=..." className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white transition-colors" disabled={saving} />
                 {uploadProgress > 0 && <p className="text-xs text-[#D4AF37] mt-2">Uploading: {Math.round(uploadProgress)}%</p>}
@@ -165,16 +173,9 @@ export function AdminVideos() {
               <label className="block text-xs uppercase tracking-widest text-white/50 mb-4">Preview</label>
               <div className="bg-black/50 border border-white/10 rounded-xl p-4">
                 {videoData.videoUrl ? (
-                  <video 
-                    controls 
-                    playsInline 
-                    preload="metadata" 
-                    poster={videoData.posterUrl}
-                    className="w-full aspect-video rounded object-cover"
-                  >
-                    <source src={videoData.videoUrl} type={videoData.videoUrl.includes('webm') ? 'video/webm' : 'video/mp4'} />
-                    Your browser does not support the video tag.
-                  </video>
+                  <div className="w-full aspect-video rounded object-cover overflow-hidden relative">
+                    <HeadlessVideoPlayer url={videoData.videoUrl} brightnessClass="brightness-[0.9]" />
+                  </div>
                 ) : (
                   <div className="aspect-video bg-white/5 flex items-center justify-center">
                     <p className="text-xs text-white/30 tracking-widest uppercase">No Video Configured</p>
