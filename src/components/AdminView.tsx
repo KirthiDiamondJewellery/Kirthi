@@ -14,6 +14,7 @@ import AdminBridalSubmissions from './AdminBridalSubmissions';
 import AdminConsultations from './AdminConsultations';
 import AdminAccessControl from './AdminAccessControl';
 import AdminSEO from './AdminSEO';
+import { AdminVideos } from './AdminVideos';
 
 export const compressImage = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
