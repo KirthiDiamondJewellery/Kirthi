@@ -354,6 +354,7 @@ Sitemap: ${baseUrl}/sitemap-index.xml`;
         { path: "", priority: "1.0", changefreq: "daily" },
         { path: "/shop", priority: "0.9", changefreq: "daily" },
         { path: "/brides", priority: "0.8", changefreq: "weekly" },
+        { path: "/bespoke", priority: "0.9", changefreq: "monthly" },
         { path: "/heritage", priority: "0.7", changefreq: "monthly" },
         { path: "/methodology", priority: "0.7", changefreq: "monthly" },
         { path: "/journal", priority: "0.8", changefreq: "weekly" },
@@ -620,6 +621,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
         { path: "/maison", priority: "0.7", changefreq: "monthly" },
         { path: "/shop", priority: "0.9", changefreq: "daily" },
         { path: "/brides", priority: "0.8", changefreq: "weekly" },
+        { path: "/bespoke", priority: "0.9", changefreq: "monthly" },
         { path: "/faq", priority: "0.7", changefreq: "weekly" },
         { path: "/kochi", priority: "0.8", changefreq: "monthly" },
         { path: "/calicut", priority: "0.8", changefreq: "monthly" },
@@ -700,6 +702,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       "",
       "/shop",
       "/brides",
+      "/bespoke",
       "/heritage",
       "/methodology",
       "/journal",
@@ -928,6 +931,23 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
         desc: "Every diamond above 0.30 carats at Kirthi Diamonds is GIA or IGI certified. Learn how to verify the certificate and what ethical sourcing means.",
         fallbackBody: "<h1>GIA & IGI Certified Diamonds in Kerala</h1><p>Every significant diamond we offer is independently graded by GIA or IGI for guaranteed quality and authenticity.</p>"
       },
+      "/bespoke": {
+        title: "Bespoke Diamond Jewellery in Kochi & Calicut | Kirthi Diamonds",
+        desc: "Commission bespoke diamond jewellery with no design fee or customisation premium. GIA and IGI certified natural diamonds, BIS hallmarked gold, and a written lifetime buyback and exchange policy.",
+        fallbackBody: `<h1>Bespoke Diamond Jewellery, Made to Commission</h1>
+<p>A bespoke commission at Kirthi Diamonds is priced the same as an equivalent piece from our collection. There is no design fee, no commission charge, and no customisation premium — the price reflects the diamond, the gold weight, and the making charge alone.</p>
+<p>Every commission begins with the stone. We present loose diamonds alongside their individual GIA or IGI certificates, so you know the exact colour, clarity, cut grade, and measurements of the stone you are choosing, rather than a range printed on a tag. The setting is then designed and hand-built around that specific stone's proportions.</p>
+<h2>Custom Diamond Engagement Rings in Kochi &amp; Calicut</h2>
+<p>Engagement ring commissions are hand-forged rather than cast from a standard mould. Our master setters, each with more than fifteen years at the bench, cut and burnish every prong to the individual stone under loupe magnification, achieving tolerances measured in hundredths of a millimetre. Commissions typically take four to eight weeks; solitaire mountings, two to three weeks.</p>
+<h2>Bespoke Bridal Jewellery in Kerala</h2>
+<p>We draw on a heritage archive of traditional Kerala designs spanning Hindu, Christian, and Muslim wedding traditions, and work in certified natural diamonds, uncut and Polki diamonds, and precious stones including ruby, emerald, and sapphire. All gold is BIS Hallmarked in 18kt and 22kt. We recommend beginning a bridal commission at least eight weeks before the wedding date.</p>
+<h2>Heirlooms and Resets</h2>
+<p>Family pieces can be reset, restyled, or remade. Bring the piece to either boutique and we will assess it with you before proposing a design.</p>
+<h2>Certifications and Standards</h2>
+<p>Every diamond above 0.30 carats carries its own individual GIA or IGI certificate, graded to that stone rather than to a batch specification. All gold jewellery is BIS Hallmarked. Every piece is covered by our written lifetime exchange and buyback policy, itemised in full and provided with every invoice — see our <a href="https://kirthidiamonds.com/pages/exchange-policy">exchange and buyback policy</a>.</p>
+<h2>Arrange a Consultation</h2>
+<p>Commissions are discussed in person at our <a href="https://kirthidiamonds.com/kochi">Kochi</a> or <a href="https://kirthidiamonds.com/calicut">Calicut</a> boutique. To arrange a visit, <a href="https://kirthidiamonds.com/contact">please get in touch</a>.</p>`
+      },
       "/kochi": {
         title: "Kochi Boutique | Kirthi Diamonds",
         desc: "Visit our Kochi boutique at Palarivattom for a bespoke diamond jewellery consultation. Explore GIA & IGI certified solitaires and bridal masterpieces.",
@@ -941,7 +961,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
   34/572, By Pass Road, Palarivattom<br>
   Kochi, Kerala 682024<br>
   India<br>
-  <a href="tel:+914842316688">Phone: +91 484 231 6688</a>
+  <a href="tel:+919847086990">Phone: +91 98470 86990</a>
 </address>
 <p><strong>Opening Hours:</strong> Monday–Saturday 10:00 – 19:00 (Closed on Sundays)</p>
 <p>To arrange a bespoke consultation with our diamond experts, please <a href="https://kirthidiamonds.com/contact">visit our contact page</a>.</p>`
@@ -959,9 +979,9 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
   61/11508A, Opposite Federal Bank, Puthiyara<br>
   Kozhikode, Kerala 673004<br>
   India<br>
-  <a href="tel:+914952725461">Phone: +91 495 272 5461</a>
+  <a href="tel:+919847086002">Phone: +91 98470 86002</a>
 </address>
-<p><strong>Opening Hours:</strong> Monday–Saturday 10:00 – 19:00 (Closed on Sundays)</p>
+<p><strong>Opening Hours:</strong> Monday–Saturday 09:30 – 19:30 (Closed on Sundays)</p>
 <p>To arrange a bespoke consultation with our diamond experts, please <a href="https://kirthidiamonds.com/contact">visit our contact page</a>.</p>`
       }
     };
@@ -1267,13 +1287,13 @@ ${JSON.stringify(orgSchema, null, 2)}
         "name": "Kirthi Diamonds Kochi",
         "image": "https://kirthidiamonds.com/og-cover.jpg",
         "url": "https://kirthidiamonds.com/kochi",
-        "telephone": "+91 484 231 6688",
+        "telephone": "+91 98470 86990",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "3rd Cross Road, Panampilly Nagar",
+          "streetAddress": "34/572, By Pass Road, Palarivattom",
           "addressLocality": "Kochi",
           "addressRegion": "Kerala",
-          "postalCode": "682036",
+          "postalCode": "682024",
           "addressCountry": "IN"
         },
         "geo": {
@@ -1297,7 +1317,7 @@ ${JSON.stringify(orgSchema, null, 2)}
         "name": "Kirthi Diamonds Calicut",
         "image": "https://kirthidiamonds.com/og-cover.jpg",
         "url": "https://kirthidiamonds.com/calicut",
-        "telephone": "+91 495 272 5461",
+        "telephone": "+91 98470 86002",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Puthiyara",
@@ -1550,6 +1570,7 @@ ${JSON.stringify(calicutSchema, null, 2)}
       '${canonicalBaseUrl}/shop',
       '${canonicalBaseUrl}/journal',
       'https://kirthidiamonds.com/brides',
+      'https://kirthidiamonds.com/bespoke',
       'https://kirthidiamonds.com/heritage',
       'https://kirthidiamonds.com/methodology',
       'https://kirthidiamonds.com/maison',
@@ -1645,7 +1666,7 @@ ${urls.map(url => `  <url>\n    <loc>${url}</loc>\n  </url>`).join('\n')}
       }
     }));
     
-    const validRoutes = ["/", "/journal", "/heritage", "/methodology", "/maison", "/shop", "/brides", "/faq", "/kochi", "/calicut", "/contact",
+    const validRoutes = ["/", "/journal", "/heritage", "/methodology", "/maison", "/shop", "/brides", "/bespoke", "/faq", "/kochi", "/calicut", "/contact",
       "/find-a-store", "/terms", "/find-a-store"];
     
     app.get("*", async (req, res) => {
