@@ -57,6 +57,26 @@ function getRazorpay(): Razorpay {
 async function startServer() {
   const app = express();
   app.set("trust proxy", 1);
+
+const uploadDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => cb(null, Date.now() + '_' + file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_'))
+});
+const upload = multer({ storage });
+
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+  res.json({ url: '/uploads/' + req.file.filename });
+});
+app.use('/uploads', express.static(uploadDir));
+
+
   const PORT = Number(process.env.PORT) || 3000;
 
 
@@ -1521,7 +1541,7 @@ ${JSON.stringify(calicutSchema, null, 2)}
 
   
   app.get('/sitemap.xml', async (req, res) => {
-    let urls = [
+    const urls = [
       'https://kirthidiamonds.com/',
       '${canonicalBaseUrl}/shop',
       '${canonicalBaseUrl}/journal',
