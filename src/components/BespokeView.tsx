@@ -2,8 +2,12 @@ import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { SharedFooter } from './SharedFooter';
 import { updateSiteSEO } from '../utils/seo';
+import { useContent } from '../contexts/ContentContext';
+import { HeadlessVideoPlayer } from './HeadlessVideoPlayer';
 
 export default function BespokeView({ onContact, onGoHome }: { onContact?: () => void, onGoHome?: () => void }) {
+  const { content: siteContent } = useContent();
+  const pageVideo = siteContent.pageVideos?.find(v => v.id === "bespoke");
   useEffect(() => {
     updateSiteSEO({
       title: "Bespoke Diamond Commissions | Kirthi Diamonds",
@@ -64,7 +68,17 @@ export default function BespokeView({ onContact, onGoHome }: { onContact?: () =>
           </p>
         </section>
 
+        
+        {pageVideo && (pageVideo.videoUrl || pageVideo.youtubeUrl) && (
+          <section className="pt-8">
+            <h2 className="text-2xl font-serif text-[#D4AF37] mb-6">Inside the Workshop</h2>
+            <div className="w-full aspect-video border border-white/10 relative">
+              <HeadlessVideoPlayer url={pageVideo.videoUrl || pageVideo.youtubeUrl} brightnessClass="brightness-[0.8]" />
+            </div>
+          </section>
+        )}
         <section className="pt-12 border-t border-white/10 space-y-8">
+
           <h2 className="text-2xl font-serif text-[#D4AF37]">Frequently Asked Questions</h2>
           
           <div className="space-y-6">
