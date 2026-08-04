@@ -3,11 +3,7 @@ import { motion } from 'motion/react';
 import { APIProvider, Map, AdvancedMarker, Pin, useAdvancedMarkerRef, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 import { MapPin, Phone, Clock, Navigation } from 'lucide-react';
 
-const API_KEY =
-  (typeof process !== 'undefined' && process.env?.GOOGLE_MAPS_PLATFORM_KEY) ||
-  (import.meta as unknown as Record<string, any>).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as unknown as Record<string, any>).GOOGLE_MAPS_PLATFORM_KEY ||
-  '';
+const API_KEY = (import.meta as unknown as Record<string, any>).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || 'AIzaSyC4ZbG7rnVzVii9emSze23mJwSQ33rlFE0';
 const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
 
 const STORES = [
