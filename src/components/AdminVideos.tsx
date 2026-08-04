@@ -60,7 +60,7 @@ export function AdminVideos() {
     setSaving(true);
     
     try {
-      const { uploadImage } = await import('./AdminView');
+      const { uploadImage } = await import('../utils/imageUpload');
       const url = await uploadImage(file);
       setVideoData(prev => ({ ...prev, posterUrl: url }));
     } catch (err: any) {
@@ -187,8 +187,6 @@ export function AdminVideos() {
         </div>
       )}
 
-    </div>
-  )}
     </div>
   );
 }

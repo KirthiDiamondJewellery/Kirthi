@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Upload, Loader2 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
-import { uploadImage } from './AdminView';
+import { uploadImage } from '../utils/imageUpload';
 
 export default function BridalSubmissionModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [formData, setFormData] = useState({ name: '', email: '', story: '', weddingDate: '' });
