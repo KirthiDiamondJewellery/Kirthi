@@ -5,11 +5,7 @@ import { useContent } from '../contexts/ContentContext';
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 import { SharedFooter } from './SharedFooter';
 
-const GOOGLE_MAPS_API_KEY =
-  (typeof process !== "undefined" && process.env?.GOOGLE_MAPS_PLATFORM_KEY) ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
-  '';
+const GOOGLE_MAPS_API_KEY = (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || 'AIzaSyC4ZbG7rnVzVii9emSze23mJwSQ33rlFE0';
 const hasValidKey = Boolean(GOOGLE_MAPS_API_KEY) && GOOGLE_MAPS_API_KEY !== 'YOUR_API_KEY';
 
 interface BoutiqueViewProps {

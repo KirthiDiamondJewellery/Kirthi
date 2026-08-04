@@ -4,6 +4,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Save, Loader2 } from 'lucide-react';
 import { VideoFacade } from './VideoFacade';
+import { HeadlessVideoPlayer } from './HeadlessVideoPlayer';
 
 const PAGE_KEYS = [
   { id: 'methodology', label: 'Methodology Page' },
@@ -49,48 +50,22 @@ export function AdminVideos() {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'video' | 'poster') => {
+  const handlePosterChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (type === 'video') {
-      if (file.type !== 'video/mp4' && file.type !== 'video/webm') {
-        setUploadError('Only MP4 and WebM videos are supported.');
-        return;
-      }
-      if (file.size > 100 * 1024 * 1024) {
-        setUploadError('Video size must be less than 100MB.');
-        return;
-      }
-    }
 
     setUploadError('');
     setSaving(true);
     
-    const storageRef = ref(storage, `videos/${selectedPage}_${type}_${Date.now()}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        if (type === 'video') setUploadProgress(progress);
-      }, 
-      (error) => {
-        console.error('Upload failed', error);
-        setUploadError('Upload failed: ' + error.message);
-        setSaving(false);
-        setUploadProgress(0);
-      }, 
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        setVideoData(prev => ({
-          ...prev,
-          [type === 'video' ? 'videoUrl' : 'posterUrl']: downloadURL
-        }));
-        setSaving(false);
-        setUploadProgress(0);
-      }
-    );
+    try {
+      const { uploadImage } = await import('./AdminView');
+      const url = await uploadImage(file);
+      setVideoData(prev => ({ ...prev, posterUrl: url }));
+    } catch (err: any) {
+      setUploadError('Upload failed: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
 
@@ -147,15 +122,15 @@ export function AdminVideos() {
               )}
               
               <div>
-                <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Upload Video (MP4/WebM, max 100MB)</label>
-                <input type="file" accept="video/mp4,video/webm" onChange={e => handleFileChange(e, 'video')} className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white transition-colors" disabled={saving} />
+                <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Video URL (YouTube, Vimeo, Google Drive)</label>
+                <input type="text" value={videoData.videoUrl} onChange={e => setVideoData({...videoData, videoUrl: e.target.value})} placeholder="e.g., https://youtube.com/watch?v=..." className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white transition-colors" disabled={saving} />
                 {uploadProgress > 0 && <p className="text-xs text-[#D4AF37] mt-2">Uploading: {Math.round(uploadProgress)}%</p>}
                 {videoData.videoUrl && <p className="text-xs text-green-500/70 mt-2 truncate">Current: {videoData.videoUrl}</p>}
               </div>
               
               <div>
                 <label className="block text-xs uppercase tracking-widest text-white/50 mb-2">Upload Poster Image</label>
-                <input type="file" accept="image/*" onChange={e => handleFileChange(e, 'poster')} className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white transition-colors" disabled={saving} />
+                <input type="file" accept="image/*" onChange={handlePosterChange} className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white transition-colors" disabled={saving} />
                 {videoData.posterUrl && <p className="text-xs text-green-500/70 mt-2 truncate">Current: {videoData.posterUrl}</p>}
               </div>
               

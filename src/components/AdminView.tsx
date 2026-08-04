@@ -32,8 +32,8 @@ export const compressImage = (file: File): Promise<string> => {
       img.src = dataUrl;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 3000;
-        const MAX_HEIGHT = 3000;
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
         let width = img.width;
         let height = img.height;
 
@@ -73,8 +73,20 @@ export const compressImage = (file: File): Promise<string> => {
 };
 
 export const uploadImage = async (file: File): Promise<string> => {
+  let finalFile = file;
+  if (file.type !== 'image/svg+xml' && file.type !== 'image/gif') {
+    try {
+      const dataUrl = await compressImage(file);
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      finalFile = new File([blob], file.name, { type: file.type });
+    } catch (e) {
+      console.warn("Failed to compress image locally", e);
+    }
+  }
+
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('file', finalFile);
   
   const res = await fetch('/api/upload', {
     method: 'POST',
@@ -82,8 +94,19 @@ export const uploadImage = async (file: File): Promise<string> => {
   });
   
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || "Failed to upload image");
+    let errorMsg = "Failed to upload image";
+    try {
+       const text = await res.text();
+       if (res.status === 413) {
+         errorMsg = "Image is too large (max 1MB). Compression failed. Please use a smaller image.";
+       } else {
+         const errorObj = JSON.parse(text);
+         errorMsg = errorObj.error || errorMsg;
+       }
+    } catch(e: any) {
+       // Ignore JSON parse errors for HTML responses
+    }
+    throw new Error(errorMsg);
   }
   
   const data = await res.json();
