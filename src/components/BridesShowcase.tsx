@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BRIDE_GALLERY } from '../constants';
 import { useContent } from '../contexts/ContentContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 import BridalSubmissionModal from './BridalSubmissionModal';
 import { VideoFacade } from './VideoFacade';
@@ -222,7 +223,8 @@ export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: ()
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   
   const pageVideo = content.pageVideos?.find(v => v.id === 'brides') || content.pageVideos?.find(v => v.id === 'methodology');
-  const videoUrl = content.methodologyVideoUrl || 'https://youtu.be/cGrZrg3_BQw';
+  const isMobile = useIsMobile();
+  const videoUrl = (isMobile && pageVideo?.mobileVideoUrl) ? pageVideo.mobileVideoUrl : (pageVideo?.videoUrl || pageVideo?.youtubeUrl || 'https://youtu.be/cGrZrg3_BQw');
   const videoIdMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i);
   const videoIdStr = videoIdMatch ? videoIdMatch[1] : "cGrZrg3_BQw";
 

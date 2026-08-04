@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useContent } from '../contexts/ContentContext';
 import { FastImage } from './FastImage';
 import { VideoFacade } from './VideoFacade';
+import { HeadlessVideoPlayer } from './HeadlessVideoPlayer';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { SharedFooter } from './SharedFooter';
 
 export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () => void, onGoHome?: () => void }) {
@@ -10,7 +12,8 @@ export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () =>
   const steps = content.methodologySteps || [];
       
   const pageVideo = content.pageVideos?.find(v => v.id === 'methodology');
-  const videoUrl = content.methodologyVideoUrl || 'https://youtu.be/cGrZrg3_BQw';
+  const isMobile = useIsMobile();
+  const videoUrl = (isMobile && pageVideo?.mobileVideoUrl) ? pageVideo.mobileVideoUrl : (pageVideo?.videoUrl || pageVideo?.youtubeUrl || content.methodologyVideoUrl || 'https://youtu.be/cGrZrg3_BQw');
   const videoIdMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i);
   const videoIdStr = videoIdMatch ? videoIdMatch[1] : "cGrZrg3_BQw";
   
@@ -81,6 +84,11 @@ export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () =>
       <div className={`relative z-20 w-full flex flex-col items-center ${videoUrl ? '' : 'bg-[#050505]'}`}>
         {videoUrl && (
           <section className="relative w-full min-h-[90vh] flex flex-col justify-center items-center px-6 md:px-28 shrink-0">
+            {videoUrl && (
+              <div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
+                <HeadlessVideoPlayer url={videoUrl} brightnessClass="brightness-[0.4]" />
+              </div>
+            )}
             <div className="relative z-20 w-full max-w-7xl pt-[20vh] pb-16">
               <div className="text-center max-w-4xl mx-auto px-4 mt-8 md:mt-16">
                 <h4 className="text-xs md:text-[10px] uppercase tracking-[0.5em] text-[#D4AF37] mb-8 drop-shadow-2xl font-semibold">Our Craftsmanship Process</h4>
@@ -92,9 +100,7 @@ export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () =>
                 <p className="text-sm md:text-base tracking-[0.15em] text-white/90 leading-[2.2] drop-shadow-xl max-w-4xl mx-auto font-light text-justify">
                   Our process is defined by an uncompromising commitment to artisanal, low-volume production. Unlike mass-manufactured commercial jewellery that relies on rapid, high-volume automated casting and generic setting templates, we restrict our studio to a handful of bespoke creations per month. This deliberate low-volume approach is central to our setting quality. When gold or platinum is cast to hold diamonds, micro-variations in the stone's dimensions must be accounted for on a sub-millimetre level. In commercial factories, stones are pressed into pre-moulded settings, creating micro-tensions that compromise structural integrity and limit the diamond's light refraction. At Kirthi, our bench jewellers dedicate dozens of hours to a single setting, hand-drawing wire and hand-carving the metal around the specific proportions of each unique stone. Master setters secure each diamond under high-magnification microscopes using manual claw techniques, ensuring perfect, non-destructive pressure and exposing the maximum possible surface area to ambient light. The result is a structurally flawless setting with unmatched fire, brilliance, and lifetime durability.
                 </p>
-                <div className="mt-16 w-full">
-                   <VideoFacade videoId={videoIdStr} title="Kirthi Diamonds Methodology" />
-                </div>
+                
               </div>
             </div>
           </section>
@@ -113,9 +119,7 @@ export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () =>
               <p className="text-sm tracking-[0.15em] text-white/70 leading-relaxed text-justify">
                 Our process is defined by an uncompromising commitment to artisanal, low-volume production. Unlike mass-manufactured commercial jewellery that relies on rapid, high-volume automated casting and generic setting templates, we restrict our studio to a handful of bespoke creations per month. This deliberate low-volume approach is central to our setting quality. When gold or platinum is cast to hold diamonds, micro-variations in the stone's dimensions must be accounted for on a sub-millimetre level. In commercial factories, stones are pressed into pre-moulded settings, creating micro-tensions that compromise structural integrity and limit the diamond's light refraction. At Kirthi, our bench jewellers dedicate dozens of hours to a single setting, hand-drawing wire and hand-carving the metal around the specific proportions of each unique stone. Master setters secure each diamond under high-magnification microscopes using manual claw techniques, ensuring perfect, non-destructive pressure and exposing the maximum possible surface area to ambient light. The result is a structurally flawless setting with unmatched fire, brilliance, and lifetime durability.
               </p>
-              <div className="mt-16 w-full">
-                 <VideoFacade videoId={videoIdStr} title="Kirthi Diamonds Methodology" />
-              </div>
+              
             </div>
           </div>
         )}
