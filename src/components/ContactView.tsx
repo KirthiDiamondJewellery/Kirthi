@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import BreadcrumbNavigation from './BreadcrumbNavigation';
 import { SharedFooter } from './SharedFooter';
 import { useContent } from '../contexts/ContentContext';
@@ -24,16 +24,11 @@ export default function ContactView() {
       const response = await fetch('/api/consultation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: formData.name, 
-          email: formData.email, 
-          phone: formData.phone, 
-          message: formData.message
-        })
+        body: JSON.stringify(formData)
       });
       if (response.ok) {
         setIsSuccess(true);
-        setFormData({ name: "", email: "", phone: "", message: "" });
+        setFormData({ name: "", phone: "", boutique: "kochi", date: "", message: "" });
       }
     } catch (e) {
       console.error(e);

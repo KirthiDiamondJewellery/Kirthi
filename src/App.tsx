@@ -489,20 +489,7 @@ export default function App() {
     };
   }, [setViewMode, content, content?.blogPosts, setCurrentIndex, setBoutiqueId]);
 
-  useEffect(() => {
-    const handleOpenConsultation = () => {
-      window.history.pushState(null, "", "/contact");
-      setViewMode("app");
-      const contactIndex = (content?.sections || SECTIONS).findIndex(s => s.id === "contact");
-      if (contactIndex !== -1) {
-        setCurrentIndex(contactIndex);
-      } else {
-        window.location.href = "/contact";
-      }
-    };
-    window.addEventListener("open-consultation", handleOpenConsultation);
-    return () => window.removeEventListener("open-consultation", handleOpenConsultation);
-  }, [setViewMode, content, setCurrentIndex]);
+  
 
   // Update URL on section change
   useEffect(() => {

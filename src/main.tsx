@@ -14,6 +14,7 @@ import StoreLocatorView from './components/StoreLocatorView';
 import './index.css';
 
 import FAQView from './components/FAQView';
+import GlobalConsultationModal from './components/GlobalConsultationModal';
 import { reportWebVitalsToFirestore } from './lib/vitals';
 
 // Initialize performance monitoring
@@ -81,6 +82,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/journal/:postId" element={<BlogPostView />} />
             <Route path="*" element={<LegacyRouteHandler />} />
           </Routes>
+          <GlobalConsultationModal />
         </BrowserRouter>
       </ContentProvider>
     </ErrorBoundary>

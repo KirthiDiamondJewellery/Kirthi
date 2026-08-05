@@ -19,6 +19,7 @@ import { getMetaDescription } from "./src/utils/meta";
 import { marked } from "marked";
 
 dotenv.config();
+const canonicalBaseUrl = process.env.BASE_URL || 'https://kirthidiamonds.com';
 
 let firebaseConfig: any = null;
 try {
@@ -86,20 +87,12 @@ app.use('/uploads', express.static(uploadDir));
 
   // Legacy redirects
   
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
   app.use(
     helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false, crossOriginResourcePolicy: false, xFrameOptions: false, crossOriginOpenerPolicy: false })
   );
 
-
-  app.post("/api/consultation", express.json(), async (req, res) => {
-    try {
-      // Very basic implementation since full logic is unclear without seeing current email setup.
-      // Assuming a generic Nodemailer transport is used, or just success response.
-      res.json({ success: true, message: "Consultation requested successfully." });
-    } catch (e) {
-      res.status(500).json({ error: "Failed to send request." });
-    }
-  });
 
   app.post("/api/create-order",
  async (req, res) => {
@@ -696,68 +689,73 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
   });
 
   // Serve union or direct to index for standard sitemap.xml requests
+  
+  let cachedSitemap = null;
+  let sitemapCacheTime = 0;
   app.get("/sitemap.xml", async (req, res) => {
     res.setHeader("Content-Type", "text/xml");
-    const staticUrls = [
-      "",
-      "/shop",
-      "/brides",
-      "/bespoke",
-      "/heritage",
-      "/methodology",
-      "/journal",
-      "/maison",
-      "/kochi",
-      "/calicut",
-      "/contact",
-      "/find-a-store",
-      "/faq",
-      "/terms",
-      "/pages/policies",
-      "/pages/diamond-jewellery",
-      "/pages/certified-diamonds",
-      "/pages/exchange-policy"
-    ];
-
     
-        let postSlugs: string[] = [];
-    if (db) {
-      try {
-        const postsSnap = await db.collection("site_content_blogPosts").get();
-        postsSnap.forEach(doc => {
-          const d = doc.data();
-          const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
-          if (slug) postSlugs.push(slug);
-        });
-
-        const trendsSnap = await db.collection("site_content_journalTrends").get();
-        trendsSnap.forEach(doc => {
-          const d = doc.data();
-          const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
-          if (slug) postSlugs.push(slug);
-        });
-      } catch (e) {
-        console.error("Error fetching sitemap posts", e);
+    // Serve from cache if less than 1 hour old
+    if (cachedSitemap && Date.now() - sitemapCacheTime < 3600000) {
+      return res.send(cachedSitemap);
+    }
+    
+    try {
+      const staticUrls = [
+        "", "/shop", "/brides", "/bespoke", "/heritage", "/methodology", 
+        "/journal", "/maison", "/kochi", "/calicut", "/contact", "/find-a-store", 
+        "/faq", "/terms", "/pages/policies", "/pages/diamond-jewellery", 
+        "/pages/certified-diamonds", "/pages/exchange-policy"
+      ];
+      
+      let postSlugs = [];
+      if (db) {
+        // We only need the title or id, but get() fetches the whole document
+        // We can optimize by using select() if we are using the admin SDK properly
+        // However, using the standard get() on collection is fine if we cache it
+        try {
+          const postsSnap = await db.collection("site_content_blogPosts").select("title").get();
+          postsSnap.forEach(doc => {
+            const d = doc.data();
+            const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
+            if (slug) postSlugs.push(slug);
+          });
+          const trendsSnap = await db.collection("site_content_journalTrends").select("title").get();
+          trendsSnap.forEach(doc => {
+            const d = doc.data();
+            const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
+            if (slug) postSlugs.push(slug);
+          });
+        } catch (e) {
+          console.error("Error fetching sitemap posts", e);
+        }
       }
+      
+      if (postSlugs.length === 0) {
+        postSlugs = hardcodedPosts.map(p => p.id);
+      }
+      
+      const today = new Date().toISOString().split("T")[0];
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+      for (const url of staticUrls) {
+        xml += `  <url>\n    <loc>https://kirthidiamonds.com${url}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n  </url>\n`;
+      }
+      for (const slug of postSlugs) {
+        xml += `  <url>\n    <loc>${canonicalBaseUrl}/journal/${slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n  </url>\n`;
+      }
+      xml += `</urlset>`;
+      
+      cachedSitemap = xml;
+      sitemapCacheTime = Date.now();
+      
+      res.send(xml);
+    } catch (error) {
+      console.error("Sitemap generation error:", error);
+      // Fallback to static if error
+      res.status(503).send("Service Unavailable");
     }
-    if (postSlugs.length === 0) {
-      postSlugs = hardcodedPosts.map(p => p.id);
-    }
-
-    const today = new Date().toISOString().split("T")[0];
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-
-    for (const url of staticUrls) {
-      xml += `  <url>\n    <loc>https://kirthidiamonds.com${url}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n  </url>\n`;
-    }
-
-    for (const slug of postSlugs) {
-      xml += `  <url>\n    <loc>${canonicalBaseUrl}/journal/${slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n  </url>\n`;
-    }
-
-    xml += `</urlset>`;
-    res.send(xml);
   });
+
 
   app.get("/robots.txt", (req, res) => {
     res.setHeader("Content-Type", "text/plain");
@@ -765,7 +763,7 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
   });
 
   async function injectSEO(html: string, pathPart: string): Promise<string> {
-    const canonicalBaseUrl = process.env.BASE_URL || 'https://kirthidiamonds.com';
+    
     const replaceMetaTag = (sourceHtml: string, attrName: "property" | "name", attrValue: string, newContent: string): string => {
       const metaRegex = /<meta\s+([^>]*?)>/gi;
       let found = false;
@@ -1564,49 +1562,6 @@ ${JSON.stringify(calicutSchema, null, 2)}
 
 
   
-  app.get('/sitemap.xml', async (req, res) => {
-    const urls = [
-      'https://kirthidiamonds.com/',
-      '${canonicalBaseUrl}/shop',
-      '${canonicalBaseUrl}/journal',
-      'https://kirthidiamonds.com/brides',
-      'https://kirthidiamonds.com/bespoke',
-      'https://kirthidiamonds.com/heritage',
-      'https://kirthidiamonds.com/methodology',
-      'https://kirthidiamonds.com/maison',
-      'https://kirthidiamonds.com/contact',
-      'https://kirthidiamonds.com/kochi',
-      'https://kirthidiamonds.com/calicut'
-    ];
-    
-    if (db) {
-      try {
-        const snap = await db.collection("site_content_blogPosts").get();
-        const trendsSnap = await db.collection("site_content_journalTrends").get();
-        const posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const trends = trendsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        [...posts, ...trends].forEach(post => {
-          const slug = post.title ? post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : encodeURIComponent(post.id);
-          urls.push(`${canonicalBaseUrl}/journal/${slug}`);
-        });
-      } catch (e) {
-        console.error("Error fetching articles for sitemap", e);
-      }
-    }
-    
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(url => `  <url>\n    <loc>${url}</loc>\n  </url>`).join('\n')}
-</urlset>`;
-    
-    res.header('Content-Type', 'application/xml');
-    res.send(sitemap);
-  });
-  
-  app.get('/robots.txt', (req, res) => {
-    res.type('text/plain');
-    res.send('User-agent: *\nAllow: /\n\nSitemap: https://kirthidiamonds.com/sitemap.xml');
-  });
 
   if (process.env.NODE_ENV !== "production") {
 

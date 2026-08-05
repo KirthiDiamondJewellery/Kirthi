@@ -112,7 +112,7 @@ export default function BespokeView({ onContact, onGoHome }: { onContact?: () =>
 
         <div className="pt-12 text-center">
           <button 
-            onClick={onContact}
+            onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('open-consultation')); }}
             className="px-8 py-4 bg-[#D4AF37] text-black text-sm uppercase tracking-widest font-medium hover:bg-white transition-colors"
           >
             Arrange a Consultation
