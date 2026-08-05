@@ -1,4 +1,4 @@
-import { uploadImage } from './AdminView';
+import { uploadImage } from '../utils/imageUpload';
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ChevronRight, ChevronLeft, Gem, CheckCircle2, UploadCloud, Paperclip } from "lucide-react";
@@ -35,20 +35,24 @@ export default function ConsultationModal({ isOpen, onClose }: ConsultationModal
   });
 
   // Handle file upload by converting to base64
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("File size exceeds 5MB limit.");
+    if (file.size > 15 * 1024 * 1024) {
+      alert("File size exceeds 15MB limit.");
       return;
     }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      updateForm("attachment", event.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    try {
+      setIsUploading(true);
+      const url = await uploadImage(file);
+      updateForm("attachment", url);
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const removeAttachment = () => {
@@ -366,7 +370,7 @@ export default function ConsultationModal({ isOpen, onClose }: ConsultationModal
                               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-3 group-hover:bg-[#D4AF37]/10 transition-colors">
                                 <UploadCloud size={18} className="text-white/50 group-hover:text-[#D4AF37] transition-colors" />
                               </div>
-                              <p className="text-xs uppercase tracking-widest text-white/70 font-medium mb-1">Select Reference Image</p>
+                              {isUploading ? <p className="text-xs uppercase tracking-widest text-[#D4AF37] font-medium mb-1 animate-pulse">Uploading...</p> : <p className="text-xs uppercase tracking-widest text-white/70 font-medium mb-1">Select Reference Image</p>}
                               <p className="text-[10px] text-white/30 uppercase tracking-wider">Drag & drop or click to upload</p>
                               <p className="text-[9px] text-white/20 uppercase tracking-widest mt-2 block">Sketches, inspiration, or previous designs (Max 5MB)</p>
                             </>
