@@ -138,10 +138,21 @@ export async function saveGlobalContentToSql(newContent: any) {
     ...globalFields
   } = newContent;
 
-  // Update site_global
+  // 1. Merge with existing site_global data
+  let existingData = {};
+  try {
+    const existingRes = await pool.query("SELECT data FROM site_global WHERE id = 'global'");
+    if (existingRes.rows.length > 0 && existingRes.rows[0].data) {
+      existingData = existingRes.rows[0].data;
+    }
+  } catch (err) {}
+
+  const mergedGlobal = { ...existingData, ...globalFields };
+
+  // Update site_global with merged data
   await pool.query(
     "INSERT INTO site_global (id, data, updated_at) VALUES ('global', $1, NOW()) ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = NOW()",
-    [JSON.stringify(globalFields)]
+    [JSON.stringify(mergedGlobal)]
   );
 
   // Update collections if provided

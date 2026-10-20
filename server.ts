@@ -92,7 +92,8 @@ if (uploadDir !== publicUploadDir) {
 }
 
 
-const PORT = Number(process.env.PORT) || 3000;
+  const PORT = Number(process.env.PORT) || 3000;
+
 
   // Legacy redirects
   
@@ -1519,25 +1520,25 @@ ${JSON.stringify(calicutSchema, null, 2)}
     if (globalBrandingData && (now - lastBrandingFetch < 30000)) {
       return globalBrandingData;
     }
+    try {
+      const pool = getPgPool();
+      const sqlRes = await pool.query("SELECT data FROM site_global WHERE id = 'global'");
+      if (sqlRes.rows.length > 0 && sqlRes.rows[0].data) {
+        const data = sqlRes.rows[0].data;
+        globalBrandingData = {
+          logoUrl: data.logoUrl || null,
+          faviconSvg: data.customFaviconSvg || null,
+          fav32: data.favicon_32 || null,
+          fav180: data.favicon_180 || data.favicon_apple || null,
+          fav192: data.favicon_192 || null,
+          fav512: data.favicon_512 || null
+        };
+        lastBrandingFetch = now;
+        return globalBrandingData;
+      }
+    } catch (e) {}
     if (db) {
       try {
-        try {
-          const pool = getPgPool();
-          const sqlRes = await pool.query("SELECT data FROM site_global WHERE id = 'global'");
-          if (sqlRes.rows.length > 0 && sqlRes.rows[0].data) {
-            const data = sqlRes.rows[0].data;
-            globalBrandingData = {
-              logoUrl: data.logoUrl || null,
-              faviconSvg: data.customFaviconSvg || null,
-              fav32: data.favicon_32 || null,
-              fav180: data.favicon_180 || data.favicon_apple || null,
-              fav192: data.favicon_192 || null,
-              fav512: data.favicon_512 || null
-            };
-            lastBrandingFetch = now;
-            return globalBrandingData;
-          }
-        } catch (e) {}
         const docSnap = await db.collection("site_content").doc("global").get();
         if (docSnap && docSnap.exists) {
           const data = typeof docSnap.data === "function" ? docSnap.data() : docSnap.data;

@@ -16,7 +16,7 @@ import AdminAccessControl from './AdminAccessControl';
 import AdminSEO from './AdminSEO';
 import { AdminVideos } from "./AdminVideos";
 
-import { compressImage, uploadImage } from '../utils/imageUpload';
+import { compressImage, compressImageToDataUrl, uploadImage } from '../utils/imageUpload';
 export default function AdminView() {
   const [user, authLoading] = useAuthState(auth);
   const [loading, setLoading] = useState(true);
@@ -1040,6 +1040,99 @@ export default function AdminView() {
 }
 
 
+
+export const FaviconUpload = ({
+  svgValue,
+  fav32,
+  fav192,
+  fav512,
+  favApple,
+  onChange,
+}: {
+  svgValue: string;
+  fav32: string;
+  fav192: string;
+  fav512: string;
+  favApple: string;
+  onChange: (vals: { svg: string; fav32: string; fav192: string; fav512: string; favApple: string }) => void;
+}) => {
+  const [processing, setProcessing] = useState(false);
+
+  const handleFaviconFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProcessing(true);
+    try {
+      if (file.type === 'image/svg+xml') {
+        const text = await file.text();
+        const dataUrl = await compressImageToDataUrl(file, 512);
+        onChange({
+          svg: text,
+          fav32: dataUrl,
+          fav192: dataUrl,
+          fav512: dataUrl,
+          favApple: dataUrl,
+        });
+      } else {
+        const fav32Url = await compressImageToDataUrl(file, 32);
+        const fav192Url = await compressImageToDataUrl(file, 192);
+        const fav512Url = await compressImageToDataUrl(file, 512);
+        const favAppleUrl = await compressImageToDataUrl(file, 180);
+        onChange({
+          svg: svgValue || '',
+          fav32: fav32Url,
+          fav192: fav192Url,
+          fav512: fav512Url,
+          favApple: favAppleUrl,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to process favicon:', err);
+    } finally {
+      setProcessing(false);
+      e.target.value = '';
+    }
+  };
+
+  const preview = fav32 || fav192 || fav512 || '/favicon-32x32.png';
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16 bg-black/90 border border-[#D4AF37]/30 p-2 flex items-center justify-center shrink-0 rounded shadow-inner">
+          <img src={preview} alt="Favicon" className="w-8 h-8 object-contain" />
+        </div>
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <label className="cursor-pointer px-3.5 py-1.5 bg-white/10 hover:bg-[#D4AF37] hover:text-black text-[10px] uppercase tracking-widest transition-colors flex items-center gap-1.5 text-white/90 rounded border border-white/10">
+              {processing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5" />}
+              <span>{processing ? 'Processing...' : 'Upload New Favicon'}</span>
+              <input type="file" accept="image/svg+xml,image/png,image/jpeg" onChange={handleFaviconFile} className="hidden" disabled={processing} />
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                onChange({
+                  svg: '',
+                  fav32: '/favicon-32x32.png',
+                  fav192: '/favicon-192x192.png',
+                  fav512: '/favicon-512x512.png',
+                  favApple: '/apple-touch-icon.png',
+                });
+              }}
+              className="px-2.5 py-1.5 text-[10px] uppercase tracking-widest text-white/60 hover:text-[#D4AF37] border border-white/10 rounded transition-colors"
+            >
+              Default Brand Favicon
+            </button>
+          </div>
+          <p className="text-[10px] text-white/40 tracking-wider">
+            Automatically formats 32x32, 192x192, 512x512, and Apple Touch Icon for Google Search and all browser tabs.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const ImageUpload = ({ value, onChange, label }: { value: string; onChange: (val: string) => void; label?: string }) => {
   const [uploading, setUploading] = useState(false);
