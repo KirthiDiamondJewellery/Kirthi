@@ -5,7 +5,8 @@
 FROM node:20.10-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --no-audit --no-fund
+ENV PUPPETEER_SKIP_DOWNLOAD=1
+RUN npm install --no-audit --no-fund
 COPY . .
 RUN npm run build
 
