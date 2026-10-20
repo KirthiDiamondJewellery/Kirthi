@@ -1,38 +1,74 @@
-import imageCompression from "browser-image-compression";
+// Bulletproof, cross-platform client-side image compression & upload
+export const compressImageToDataUrl = (file: File, maxDim = 1200, quality = 0.85): Promise<string> => {
+  if (file.type === "image/svg+xml" || file.size < 40000) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          return resolve(e.target?.result as string);
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Try webp first, fallback to jpeg
+        try {
+          const webpData = canvas.toDataURL("image/webp", quality);
+          if (webpData && webpData.startsWith("data:image/webp")) {
+            return resolve(webpData);
+          }
+        } catch (err) {}
+
+        const jpegData = canvas.toDataURL("image/jpeg", quality);
+        resolve(jpegData);
+      };
+      img.onerror = () => {
+        resolve(e.target?.result as string);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => {
+      resolve("");
+    };
+    reader.readAsDataURL(file);
+  });
+};
 
 export const compressImage = async (file: File): Promise<File> => {
-  if (file.type === "image/svg+xml" || file.type === "image/gif") {
-    return file;
-  }
-  
-  const options = {
-    maxSizeMB: 0.8,
-    maxWidthOrHeight: 1200,
-    useWebWorker: true,
-    fileType: file.type === "image/png" ? "image/png" : "image/webp"
-  };
-  
-  try {
-    const compressedFile = await imageCompression(file, options);
-    return compressedFile;
-  } catch (error) {
-    console.error("Compression error:", error);
-    return file;
-  }
+  return file;
 };
 
 export const uploadImage = async (file: File): Promise<string> => {
-  let finalFile = file;
-  try {
-    finalFile = await compressImage(file);
-  } catch (e) {
-    console.warn("Compression warning, using original file", e);
-  }
+  // 1. First generate compressed data URL (guaranteed fallback)
+  const dataUrl = await compressImageToDataUrl(file);
 
-  // 1. Try server-side persistent upload (/api/upload)
+  // 2. Try server-side persistent upload (/api/upload)
   try {
     const bodyFormData = new FormData();
-    bodyFormData.append("file", finalFile);
+    bodyFormData.append("file", file);
     const res = await fetch("/api/upload", {
       method: "POST",
       body: bodyFormData,
@@ -44,20 +80,9 @@ export const uploadImage = async (file: File): Promise<string> => {
       }
     }
   } catch (err) {
-    console.warn("Server upload attempt failed, falling back to base64 DataURL:", err);
+    console.warn("Server upload endpoint unavailable, using compressed data URL:", err);
   }
 
-  // 2. Fallback to compressed base64 data URL
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-      } else {
-        reject(new Error("Failed to read file as data URL"));
-      }
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(finalFile);
-  });
+  // Fallback directly to compressed data URL
+  return dataUrl;
 };

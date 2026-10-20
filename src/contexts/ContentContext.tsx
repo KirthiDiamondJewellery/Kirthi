@@ -386,6 +386,19 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       if (isMounted) setLoading(false);
     }, 5000);
 
+    // Initial load from Cloud SQL (PostgreSQL)
+    fetch("/api/db/content")
+      .then(res => res.ok ? res.json() : null)
+      .then(sqlData => {
+        if (sqlData && isMounted) {
+          currentData = { ...currentData, ...sqlData };
+          setContent({ ...currentData });
+          setLoading(false);
+          clearTimeout(timeout);
+        }
+      })
+      .catch(() => {});
+
     const listCollections = ['blogPosts', 'pageVideos', 'shopProducts', 'heritageItems', 'methodologySteps', 'brideGallery', 'journalTrends', 'faqs', 'homeFAQs'];
     let loadedCount = 0;
     const totalToLoad = 1 + listCollections.length;
@@ -564,6 +577,17 @@ export function ContentProvider({ children }: { children: ReactNode }) {
             }
           }
         });
+      }
+
+      // 1. Sync to Cloud SQL (PostgreSQL)
+      try {
+        await fetch("/api/db/content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newContent),
+        });
+      } catch (sqlErr) {
+        console.warn("Could not sync to Cloud SQL:", sqlErr);
       }
 
       await setDoc(doc(db, "site_content", "global"), globalData);
