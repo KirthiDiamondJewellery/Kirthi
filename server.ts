@@ -1,3 +1,4 @@
+import { fetchFullContentFromSql, saveGlobalContentToSql, saveBlogPostToSql, getPgPool } from "./src/db/queries";
 import multer from "multer";
 import sharp from "sharp";
 import express from "express";
@@ -101,6 +102,38 @@ const PORT = Number(process.env.PORT) || 3000;
     helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false, crossOriginResourcePolicy: false, xFrameOptions: false, crossOriginOpenerPolicy: false })
   );
 
+
+  
+  // Cloud SQL Relational Database APIs
+  app.get("/api/db/content", async (req, res) => {
+    try {
+      const data = await fetchFullContentFromSql();
+      res.json(data);
+    } catch (err: any) {
+      console.error("Error fetching content from Cloud SQL:", err);
+      res.status(500).json({ error: "Failed to fetch content from Cloud SQL" });
+    }
+  });
+
+  app.post("/api/db/content", async (req, res) => {
+    try {
+      const result = await saveGlobalContentToSql(req.body);
+      res.json(result);
+    } catch (err: any) {
+      console.error("Error saving content to Cloud SQL:", err);
+      res.status(500).json({ error: "Failed to save content to Cloud SQL" });
+    }
+  });
+
+  app.post("/api/db/posts", async (req, res) => {
+    try {
+      const result = await saveBlogPostToSql(req.body);
+      res.json(result);
+    } catch (err: any) {
+      console.error("Error saving post to Cloud SQL:", err);
+      res.status(500).json({ error: "Failed to save post to Cloud SQL" });
+    }
+  });
 
   app.post("/api/create-order",
  async (req, res) => {
@@ -1478,11 +1511,34 @@ ${JSON.stringify(calicutSchema, null, 2)}
   app.get('/projects/*', (req, res) => res.redirect(301, '/heritage'));
   app.get('/post/*', (req, res) => res.redirect(301, '/journal'));
 
-  // Real-time branding synchronization from Firestore 'site_content/global'
+  // Cached branding data from Firestore 'site_content/global'
   let globalBrandingData: any = null;
-  if (db) {
-    try {
-      db.collection("site_content").doc("global").onSnapshot((docSnap: any) => {
+  let lastBrandingFetch = 0;
+  async function getBrandingData() {
+    const now = Date.now();
+    if (globalBrandingData && (now - lastBrandingFetch < 30000)) {
+      return globalBrandingData;
+    }
+    if (db) {
+      try {
+        try {
+          const pool = getPgPool();
+          const sqlRes = await pool.query("SELECT data FROM site_global WHERE id = 'global'");
+          if (sqlRes.rows.length > 0 && sqlRes.rows[0].data) {
+            const data = sqlRes.rows[0].data;
+            globalBrandingData = {
+              logoUrl: data.logoUrl || null,
+              faviconSvg: data.customFaviconSvg || null,
+              fav32: data.favicon_32 || null,
+              fav180: data.favicon_180 || data.favicon_apple || null,
+              fav192: data.favicon_192 || null,
+              fav512: data.favicon_512 || null
+            };
+            lastBrandingFetch = now;
+            return globalBrandingData;
+          }
+        } catch (e) {}
+        const docSnap = await db.collection("site_content").doc("global").get();
         if (docSnap && docSnap.exists) {
           const data = typeof docSnap.data === "function" ? docSnap.data() : docSnap.data;
           if (data) {
@@ -1494,23 +1550,24 @@ ${JSON.stringify(calicutSchema, null, 2)}
               fav192: data.favicon_192 || null,
               fav512: data.favicon_512 || null
             };
+            lastBrandingFetch = now;
           }
         }
-      }, (err: any) => {
-        console.error("Error in real-time branding snapshot:", err);
-      });
-    } catch (e) {
-      console.error("Error setting up Firestore snapshot inside server:", e);
+      } catch (e) {
+        // Safe fallback
+      }
     }
+    return globalBrandingData;
   }
 
-  app.get("/logo.svg", (req, res, next) => {
+  app.get("/logo.svg", async (req, res, next) => {
     res.setHeader("Content-Type", "image/svg+xml");
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
-    if (globalBrandingData && globalBrandingData.faviconSvg) {
-      return res.send(globalBrandingData.faviconSvg);
+    const branding = await getBrandingData();
+    if (branding && branding.faviconSvg) {
+      return res.send(branding.faviconSvg);
     }
     const localSvg = path.join(process.cwd(), "public", "logo.svg");
     if (fs.existsSync(localSvg)) {
@@ -1519,14 +1576,15 @@ ${JSON.stringify(calicutSchema, null, 2)}
     next();
   });
 
-  app.get("/logo.png", (req, res, next) => {
+  app.get("/logo.png", async (req, res, next) => {
     res.setHeader("Content-Type", "image/png");
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
-    if (globalBrandingData && globalBrandingData.fav512) {
+    const branding = await getBrandingData();
+    if (branding && branding.fav512) {
       try {
-        const base64Data = globalBrandingData.fav512.split(",")[1] || globalBrandingData.fav512;
+        const base64Data = branding.fav512.split(",")[1] || branding.fav512;
         const imgBuffer = Buffer.from(base64Data, "base64");
         return res.send(imgBuffer);
       } catch (e) {

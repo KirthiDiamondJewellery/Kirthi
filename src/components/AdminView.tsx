@@ -1056,18 +1056,27 @@ export const ImageUpload = ({ value, onChange, label }: { value: string; onChang
     setPreviewErr(false);
     try {
       const url = await uploadImage(file);
-      onChange(url);
-    } catch (err) {
+      if (url) {
+        onChange(url);
+      }
+    } catch (err: any) {
       console.error("Upload failed", err);
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') onChange(reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') onChange(reader.result);
+        };
+        reader.readAsDataURL(file);
+      } catch (innerErr) {
+        alert("Failed to read image file: " + (err?.message || "Unknown error"));
+      }
     } finally {
       setUploading(false);
+      e.target.value = '';
     }
   };
+
+  const isLogoField = label?.toLowerCase().includes("logo") || !label;
 
   return (
     <div className="space-y-3">
@@ -1091,7 +1100,7 @@ export const ImageUpload = ({ value, onChange, label }: { value: string; onChang
           </div>
         ) : (
           <div className="w-24 h-24 bg-white/5 border border-dashed border-white/20 flex flex-col items-center justify-center text-white/40 text-[10px] uppercase tracking-wider shrink-0 rounded p-1 text-center">
-            {previewErr ? "Invalid Img" : "No Logo"}
+            {previewErr ? "Invalid Img" : isLogoField ? "No Logo" : "No Image"}
           </div>
         )}
         <div className="flex-1 w-full space-y-2">
@@ -1099,83 +1108,34 @@ export const ImageUpload = ({ value, onChange, label }: { value: string; onChang
             type="text"
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Image URL (/uploads/... or data:image/...)"
+            placeholder="Image URL or data:image/..."
             className="w-full bg-black/60 border border-white/10 p-2.5 text-xs text-white focus:border-[#D4AF37] outline-none rounded"
           />
           <div className="flex items-center gap-2 flex-wrap">
             <label className="cursor-pointer px-3.5 py-1.5 bg-white/10 hover:bg-[#D4AF37] hover:text-black text-[10px] uppercase tracking-widest transition-colors flex items-center gap-1.5 text-white/90 rounded border border-white/10">
-              <span>{uploading ? 'Uploading...' : 'Upload Image'}</span>
+              {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5" />}
+              <span>{uploading ? 'Processing Image...' : 'Upload Image'}</span>
               <input type="file" accept="image/*" onChange={handleFile} className="hidden" disabled={uploading} />
             </label>
-            <button
-              type="button"
-              onClick={() => onChange('/logo.svg')}
-              className="px-2.5 py-1.5 text-[10px] uppercase tracking-widest text-white/60 hover:text-[#D4AF37] border border-white/10 rounded transition-colors"
-            >
-              Default SVG
-            </button>
+            {isLogoField && (
+              <button
+                type="button"
+                onClick={() => onChange('/logo.png')}
+                className="px-2.5 py-1.5 text-[10px] uppercase tracking-widest text-white/60 hover:text-[#D4AF37] border border-white/10 rounded transition-colors"
+              >
+                Official Master Logo
+              </button>
+            )}
             {value && (
               <button
                 type="button"
                 onClick={() => onChange('')}
-                className="px-2 py-1.5 text-[10px] uppercase tracking-widest text-red-400/80 hover:text-red-400 transition-colors"
+                className="px-2.5 py-1.5 text-[10px] uppercase tracking-widest text-red-400/70 hover:text-red-400 border border-red-500/20 rounded transition-colors"
               >
                 Clear
               </button>
             )}
           </div>
-          {value && value.startsWith('/uploads/') && (
-            <p className="text-[10px] text-emerald-400/80 tracking-wider">✓ Logo stored on server network</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export const FaviconUpload = ({ svgValue, fav32, fav192, fav512, favApple, onChange }: any) => {
-  return (
-    <div className="space-y-4 bg-black/40 border border-white/10 p-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <span className="text-[10px] uppercase tracking-wider text-white/50 block">SVG Favicon</span>
-          <input
-            type="text"
-            value={svgValue || ''}
-            onChange={(e) => onChange({ svg: e.target.value, fav32, fav192, fav512, favApple })}
-            placeholder="/favicon.svg"
-            className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white"
-          />
-        </div>
-        <div className="space-y-1">
-          <span className="text-[10px] uppercase tracking-wider text-white/50 block">32x32 Favicon</span>
-          <input
-            type="text"
-            value={fav32 || ''}
-            onChange={(e) => onChange({ svg: svgValue, fav32: e.target.value, fav192, fav512, favApple })}
-            placeholder="/favicon-32x32.png"
-            className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white"
-          />
-        </div>
-        <div className="space-y-1">
-          <span className="text-[10px] uppercase tracking-wider text-white/50 block">192x192 Favicon</span>
-          <input
-            type="text"
-            value={fav192 || ''}
-            onChange={(e) => onChange({ svg: svgValue, fav32, fav192, fav512: favApple, favApple })}
-            placeholder="/favicon.png"
-            className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white"
-          />
-        </div>
-        <div className="space-y-1">
-          <span className="text-[10px] uppercase tracking-wider text-white/50 block">Apple Touch Icon</span>
-          <input
-            type="text"
-            value={favApple || ''}
-            onChange={(e) => onChange({ svg: svgValue, fav32, fav192, fav512, favApple: e.target.value })}
-            placeholder="/apple-touch-icon.png"
-            className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white"
-          />
         </div>
       </div>
     </div>
@@ -1291,6 +1251,58 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
                           </div>
                         );
                       }
+                      if (type === 'imageGallery') {
+                        const gallery = Array.isArray(val) ? val : [];
+                        return (
+                          <div key={field} className="md:col-span-2 space-y-3 bg-white/[0.02] border border-white/10 p-3 rounded">
+                            <label className="text-[10px] uppercase tracking-wider text-[#D4AF37] block">
+                              {field} (Image Gallery - {gallery.length} images)
+                            </label>
+                            {gallery.length > 0 && (
+                              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                                {gallery.map((imgUrl: string, imgIdx: number) => (
+                                  <div key={imgIdx} className="relative aspect-square bg-black border border-white/20 rounded overflow-hidden group">
+                                    <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newGallery = gallery.filter((_: any, i: number) => i !== imgIdx);
+                                        handleUpdateItem(idx, field, newGallery);
+                                      }}
+                                      className="absolute inset-0 bg-red-950/80 text-red-300 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs transition-opacity"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <label className="cursor-pointer px-3 py-1.5 bg-white/10 hover:bg-[#D4AF37] hover:text-black text-[10px] uppercase tracking-widest text-white/90 rounded border border-white/10 flex items-center gap-1.5 transition-colors">
+                                <Plus size={12} />
+                                <span>Add Image(s) to Gallery</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={async (e) => {
+                                    const files = Array.from(e.target.files || []);
+                                    if (!files.length) return;
+                                    const uploadedUrls: string[] = [];
+                                    for (const f of files) {
+                                      const u = await uploadImage(f);
+                                      if (u) uploadedUrls.push(u);
+                                    }
+                                    handleUpdateItem(idx, field, [...gallery, ...uploadedUrls]);
+                                    e.target.value = '';
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        );
+                      }
                       if (type === 'number') {
                         return (
                           <div key={field} className="space-y-1">
@@ -1383,10 +1395,33 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
       const existingIds = new Set(snap.docs.map(d => d.id));
       const incomingIds = new Set(newItems.map(it => it.id).filter(Boolean));
 
+      const cleanDoc = (obj: any): any => {
+        if (Array.isArray(obj)) return obj.map(cleanDoc);
+        if (obj && typeof obj === "object") {
+          const cleaned: any = {};
+          for (const k of Object.keys(obj)) {
+            if (obj[k] !== undefined) {
+              cleaned[k] = cleanDoc(obj[k]);
+            }
+          }
+          return cleaned;
+        }
+        return obj;
+      };
+
       // Save all updated/new items directly
       for (const item of newItems) {
         const id = item.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-        await setDoc(doc(db, collectionName, id), { ...item, id }, { merge: true });
+        const cleaned = cleanDoc({ ...item, id });
+        await setDoc(doc(db, collectionName, id), cleaned, { merge: true });
+        // Sync to Cloud SQL (PostgreSQL)
+        if (collectionName.includes("blogPosts")) {
+          fetch("/api/db/posts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cleaned),
+          }).catch(() => {});
+        }
       }
 
       // Delete items that were removed
