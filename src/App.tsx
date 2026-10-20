@@ -38,6 +38,7 @@ import AdminView from "./components/AdminView";
 import PageView from "./components/PageView";
 import BoutiqueView from "./components/BoutiqueView";
 import StoreLocatorView from "./components/StoreLocatorView";
+import BoutiqueLocalView from "./components/BoutiqueLocalView";
 
 // Memoized section rendering components to prevent unnecessary re-renders
 const MemoizedLandingView = LandingView;
@@ -395,6 +396,9 @@ export default function App() {
 
   const { content, loading } = useContent();
   const [logoLoaded, setLogoLoaded] = useState(false);
+  useEffect(() => {
+    setLogoLoaded(false);
+  }, [content?.logoUrl]);
   const [boutiqueId, setBoutiqueId] = useState<"kochi" | "calicut" | null>(null);
 
   const triggerHaptic = useCallback((pattern: number | number[] = 50) => {
@@ -1054,27 +1058,32 @@ export default function App() {
           animate={{ y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           onClick={(e) => { e.preventDefault(); handleGoHome(); }}
-          className="flex flex-col items-center cursor-pointer pointer-events-auto justify-center w-1/3"
+          className="flex flex-col items-center cursor-pointer pointer-events-auto justify-center w-1/3 group"
         >
-          {content?.logoUrl ? (
-            <div className="relative flex items-center justify-center">
-              {!logoLoaded && (
-                <div className="absolute inset-x-[-20%] inset-y-[-10%] bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse blur-sm" />
-              )}
-              <img
-                fetchPriority="high"
-                src={content.logoUrl || undefined}
-                alt="Kirthi Diamonds"
-                width="180"
-                height="48"
-                onLoad={() => setLogoLoaded(true)}
-                className={`h-8 sm:h-10 md:h-12 w-auto filter brightness-125 drop-shadow-lg object-contain transition-opacity duration-300 ${logoLoaded ? 'opacity-100' : 'opacity-0'}`}
-              />
-            </div>
-          ) : (
-            <div className="h-8 sm:h-10 md:h-12 w-32 md:w-48 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse blur-sm" />
-          )}
-          <div className="hidden md:block">
+          <div className="relative flex items-center justify-center">
+            <img
+              key={content?.logoUrl || '/logo.png'}
+              fetchPriority="high"
+              src={content?.logoUrl ? (content.logoUrl.includes('?') ? content.logoUrl : `${content.logoUrl}?v=brand-v3`) : '/logo.png?v=brand-v3'}
+              alt="Kirthi Diamonds"
+              width="180"
+              height="60"
+              ref={(img) => {
+                if (img && img.complete) {
+                  setLogoLoaded(true);
+                }
+              }}
+              onLoad={() => setLogoLoaded(true)}
+              onError={(e) => {
+                setLogoLoaded(true);
+                if (!e.currentTarget.src.includes('/logo.png')) {
+                  e.currentTarget.src = '/logo.png?v=brand-v3';
+                }
+              }}
+              className="h-10 sm:h-12 md:h-14 w-auto object-contain transition-opacity duration-300"
+            />
+          </div>
+          <div className="hidden md:block mt-1">
             <span className="text-sm font-light uppercase tracking-[0.4em] text-center whitespace-nowrap">
               Kirthi Diamonds
             </span>
@@ -1580,16 +1589,19 @@ export default function App() {
                   </div>
 
                   <div className="pt-8">
-                    {content?.logoUrl && (
-                      <img
-                        loading="lazy"
-                        src={content.logoUrl || undefined}
-                        width="150"
-                        height="80"
-                        className="h-16 md:h-20 w-auto grayscale opacity-40 mb-6 md:mb-8 object-contain"
-                        alt="Kirthi Diamonds Seal"
-                      />
-                    )}
+                    <img
+                      loading="lazy"
+                      src={content?.logoUrl || "/logo.svg"}
+                      width="150"
+                      height="80"
+                      onError={(e) => {
+                        if (!e.currentTarget.src.endsWith('/logo.svg')) {
+                          e.currentTarget.src = '/logo.svg';
+                        }
+                      }}
+                      className="h-16 md:h-20 w-auto opacity-70 mb-6 md:mb-8 object-contain"
+                      alt="Kirthi Diamonds Seal"
+                    />
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 opacity-40">
                       <a
                         href="/terms"

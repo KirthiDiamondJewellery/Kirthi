@@ -12,7 +12,7 @@ export interface CartItem {
   selectedSize?: string;
 }
 
-export type ViewMode = 'app' | 'admin' | 'page' | 'terms' | 'boutique' | 'locator';
+export type ViewMode = 'app' | 'admin' | 'page' | 'terms' | 'boutique' | 'locator' | 'local';
 
 interface AppState {
   theme: 'light' | 'dark';

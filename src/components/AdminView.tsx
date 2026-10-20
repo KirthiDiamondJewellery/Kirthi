@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TurndownService from 'turndown';
 import { gfm } from 'turndown-plugin-gfm';
 import { signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
@@ -14,1106 +14,9 @@ import AdminBridalSubmissions from './AdminBridalSubmissions';
 import AdminConsultations from './AdminConsultations';
 import AdminAccessControl from './AdminAccessControl';
 import AdminSEO from './AdminSEO';
-import { AdminVideos } from './AdminVideos';
+import { AdminVideos } from "./AdminVideos";
 
-export const compressImage = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = event => {
-      const dataUrl = event.target?.result as string;
-      
-      // If SVG or GIF, avoid canvas to preserve vectors/animations
-      if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
-        resolve(dataUrl);
-        return;
-      }
-
-      const img = new Image();
-      img.src = dataUrl;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1200;
-        const MAX_HEIGHT = 1200;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-        
-        const isPng = file.type === 'image/png';
-        const format = isPng ? 'image/png' : 'image/webp';
-        const quality = 0.95;
-        
-        const tryCompress = (w: number, h: number, q: number) => {
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx?.clearRect(0, 0, w, h);
-          ctx?.drawImage(img, 0, 0, w, h);
-          return canvas.toDataURL(format, q);
-        };
-        
-        const base64 = tryCompress(width, height, quality);
-        
-        // Remove aggressive downscaling since this goes to Firebase Storage
-        resolve(base64);
-      }
-    };
-    reader.onerror = error => reject(error);
-  });
-};
-
-
-export const uploadImage = async (file: File): Promise<string> => {
-  let finalFile = file;
-  if (file.type !== 'image/svg+xml' && file.type !== 'image/gif') {
-    try {
-      const dataUrl = await compressImage(file);
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      finalFile = new File([blob], file.name, { type: file.type });
-    } catch (e) {
-      console.warn("Failed to compress image locally", e);
-    }
-  }
-
-  const storageRef = ref(storage, `uploads/${Date.now()}_${finalFile.name}`);
-  const snapshot = await uploadBytes(storageRef, finalFile);
-  const downloadURL = await getDownloadURL(snapshot.ref);
-  return downloadURL;
-};
-
-function ImageUpload({ value, onChange }: { value: string, onChange: (val: string) => void }) {
-  const [uploading, setUploading] = useState(false);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const url = await uploadImage(file);
-      onChange(url);
-    } catch(err: any) {
-      alert(err.message || "Error processing image.");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  return (
-    <div className="flex flex-col space-y-6 md:space-y-4 max-w-sm">
-      <div className={`relative w-full aspect-square md:aspect-[4/3] border border-white/10 flex items-center justify-center overflow-hidden transition-all duration-300 ${uploading ? 'opacity-50' : ''} ${value ? 'bg-black/40' : 'bg-black/20'}`}>
-        {value ? (
-          <>
-            <img src={value || undefined} alt="Uploaded Image" className="w-full h-full object-cover" />
-            <div className="absolute top-2 right-2 bg-black/60 px-2 py-3 md:py-1 text-xs md:text-[10px] uppercase tracking-widest text-[#D4AF37] backdrop-blur-md">
-              Current
-            </div>
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center text-white/30 space-y-3">
-             <ImageIcon size={32} strokeWidth={1} />
-             <span className="text-xs md:text-[10px] uppercase tracking-widest">No Image</span>
-          </div>
-        )}
-        
-        {uploading && (
-           <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10 space-y-3">
-             <Loader2 size={24} className="animate-spin text-[#D4AF37]" />
-             <span className="text-xs md:text-[10px] uppercase tracking-widest text-[#D4AF37]">Processing...</span>
-           </div>
-        )}
-      </div>
-
-      <div className="flex items-center space-x-4 md:space-x-6">
-        <label className="flex-1 flex justify-center items-center space-x-2 text-xs md:text-[10px] uppercase tracking-[0.2em] cursor-pointer hover:bg-[#D4AF37] hover:text-black text-[#D4AF37] transition-all border border-[#D4AF37]/50 px-4 py-3">
-          <ImageIcon size={14} />
-          <span>{value ? 'Replace Image' : 'Upload Image'}</span>
-          <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
-        </label>
-      </div>
-
-      <div className="flex items-end space-x-2 border-t border-white/5 pt-4">
-        <div className="flex-1 space-y-2">
-          <span className="text-xs md:text-[10px] opacity-30 block uppercase tracking-widest">Or paste URL</span>
-          <input type="text" value={value} onChange={e => !uploading && onChange(e.target.value)} disabled={uploading} className="bg-transparent border-b border-white/20 text-xs w-full focus:border-[#D4AF37] transition-colors outline-none placeholder:opacity-20 p-2" placeholder="https://" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function sanitizeAndNormalizeSVG(svgContent: string): string {
-  try {
-    let cleanedText = svgContent;
-    
-    // Remove XML declaration or other header wrappers
-    cleanedText = cleanedText.replace(/^[\s\S]*?(<svg)/i, '$1');
-    
-    // Strip external CSS imports/links that trigger security blocks in canvas rendering
-    cleanedText = cleanedText.replace(/@import\s+url\([^)]+\);?/gi, '');
-    cleanedText = cleanedText.replace(/<link\s+[^>]*href=["'][^"']*["'][^>]*>/gi, '');
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(cleanedText, "image/svg+xml");
-    
-    const parserError = doc.querySelector("parsererror");
-    if (parserError) {
-      console.warn("DOMParser error for SVG, returning cleaned string directly:", parserError.textContent);
-      return cleanedText;
-    }
-    
-    const svgEl = doc.querySelector("svg");
-    if (!svgEl) {
-      return cleanedText;
-    }
-
-    // 1. Ensure xmlns is present
-    if (!svgEl.getAttribute("xmlns")) {
-      svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    }
-
-    // 2. Read attributes
-    const widthAttr = svgEl.getAttribute("width");
-    const heightAttr = svgEl.getAttribute("height");
-    const viewBoxAttr = svgEl.getAttribute("viewBox");
-
-    // Clean up width/height (remove "px", "%", etc.)
-    const parseDim = (val: string | null): number | null => {
-      if (!val) return null;
-      if (val.includes('%')) return null; // percent sizes won't help canvas
-      const num = parseFloat(val);
-      return isNaN(num) ? null : num;
-    };
-
-    let width = parseDim(widthAttr);
-    let height = parseDim(heightAttr);
-
-    let vbX = 0, vbY = 0, vbW = 0, vbH = 0;
-    let hasViewBox = false;
-    if (viewBoxAttr) {
-      const parts = viewBoxAttr.trim().split(/[\s,]+/);
-      if (parts.length === 4) {
-        vbX = parseFloat(parts[0]);
-        vbY = parseFloat(parts[1]);
-        vbW = parseFloat(parts[2]);
-        vbH = parseFloat(parts[3]);
-        if (!isNaN(vbX) && !isNaN(vbY) && !isNaN(vbW) && !isNaN(vbH)) {
-          hasViewBox = true;
-        }
-      }
-    }
-
-    // Normalize width, height, and viewBox
-    if (!width && !height && !hasViewBox) {
-      width = 512;
-      height = 512;
-      svgEl.setAttribute("width", "512");
-      svgEl.setAttribute("height", "512");
-      svgEl.setAttribute("viewBox", "0 0 512 512");
-    } else if (hasViewBox && (!width || !height)) {
-      svgEl.setAttribute("width", vbW.toString());
-      svgEl.setAttribute("height", vbH.toString());
-    } else if ((width && height) && !hasViewBox) {
-      svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    } else if (hasViewBox && width && height) {
-      svgEl.setAttribute("width", width.toString());
-      svgEl.setAttribute("height", height.toString());
-    }
-
-    const serializer = new XMLSerializer();
-    return serializer.serializeToString(doc);
-  } catch (e) {
-    console.warn("SVG normalization failed:", e);
-    return svgContent;
-  }
-}
-
-function FaviconUpload({ 
-  svgValue, 
-  fav32,
-  fav192,
-  fav512,
-  favApple,
-  onChange 
-}: { 
-  svgValue: string; 
-  fav32: string;
-  fav192: string;
-  fav512: string;
-  favApple: string;
-  onChange: (vals: { svg: string; fav32: string; fav192: string; fav512: string; favApple: string }) => void 
-}) {
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    if (file.type !== 'image/svg+xml' && !file.name.endsWith('.svg')) {
-      setError("Please upload a valid SVG file (.svg). Only vector format is eligible for perfect responsive favicon generation.");
-      return;
-    }
-    
-    setProcessing(true);
-    setError(null);
-    setInfo(null);
-    
-    try {
-      const reader = new FileReader();
-      reader.readAsText(file);
-      reader.onerror = () => {
-        setError("Could not read uploaded SVG file.");
-        setProcessing(false);
-      };
-      reader.onload = async (event) => {
-        const svgContent = event.target?.result as string;
-        
-        if (!svgContent.trim().includes('<svg')) {
-          setError("Invalid SVG format. The uploaded file must contain an <svg> tag.");
-          setProcessing(false);
-          return;
-        }
-        
-        const normalizedSvg = sanitizeAndNormalizeSVG(svgContent);
-        
-        // Convert to Unicode-safe Base64 data URL to avoid iframe sandboxing/origin restrictions
-        let base64Svg: string;
-        try {
-          base64Svg = btoa(unescape(encodeURIComponent(normalizedSvg)));
-        } catch (e) {
-          base64Svg = btoa(normalizedSvg);
-        }
-        const dataUrl = `data:image/svg+xml;base64,${base64Svg}`;
-        
-        const saveWithFallback = (svgStr: string, warningMsg: string) => {
-          onChange({
-            svg: svgStr,
-            fav32: '',
-            fav192: '',
-            fav512: '',
-            favApple: ''
-          });
-          setInfo(warningMsg);
-          setProcessing(false);
-        };
-
-        const tryLoadAndRasterize = (srcUrl: string, useFallbackOnFailure: boolean) => {
-          const img = new Image();
-          img.src = srcUrl;
-          
-          img.onload = () => {
-            try {
-              const sizes = {
-                fav32: 32,
-                fav180: 180,
-                fav192: 192,
-                fav512: 512
-              };
-              
-              const results = {
-                svg: normalizedSvg,
-                fav32: '',
-                fav192: '',
-                fav512: '',
-                favApple: ''
-              };
-              
-              const canvas32 = document.createElement('canvas');
-              canvas32.width = sizes.fav32;
-              canvas32.height = sizes.fav32;
-              const ctx32 = canvas32.getContext('2d');
-              if (ctx32) {
-                ctx32.clearRect(0, 0, 32, 32);
-                ctx32.drawImage(img, 0, 0, 32, 32);
-                results.fav32 = canvas32.toDataURL('image/png');
-              }
-              
-              const canvas192 = document.createElement('canvas');
-              canvas192.width = sizes.fav192;
-              canvas192.height = sizes.fav192;
-              const ctx192 = canvas192.getContext('2d');
-              if (ctx192) {
-                ctx192.clearRect(0, 0, 192, 192);
-                ctx192.drawImage(img, 0, 0, 192, 192);
-                results.fav192 = canvas192.toDataURL('image/png');
-              }
-              
-              const canvas512 = document.createElement('canvas');
-              canvas512.width = sizes.fav512;
-              canvas512.height = sizes.fav512;
-              const ctx512 = canvas512.getContext('2d');
-              if (ctx512) {
-                ctx512.clearRect(0, 0, 512, 512);
-                ctx512.drawImage(img, 0, 0, 512, 512);
-                results.fav512 = canvas512.toDataURL('image/png');
-              }
-              
-              const canvasApple = document.createElement('canvas');
-              canvasApple.width = sizes.fav180;
-              canvasApple.height = sizes.fav180;
-              const ctxApple = canvasApple.getContext('2d');
-              if (ctxApple) {
-                ctxApple.clearRect(0, 0, 180, 180);
-                ctxApple.drawImage(img, 0, 0, 180, 180);
-                results.favApple = canvasApple.toDataURL('image/png');
-              }
-              
-              if (srcUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(srcUrl);
-              }
-              
-              onChange(results);
-              setInfo("Vector and responsive favicon sizes compiled successfully!");
-              setProcessing(false);
-            } catch (err: any) {
-              console.error("Rasterization failed:", err);
-              if (srcUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(srcUrl);
-              }
-              saveWithFallback(normalizedSvg, "SVG parsed but canvas rasterization failed. Vector SVG favicon is fully loaded, but responsive PNG copies were skipped.");
-            }
-          };
-          
-          img.onerror = (err) => {
-            console.warn(`Failed to load SVG source image (${srcUrl.startsWith('data:') ? 'data url' : 'blob url'}):`, err);
-            if (srcUrl.startsWith('blob:')) {
-              URL.revokeObjectURL(srcUrl);
-            }
-            
-            if (useFallbackOnFailure) {
-              // Try standard Blob URL as a secondary attempt
-              try {
-                const blob = new Blob([normalizedSvg], { type: 'image/svg+xml;charset=utf-8' });
-                const blobUrl = URL.createObjectURL(blob);
-                tryLoadAndRasterize(blobUrl, false);
-              } catch (blobErr) {
-                saveWithFallback(normalizedSvg, "SVG uploaded! Direct SVG favicon is active, but PNG rasterization was bypassed in this preview environment.");
-              }
-            } else {
-              // Gracefully fallback instead of throwing error and blocking
-              saveWithFallback(normalizedSvg, "SVG uploaded! Direct SVG favicon is active, but PNG rasterization was bypassed in this preview environment.");
-            }
-          };
-        };
-        
-        tryLoadAndRasterize(dataUrl, true);
-      };
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred during processing.");
-      setProcessing(false);
-    }
-  };
-
-  const handleReset = () => {
-    if (confirm("Are you sure you want to restore the default branded Kirthi Diamonds favicon?")) {
-      setInfo(null);
-      setError(null);
-      onChange({
-        svg: '',
-        fav32: '',
-        fav192: '',
-        fav512: '',
-        favApple: ''
-      });
-    }
-  };
-
-  return (
-    <div className="space-y-6 bg-black/30 border border-white/5 p-6 rounded-sm">
-      <div className="flex justify-between items-start">
-        <div className="space-y-1">
-          <h3 className="text-xs font-serif text-white uppercase tracking-widest">Dynamic Favicon Studio</h3>
-          <p className="text-[10px] opacity-40 uppercase tracking-widest">Supports .svg vectors for perfect scaling</p>
-        </div>
-        {(svgValue || fav32) && (
-          <button 
-            type="button" 
-            onClick={handleReset}
-            className="text-[9px] uppercase tracking-widest text-[#D4AF37]/70 hover:text-[#D4AF37] border border-[#D4AF37]/20 px-2 py-1 transition-colors"
-          >
-            Reset to Default
-          </button>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        {/* SVG Display & Upload Box */}
-        <div className="space-y-4">
-          <div className="relative aspect-square border border-white/10 flex items-center justify-center overflow-hidden bg-white/5 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:16px_16px] p-8">
-            {svgValue ? (
-              <div 
-                className="w-full h-full flex items-center justify-center [&_svg]:w-full [&_svg]:h-full [&_svg]:max-w-full [&_svg]:max-h-full"
-                dangerouslySetInnerHTML={{ __html: svgValue }}
-              />
-            ) : (
-              <img src="/favicon.svg" alt="Default Favicon Preview" className="w-1/2 h-1/2 object-contain" />
-            )}
-            
-            <div className="absolute top-2 left-2 bg-black/60 px-2 py-1 text-[8px] uppercase tracking-widest text-[#D4AF37] border border-[#D4AF37]/30">
-              {svgValue ? 'SVG Active' : 'Default Preset'}
-            </div>
-
-            {processing && (
-              <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10 space-y-3">
-                <Loader2 size={24} className="animate-spin text-[#D4AF37]" />
-                <span className="text-xs md:text-[10px] uppercase tracking-widest text-[#D4AF37]">Rendering assets...</span>
-              </div>
-            )}
-          </div>
-
-          <label className="flex justify-center items-center space-x-2 text-xs md:text-[10px] uppercase tracking-[0.2em] cursor-pointer hover:bg-[#D4AF37] hover:text-black text-[#D4AF37] transition-all border border-[#D4AF37]/50 px-4 py-3 bg-black">
-            <Plus size={14} />
-            <span>Upload SVG Favicon</span>
-            <input type="file" accept="image/svg+xml" className="hidden" onChange={handleFileChange} disabled={processing} />
-          </label>
-        </div>
-
-        {/* Resolved Resolutions Preview */}
-        <div className="space-y-4">
-          <label className="text-[10px] uppercase tracking-[0.2em] opacity-45 block">Multi-Size Outputs</label>
-          
-          <div className="space-y-3 bg-black/40 p-4 border border-white/5 rounded-sm">
-            {/* 32x32 */}
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 border border-white/10 flex items-center justify-center bg-black overflow-hidden p-1">
-                  <img src={fav32 || "/favicon-32x32.png"} alt="32x32 Favicon" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <div className="text-xs text-white/80 font-mono">favicon-32x32.png</div>
-                  <div className="text-[9px] opacity-40">Tab bar, bookmark folders</div>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono opacity-50">32 × 32</span>
-            </div>
-
-            {/* 192x192 */}
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 border border-white/10 flex items-center justify-center bg-black overflow-hidden p-1">
-                  <img src={fav192 || "/favicon.png"} alt="192x192 Favicon" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <div className="text-xs text-white/80 font-mono">favicon.png</div>
-                  <div className="text-[9px] opacity-40">Google search Symbol, PWA</div>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono opacity-50">192 × 192</span>
-            </div>
-
-            {/* Apple touch */}
-            <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 border border-white/10 flex items-center justify-center bg-black overflow-hidden p-1">
-                  <img src={favApple || "/apple-touch-icon.png"} alt="180x180 Favicon" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <div className="text-xs text-white/80 font-mono">apple-touch-icon.png</div>
-                  <div className="text-[9px] opacity-40">iOS Homescreen / Bookmarks</div>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono opacity-50">180 × 180</span>
-            </div>
-
-            {/* 512x512 */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 border border-white/10 flex items-center justify-center bg-black overflow-hidden p-1">
-                  <img src={fav512 || "/favicon-512.png"} alt="512x512 Favicon" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <div className="text-xs text-white/80 font-mono">favicon-512.png</div>
-                  <div className="text-[9px] opacity-40">PWA Splash / Large screens</div>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono opacity-50">512 × 512</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {error && (
-        <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono">
-          {error}
-        </div>
-      )}
-
-      {info && (
-        <div className="p-3 bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-mono">
-          {info}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MultiImageGallery({ images, heroImage, onChange, arMode = false }: { images: string[], heroImage: string, onChange: (images: string[], heroImage: string) => void, arMode?: boolean }) {
-  const [uploading, setUploading] = useState(false);
-
-  // Ensure heroImage is part of the gallery if it exists
-  const displayImages = [...new Set([...(heroImage ? [heroImage] : []), ...(images || [])])];
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    setUploading(true);
-    try {
-      const newImages = [...displayImages];
-      let newHero = heroImage;
-      for (let i = 0; i < files.length; i++) {
-         const url = await uploadImage(files[i]);
-         newImages.push(url);
-         if (!newHero) newHero = url; 
-      }
-      onChange(newImages, newHero);
-      
-    } catch(err: any) {
-      alert(err.message || "Error processing images.");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const removeImage = (idx: number) => {
-    const toRemove = displayImages[idx];
-    const newImages = displayImages.filter((_, i) => i !== idx);
-    let newHero = heroImage;
-    if (heroImage === toRemove) {
-      newHero = newImages[0] || '';
-    }
-    onChange(newImages, newHero);
-  };
-
-  return (
-    <div className="space-y-6 md:space-y-4">
-      {arMode && (
-        <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 p-4 text-xs text-[#D4AF37] mb-4">
-          <strong>AR Try-On Instruction:</strong> For AR Try-On to function correctly, please ensure the <strong>Hero Image</strong> is a top-down, direct view with a transparent background (.png).
-        </div>
-      )}
-      
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-2">
-         {displayImages.map((img, idx) => (
-           <div key={idx} className={`relative group transition-all duration-300 ${heroImage === img ? 'ring-2 ring-[#D4AF37] ring-offset-2 ring-offset-[#0A0A0A] shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'border border-white/10 hover:border-[#D4AF37]/50'}`}>
-             {heroImage === img && (
-               <div className="absolute -top-3 -left-3 z-10 bg-[#D4AF37] text-black text-xs md:text-[10px] font-bold uppercase tracking-widest px-3 py-3 md:py-1.5 shadow-lg flex items-center space-x-1">
-                 <Star size={10} className="fill-black" />
-                 <span>Hero</span>
-               </div>
-             )}
-             <img src={img || undefined} alt={`Gallery Image ${idx + 1}`} className="w-full h-32 object-cover bg-black/20" />
-             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-3">
-                {heroImage !== img && (
-                   <button type="button" onClick={() => onChange(displayImages, img)} className="text-xs md:text-[10px] uppercase tracking-widest bg-white/10 px-4 py-3 md:py-2 border border-white/20 hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black transition-colors w-28">Set Hero</button>
-                )}
-                <button type="button" onClick={() => removeImage(idx)} className="text-xs md:text-[10px] uppercase tracking-widest bg-red-500/10 px-4 py-3 md:py-2 border border-red-500/30 hover:bg-red-500 hover:border-red-500 text-white transition-colors w-28">Remove</button>
-             </div>
-           </div>
-         ))}
-         
-         <label className={`border border-white/10 border-dashed h-32 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 group ${uploading ? 'bg-black/40 pointer-events-none' : 'hover:border-[#D4AF37] hover:bg-[#D4AF37]/5 text-white/50 hover:text-[#D4AF37] bg-black/20'}`}>
-            {uploading ? (
-              <div className="flex flex-col items-center justify-center space-y-3">
-                <Loader2 size={24} className="animate-spin text-[#D4AF37]" />
-                <span className="text-xs md:text-[10px] uppercase tracking-widest text-[#D4AF37]">Processing...</span>
-              </div>
-            ) : (
-              <>
-                <ImageIcon size={24} className="mb-3 group-hover:scale-110 transition-transform opacity-70 group-hover:opacity-100" />
-                <span className="text-xs md:text-[10px] uppercase tracking-widest text-center px-4 font-medium">Upload Photos</span>
-              </>
-            )}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} disabled={uploading} />
-         </label>
-      </div>
-      
-      <div className="flex items-center space-x-2 pt-4 border-t border-white/5">
-         <span className="text-xs md:text-[10px] opacity-30 mt-1 block w-max uppercase tracking-widest">Add by URL: </span>
-         <input type="text" onKeyDown={(e) => {
-           if (e.key === 'Enter') {
-             e.preventDefault();
-             const val = e.currentTarget.value.trim();
-             if (val && !uploading) {
-               onChange([...displayImages, val], heroImage);
-               if (!heroImage) onChange([...displayImages, val], val);
-               e.currentTarget.value = '';
-             }
-           }
-         }} disabled={uploading} className="bg-transparent border-b border-white/20 text-xs w-full focus:border-[#D4AF37] outline-none transition-colors placeholder:opacity-30 p-2" placeholder="Paste image URL and press Enter..." />
-      </div>
-    </div>
-  );
-}
-
-function PaginatedArrayEditor({ collectionName, schema, title }: { collectionName: string, schema: any, title: string }) {
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [lastVisible, setLastVisible] = useState<any>(null);
-  const [pageTokens, setPageTokens] = useState<any[]>([null]);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [saving, setSaving] = useState(false);
-  const PAGE_SIZE = 10;
-
-  const fetchPage = async (pageIdx: number) => {
-    setLoading(true);
-    try {
-      let q;
-      if (pageTokens[pageIdx]) {
-        q = query(collection(db, collectionName), startAfter(pageTokens[pageIdx]), limit(PAGE_SIZE));
-      } else {
-        q = query(collection(db, collectionName), limit(PAGE_SIZE));
-      }
-      const snap = await getDocs(q);
-      const fetched = snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
-      setItems(fetched);
-      setLastVisible(snap.docs[snap.docs.length - 1]);
-    } catch (e) {
-      console.error(e);
-    }
-    setLoading(false);
-  };
-
-  React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchPage(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collectionName]);
-
-  const handleNext = () => {
-    if (lastVisible) {
-      const newPage = currentPage + 1;
-      const newTokens = [...pageTokens];
-      newTokens[newPage] = lastVisible;
-      setPageTokens(newTokens);
-      setCurrentPage(newPage);
-      fetchPage(newPage);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentPage > 0) {
-      const newPage = currentPage - 1;
-      setCurrentPage(newPage);
-      fetchPage(newPage);
-    }
-  };
-
-  const handleAdd = () => {
-    const newItem: any = {};
-    Object.keys(schema).forEach(key => {
-      if (key === 'id') {
-        newItem[key] = `id-${Math.random().toString(36).substr(2, 9)}`;
-      } else {
-        newItem[key] = schema[key] === 'array' ? [] : '';
-      }
-    });
-    setItems([newItem, ...items]);
-  };
-
-  const handleUpdate = (idx: number, key: string, value: any) => {
-    const newItems = [...items];
-    newItems[idx][key] = value;
-    setItems(newItems);
-  };
-
-  const handleRemove = async (idx: number) => {
-    if (!window.confirm("Delete this item?")) return;
-    const item = items[idx];
-    if (item.id) {
-      setSaving(true);
-      try {
-        await deleteDoc(doc(db, collectionName, item.id));
-      } catch (e) {
-        console.error(e);
-      }
-      setSaving(false);
-    }
-    setItems(items.filter((_, i) => i !== idx));
-  };
-
-  const saveBatch = async () => {
-    setSaving(true);
-    try {
-      const promises = items.map(item => {
-        const id = item.id || `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        return setDoc(doc(db, collectionName, id), { ...item, id });
-      });
-      await Promise.all(promises);
-      alert('Saved successfully!');
-    } catch (e) {
-      console.error(e);
-      alert('Failed to save batch');
-    }
-    setSaving(false);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center border-b border-white/10 pb-4">
-        <h1 className="text-sm uppercase tracking-[0.3em] font-light">{title} (Page {currentPage + 1})</h1>
-        <div className="flex items-center space-x-4">
-          <button type="button" onClick={saveBatch} disabled={saving} className="flex items-center space-x-2 bg-[#D4AF37] text-black hover:bg-white transition-colors text-xs uppercase tracking-widest px-4 py-2 disabled:opacity-50">
-            {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}<span>Save Changes</span>
-          </button>
-          <button type="button" onClick={handleAdd} className="flex items-center space-x-2 text-[#D4AF37] hover:text-white transition-colors text-xs md:text-[10px] uppercase tracking-widest px-3 py-3 md:py-1 border border-[#D4AF37]/50">
-            <Plus size={12} /><span>Add New</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-8">
-        {items.map((item, index) => (
-          <div key={item.id || index} className="bg-black/40 border border-white/5 p-6 space-y-6 relative group">
-            <button type="button" onClick={() => handleRemove(index)} className="absolute top-4 right-4 text-white/20 hover:text-red-400 transition-colors">
-              <Trash2 size={16} />
-            </button>
-            <div className="text-xs md:text-[10px] opacity-30 absolute top-4 left-4">ITEM (Page {currentPage + 1})</div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-              {Object.keys(schema).map(key => {
-                const hasGallery = Object.values(schema).includes('imageGallery');
-                if (key === 'image' && hasGallery) return null; // Let imageGallery handle 'image'
-                           
-                if (schema[key] === 'imageGallery') {
-                  const arMode = title.toLowerCase().includes('boutique') || title.toLowerCase().includes('shop');
-                  return (
-                    <div key={key} className="space-y-6 md:space-y-4 md:col-span-2 border border-white/5 p-4 rounded-sm bg-black/20">
-                       <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 flex justify-between">
-                         {key} (Image Gallery & Hero)
-                       </label>
-                       <MultiImageGallery 
-                          images={item[key] || []}
-                          heroImage={item.image || ''}
-                          onChange={(vals, val) => {
-                            setItems(prev => {
-                              const newItems = [...prev];
-                              newItems[index] = { ...newItems[index], [key]: vals, image: val };
-                              return newItems;
-                            });
-                          }}
-                          arMode={arMode}
-                       />
-                    </div>
-                  );
-                }
-
-                if (key === 'image' || key === 'logoUrl' || key.toLowerCase().includes('image')) {
-                  return (
-                    <div key={key} className="space-y-2 md:col-span-2">
-                       <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50">{key}</label>
-                       <ImageUpload value={item[key] || ''} onChange={(val) => handleUpdate(index, key, val)} />
-                    </div>
-                  );
-                }
-                if (key === 'id') {
-                  return null; // hide ID generator
-                }
-                if (schema[key] === 'array') { // e.g. details, angles
-                  return (
-                    <div key={key} className="space-y-2 md:col-span-2 border border-white/5 p-4 rounded-sm">
-                      <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 flex justify-between">
-                        {key} (Comma/Newline separated list)
-                      </label>
-                      <textarea 
-                        value={Array.isArray(item[key]) ? item[key].join(', ') : ''}
-                        onChange={(e) => {
-                          const arr = e.target.value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
-                          handleUpdate(index, key, arr);
-                        }}
-                        className="w-full bg-black/50 border border-white/10 p-3 text-xs font-mono focus:border-[#D4AF37] outline-none h-24"
-                      />
-                    </div>
-                  );
-                }
-                const isLongText = key === 'content' || key === 'description' || key === 'excerpt' || key === 'longDescription';
-                const insertMarkdown = (prefix: string, suffix: string = '') => {
-                   const textarea = document.getElementById(`textarea-paginated-${index}-${key}`) as HTMLTextAreaElement;
-                   if (!textarea) return;
-                   const start = textarea.selectionStart;
-                   const end = textarea.selectionEnd;
-                   const currentVal = item[key] || '';
-                   const selectedText = currentVal.substring(start, end);
-                   const replacement = prefix + selectedText + suffix;
-                   const newVal = currentVal.substring(0, start) + replacement + currentVal.substring(end);
-                   handleUpdate(index, key, newVal);
-                   setTimeout(() => {
-                      textarea.focus();
-                      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-                   }, 0);
-                };
-
-                return (
-                  <div key={key} className={`space-y-2 ${isLongText ? 'md:col-span-2' : ''}`}>
-                    <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 flex justify-between items-center">
-                       <span>{key}</span>
-                       {isLongText && (
-                         <div className="flex gap-2">
-                           <button type="button" onClick={() => insertMarkdown('## ', '')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">H2</button>
-                           <button type="button" onClick={() => insertMarkdown('### ', '')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">H3</button>
-                           <button type="button" onClick={() => insertMarkdown('**', '**')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">B</button>
-                           <button type="button" onClick={() => insertMarkdown('*', '*')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">I</button>
-                           <button type="button" onClick={() => insertMarkdown('[', '](https://)')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">Link</button>
-                           <button type="button" onClick={() => insertMarkdown('- ', '')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">List</button>
-                         </div>
-                       )}
-                    </label>
-                    {isLongText ? (
-                      <textarea 
-                        id={`textarea-paginated-${index}-${key}`}
-                        value={item[key] || ''} 
-                        onChange={e => handleUpdate(index, key, e.target.value)} 
-                        className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none h-48 font-mono text-[10px] md:text-xs" 
-                      />
-                    ) : (
-                      <input 
-                        type={schema[key] === 'number' ? 'number' : 'text'}
-                        value={item[key] || ''} 
-                        onChange={e => handleUpdate(index, key, schema[key] === 'number' ? parseFloat(e.target.value) || 0 : e.target.value)} 
-                        className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none" 
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-        {items.length === 0 && !loading && (
-           <div className="text-center py-12 border border-white/5 opacity-50 text-xs uppercase tracking-widest">No Items Found</div>
-        )}
-        {loading && (
-           <div className="flex justify-center py-12"><Loader2 className="animate-spin text-[#D4AF37]" /></div>
-        )}
-      </div>
-
-      <div className="flex justify-between items-center pt-6 border-t border-white/10">
-        <button type="button" onClick={handlePrev} disabled={currentPage === 0 || loading} className="flex items-center space-x-2 uppercase tracking-widest text-xs opacity-50 hover:opacity-100 disabled:opacity-20 transition-all">
-          <ChevronLeft size={16} /> <span>Previous Page</span>
-        </button>
-        <span className="text-[10px] opacity-40 uppercase tracking-widest">Page {currentPage + 1}</span>
-        <button type="button" onClick={handleNext} disabled={!lastVisible || loading} className="flex items-center space-x-2 uppercase tracking-widest text-xs opacity-50 hover:opacity-100 disabled:opacity-20 transition-all">
-          <span>Next Page</span> <ChevronRight size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ArrayEditor({ items, schema, onChange, title }: { items: any[], schema: any, onChange: (items: any[]) => void, title: string }) {
-  const handleAdd = () => {
-    const newItem: any = {};
-    Object.keys(schema).forEach(key => {
-      if (key === 'id') {
-        newItem[key] = `id-${Math.random().toString(36).substr(2, 9)}`;
-      } else {
-        newItem[key] = schema[key] === 'array' ? [] : '';
-      }
-    });
-    onChange([...items, newItem]);
-  };
-
-  const handleUpdate = (idx: number, key: string, value: any) => {
-    const newItems = [...items];
-    newItems[idx][key] = value;
-    onChange(newItems);
-  };
-
-  const handleRemove = (idx: number) => {
-    onChange(items.filter((_, i) => i !== idx));
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center border-b border-white/10 pb-4">
-        <h2 className="text-sm uppercase tracking-[0.3em] font-light">{title} ({items.length})</h2>
-        <button type="button" onClick={handleAdd} className="flex items-center space-x-2 text-[#D4AF37] hover:text-white transition-colors text-xs md:text-[10px] uppercase tracking-widest px-3 py-3 md:py-1 border border-[#D4AF37]/50">
-          <Plus size={12} /><span>Add New</span>
-        </button>
-      </div>
-
-      <div className="space-y-8">
-        {items.map((item, index) => (
-          <div key={index} className="bg-black/40 border border-white/5 p-6 space-y-6 relative group">
-            <button type="button" onClick={() => handleRemove(index)} className="absolute top-4 right-4 text-white/20 hover:text-red-400 transition-colors">
-              <Trash2 size={16} />
-            </button>
-            <div className="text-xs md:text-[10px] opacity-30 absolute top-4 left-4">ITEM #{index + 1}</div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-              {Object.keys(schema).map(key => {
-                const hasGallery = Object.values(schema).includes('imageGallery');
-                if (key === 'image' && hasGallery) return null; // Let imageGallery handle 'image'
-                           
-                if (schema[key] === 'imageGallery') {
-                  const arMode = title.toLowerCase().includes('boutique') || title.toLowerCase().includes('shop');
-                  return (
-                    <div key={key} className="space-y-6 md:space-y-4 md:col-span-2 border border-white/5 p-4 rounded-sm bg-black/20">
-                       <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 flex justify-between">
-                         {key} (Image Gallery & Hero)
-                       </label>
-                       <MultiImageGallery 
-                          images={item[key] || []}
-                          heroImage={item.image || ''}
-                          onChange={(vals, val) => {
-                            const newItems = [...items];
-                            newItems[index] = { ...newItems[index], [key]: vals, image: val };
-                            onChange(newItems);
-                          }}
-                          arMode={arMode}
-                       />
-                    </div>
-                  );
-                }
-
-                if (key === 'image' || key === 'logoUrl' || key.toLowerCase().includes('image')) {
-                  return (
-                    <div key={key} className="space-y-2 md:col-span-2">
-                       <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50">{key}</label>
-                       <ImageUpload value={item[key] || ''} onChange={(val) => handleUpdate(index, key, val)} />
-                    </div>
-                  );
-                }
-                if (key === 'id') {
-                  return null; // hide ID generator
-                }
-                if (schema[key] === 'array') { // e.g. details, angles
-                  return (
-                    <div key={key} className="space-y-2 md:col-span-2 border border-white/5 p-4 rounded-sm">
-                      <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 flex justify-between">
-                        {key} (Comma/Newline separated list)
-                      </label>
-                      <textarea 
-                        value={Array.isArray(item[key]) ? item[key].join(', ') : ''}
-                        onChange={(e) => {
-                          const arr = e.target.value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
-                          handleUpdate(index, key, arr);
-                        }}
-                        className="w-full bg-black/50 border border-white/10 p-3 text-xs font-mono focus:border-[#D4AF37] outline-none h-24"
-                      />
-                    </div>
-                  );
-                }
-                const isLongText = key === 'content' || key === 'description' || key === 'excerpt' || key === 'longDescription';
-                const insertMarkdown = (prefix: string, suffix: string = '') => {
-                   const textarea = document.getElementById(`textarea-${index}-${key}`) as HTMLTextAreaElement;
-                   if (!textarea) return;
-                   const start = textarea.selectionStart;
-                   const end = textarea.selectionEnd;
-                   const currentVal = item[key] || '';
-                   const selectedText = currentVal.substring(start, end);
-                   const replacement = prefix + selectedText + suffix;
-                   const newVal = currentVal.substring(0, start) + replacement + currentVal.substring(end);
-                   handleUpdate(index, key, newVal);
-                   setTimeout(() => {
-                      textarea.focus();
-                      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
-                   }, 0);
-                };
-
-                return (
-                  <div key={key} className={`space-y-2 ${isLongText ? 'md:col-span-2' : ''}`}>
-                    <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 flex justify-between items-center">
-                       <span>{key}</span>
-                       {isLongText && (
-                         <div className="flex gap-2">
-                           <button type="button" onClick={() => insertMarkdown('## ', '')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">H2</button>
-                           <button type="button" onClick={() => insertMarkdown('### ', '')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">H3</button>
-                           <button type="button" onClick={() => insertMarkdown('**', '**')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">B</button>
-                           <button type="button" onClick={() => insertMarkdown('*', '*')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">I</button>
-                           <button type="button" onClick={() => insertMarkdown('[', '](https://)')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">Link</button>
-                           <button type="button" onClick={() => insertMarkdown('- ', '')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">List</button>
-                           <button type="button" onClick={() => insertMarkdown('\n| Column 1 | Column 2 |\n|---|---|\n| Value | Value |\n', '')} className="hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm">Table</button>
-                           <label className="cursor-pointer hover:text-white transition-colors border border-white/20 px-1 py-0.5 rounded-sm flex items-center">
-                             Upload
-                             <input 
-                               type="file" 
-                               className="hidden" 
-                               accept=".html,.htm,.md,.txt" 
-                               onChange={(e) => {
-                                 const file = e.target.files?.[0];
-                                 if (!file) return;
-                                 const reader = new FileReader();
-                                 reader.onload = (event) => {
-                                   const text = event.target?.result as string;
-                                   if (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm')) {
-                                     const turndownService = new TurndownService({ headingStyle: 'atx' });
-                                     turndownService.use(gfm);
-                                     const markdown = turndownService.turndown(text);
-                                     insertMarkdown(markdown, '');
-                                   } else {
-                                     insertMarkdown(text, '');
-                                   }
-                                 };
-                                 reader.readAsText(file);
-                                 e.target.value = '';
-                               }} 
-                             />
-                           </label>
-                         </div>
-                       )}
-                    </label>
-                    {isLongText ? (
-                       <textarea 
-                         id={`textarea-${index}-${key}`}
-                         value={item[key] || ''} 
-                         onChange={(e) => handleUpdate(index, key, e.target.value)}
-                         onPaste={(e) => {
-                           const html = e.clipboardData.getData('text/html');
-                           if (html) {
-                             e.preventDefault();
-                             const turndownService = new TurndownService({ headingStyle: 'atx' });
-                             turndownService.use(gfm);
-                             const markdown = turndownService.turndown(html);
-                             const textarea = e.currentTarget;
-                             const start = textarea.selectionStart;
-                             const end = textarea.selectionEnd;
-                             const currentVal = item[key] || '';
-                             const newVal = currentVal.substring(0, start) + markdown + currentVal.substring(end);
-                             handleUpdate(index, key, newVal);
-                             setTimeout(() => {
-                                textarea.focus();
-                                textarea.setSelectionRange(start + markdown.length, start + markdown.length);
-                             }, 0);
-                           }
-                         }}
-                         className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none h-32 font-mono leading-relaxed"
-                       />
-                    ) : (
-                       <input 
-                         type={schema[key] === 'number' ? 'number' : 'text'}
-                         step={schema[key] === 'number' ? '0.001' : undefined}
-                         min={schema[key] === 'number' ? '0' : undefined}
-                         value={item[key] === 0 ? 0 : (item[key] || '')} 
-                         onChange={(e) => handleUpdate(index, key, schema[key] === 'number' ? (e.target.value ? parseFloat(e.target.value) : '') : e.target.value)}
-                         className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none"
-                       />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        ))}
-        {items.length === 0 && <div className="text-center py-3 md:py-12 text-white/30 text-xs italic">No items created yet.</div>}
-      </div>
-    </div>
-  )
-}
-
-
+import { compressImage, uploadImage } from '../utils/imageUpload';
 export default function AdminView() {
   const [user, authLoading] = useAuthState(auth);
   const [loading, setLoading] = useState(true);
@@ -1713,8 +616,12 @@ export default function AdminView() {
               <h2 className="text-sm uppercase tracking-[0.3em] font-light border-b border-white/10 pb-4">Brand Identity</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <div className="space-y-4">
-                  <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 block mb-2">Master Header Logo</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 block">Master Header Logo</label>
+                    <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest font-mono">Live Website Header</span>
+                  </div>
                   <ImageUpload value={formData.logoUrl || ''} onChange={(val) => setFormData({...formData, logoUrl: val})} />
+                  <p className="text-[10px] text-white/40 tracking-wider">Synchronized across the main navigation header and mobile menus. Supports SVG, WebP, PNG, and JPEG.</p>
                 </div>
                 <div>
                   <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 block mb-2">Site Favicon (Google Search & Browsers)</label>
@@ -1809,7 +716,7 @@ export default function AdminView() {
                   <input type="text" value={formData.philosophyTitle || ''} onChange={e => setFormData({...formData, philosophyTitle: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white" />
                 </div>
                 <div className="space-y-2 md:col-span-2 text-white">
-                  <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50">Philosophy Subtitle (use \n for line breaks)</label>
+                  <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50">Philosophy Subtitle (use \nfor line breaks)</label>
                   <textarea value={formData.philosophySubtitle || ''} onChange={e => setFormData({...formData, philosophySubtitle: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none h-24 text-white" />
                 </div>
                 <div className="space-y-2 md:col-span-2 text-white">
@@ -2020,10 +927,7 @@ export default function AdminView() {
                   <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50">Savoir Faire Description</label>
                   <textarea value={formData.methodologyDescription || ''} onChange={e => setFormData({...formData, methodologyDescription: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white h-24" />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50">Savoir Faire Video URL</label>
-                  <input type="text" value={formData.methodologyVideoUrl || ''} onChange={e => setFormData({...formData, methodologyVideoUrl: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white" />
-                </div>
+                
               </div>
             </section>
             
@@ -2135,3 +1039,407 @@ export default function AdminView() {
   );
 }
 
+
+
+export const ImageUpload = ({ value, onChange, label }: { value: string; onChange: (val: string) => void; label?: string }) => {
+  const [uploading, setUploading] = useState(false);
+  const [previewErr, setPreviewErr] = useState(false);
+
+  React.useEffect(() => {
+    setPreviewErr(false);
+  }, [value]);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setPreviewErr(false);
+    try {
+      const url = await uploadImage(file);
+      onChange(url);
+    } catch (err) {
+      console.error("Upload failed", err);
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') onChange(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {label && <label className="text-xs uppercase tracking-widest text-[#D4AF37]">{label}</label>}
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        {value && !previewErr ? (
+          <div className="relative w-24 h-24 bg-black/90 border border-[#D4AF37]/30 p-2 flex items-center justify-center shrink-0 overflow-hidden group rounded shadow-inner">
+            <img 
+              src={value} 
+              alt="Preview" 
+              onError={() => setPreviewErr(true)}
+              className="max-w-full max-h-full object-contain" 
+            />
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="absolute inset-0 bg-black/80 text-red-400 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs tracking-wider transition-opacity font-medium"
+            >
+              Clear
+            </button>
+          </div>
+        ) : (
+          <div className="w-24 h-24 bg-white/5 border border-dashed border-white/20 flex flex-col items-center justify-center text-white/40 text-[10px] uppercase tracking-wider shrink-0 rounded p-1 text-center">
+            {previewErr ? "Invalid Img" : "No Logo"}
+          </div>
+        )}
+        <div className="flex-1 w-full space-y-2">
+          <input
+            type="text"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Image URL (/uploads/... or data:image/...)"
+            className="w-full bg-black/60 border border-white/10 p-2.5 text-xs text-white focus:border-[#D4AF37] outline-none rounded"
+          />
+          <div className="flex items-center gap-2 flex-wrap">
+            <label className="cursor-pointer px-3.5 py-1.5 bg-white/10 hover:bg-[#D4AF37] hover:text-black text-[10px] uppercase tracking-widest transition-colors flex items-center gap-1.5 text-white/90 rounded border border-white/10">
+              <span>{uploading ? 'Uploading...' : 'Upload Image'}</span>
+              <input type="file" accept="image/*" onChange={handleFile} className="hidden" disabled={uploading} />
+            </label>
+            <button
+              type="button"
+              onClick={() => onChange('/logo.svg')}
+              className="px-2.5 py-1.5 text-[10px] uppercase tracking-widest text-white/60 hover:text-[#D4AF37] border border-white/10 rounded transition-colors"
+            >
+              Default SVG
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange('')}
+                className="px-2 py-1.5 text-[10px] uppercase tracking-widest text-red-400/80 hover:text-red-400 transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          {value && value.startsWith('/uploads/') && (
+            <p className="text-[10px] text-emerald-400/80 tracking-wider">✓ Logo stored on server network</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const FaviconUpload = ({ svgValue, fav32, fav192, fav512, favApple, onChange }: any) => {
+  return (
+    <div className="space-y-4 bg-black/40 border border-white/10 p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <span className="text-[10px] uppercase tracking-wider text-white/50 block">SVG Favicon</span>
+          <input
+            type="text"
+            value={svgValue || ''}
+            onChange={(e) => onChange({ svg: e.target.value, fav32, fav192, fav512, favApple })}
+            placeholder="/favicon.svg"
+            className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white"
+          />
+        </div>
+        <div className="space-y-1">
+          <span className="text-[10px] uppercase tracking-wider text-white/50 block">32x32 Favicon</span>
+          <input
+            type="text"
+            value={fav32 || ''}
+            onChange={(e) => onChange({ svg: svgValue, fav32: e.target.value, fav192, fav512, favApple })}
+            placeholder="/favicon-32x32.png"
+            className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white"
+          />
+        </div>
+        <div className="space-y-1">
+          <span className="text-[10px] uppercase tracking-wider text-white/50 block">192x192 Favicon</span>
+          <input
+            type="text"
+            value={fav192 || ''}
+            onChange={(e) => onChange({ svg: svgValue, fav32, fav192, fav512: favApple, favApple })}
+            placeholder="/favicon.png"
+            className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white"
+          />
+        </div>
+        <div className="space-y-1">
+          <span className="text-[10px] uppercase tracking-wider text-white/50 block">Apple Touch Icon</span>
+          <input
+            type="text"
+            value={favApple || ''}
+            onChange={(e) => onChange({ svg: svgValue, fav32, fav192, fav512, favApple: e.target.value })}
+            placeholder="/apple-touch-icon.png"
+            className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [filterText, setFilterText] = useState('');
+
+  const currentItems = items || [];
+  const fields = Object.keys(schema || {});
+
+  const handleUpdateItem = (index: number, key: string, val: any) => {
+    const updated = [...currentItems];
+    updated[index] = { ...updated[index], [key]: val };
+    onChange(updated);
+  };
+
+  const handleAddItem = () => {
+    const newItem: any = { id: `item_${Date.now()}` };
+    fields.forEach(f => {
+      if (f !== 'id') newItem[f] = schema[f] === 'number' ? 0 : schema[f] === 'array' ? [] : '';
+    });
+    onChange([newItem, ...currentItems]);
+    setEditingIndex(0);
+  };
+
+  const handleDeleteItem = (index: number) => {
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
+    const updated = currentItems.filter((_: any, i: number) => i !== index);
+    onChange(updated);
+    if (editingIndex === index) setEditingIndex(null);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-4">
+        <div>
+          <h2 className="text-sm uppercase tracking-[0.3em] font-light text-white">{title}</h2>
+          <span className="text-xs text-white/40">{currentItems.length} items registered</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            placeholder="Filter items..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            className="bg-black/50 border border-white/10 px-3 py-1.5 text-xs text-white outline-none focus:border-[#D4AF37]"
+          />
+          <button
+            type="button"
+            onClick={handleAddItem}
+            className="px-4 py-1.5 bg-[#D4AF37] text-black text-xs uppercase tracking-widest font-medium hover:bg-white transition-colors flex items-center gap-1.5"
+          >
+            <Plus size={14} /> Add New
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {currentItems
+          .filter((item: any) => {
+            if (!filterText) return true;
+            return JSON.stringify(item).toLowerCase().includes(filterText.toLowerCase());
+          })
+          .map((item: any, idx: number) => {
+            const isEditing = editingIndex === idx;
+            const displayName = item.name || item.title || item.id || `Item #${idx + 1}`;
+            return (
+              <div key={item.id || idx} className="bg-black/40 border border-white/10 p-4 space-y-4 transition-all">
+                <div className="flex justify-between items-center cursor-pointer" onClick={() => setEditingIndex(isEditing ? null : idx)}>
+                  <div className="flex items-center gap-3">
+                    {item.image && (
+                      <img src={item.image} alt="" className="w-10 h-10 object-cover border border-white/10 rounded" />
+                    )}
+                    <div>
+                      <h4 className="text-xs uppercase tracking-widest text-white">{displayName}</h4>
+                      {item.category && <span className="text-[10px] text-white/40">{item.category}</span>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setEditingIndex(isEditing ? null : idx); }}
+                      className="px-3 py-1 bg-white/5 hover:bg-white/10 text-xs text-white/80"
+                    >
+                      {isEditing ? 'Collapse' : 'Edit'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleDeleteItem(idx); }}
+                      className="p-1 hover:text-red-400 text-white/40"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                {isEditing && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                    {fields.map((field) => {
+                      const type = schema[field];
+                      const val = item[field];
+                      if (type === 'image') {
+                        return (
+                          <div key={field} className="md:col-span-2">
+                            <ImageUpload
+                              label={field}
+                              value={val || ''}
+                              onChange={(newUrl) => handleUpdateItem(idx, field, newUrl)}
+                            />
+                          </div>
+                        );
+                      }
+                      if (type === 'number') {
+                        return (
+                          <div key={field} className="space-y-1">
+                            <label className="text-[10px] uppercase tracking-wider text-white/50">{field}</label>
+                            <input
+                              type="number"
+                              value={val ?? 0}
+                              onChange={(e) => handleUpdateItem(idx, field, parseFloat(e.target.value) || 0)}
+                              className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white focus:border-[#D4AF37] outline-none"
+                            />
+                          </div>
+                        );
+                      }
+                      if (type === 'array') {
+                        return (
+                          <div key={field} className="space-y-1 md:col-span-2">
+                            <label className="text-[10px] uppercase tracking-wider text-white/50">{field} (comma separated)</label>
+                            <input
+                              type="text"
+                              value={Array.isArray(val) ? val.join(', ') : (val || '')}
+                              onChange={(e) => handleUpdateItem(idx, field, e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                              className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white focus:border-[#D4AF37] outline-none"
+                            />
+                          </div>
+                        );
+                      }
+                      return (
+                        <div key={field} className={`space-y-1 ${field === 'description' || field === 'content' || field === 'longDescription' ? 'md:col-span-2' : ''}`}>
+                          <label className="text-[10px] uppercase tracking-wider text-white/50">{field}</label>
+                          {field === 'description' || field === 'content' || field === 'longDescription' ? (
+                            <textarea
+                              value={val || ''}
+                              onChange={(e) => handleUpdateItem(idx, field, e.target.value)}
+                              rows={3}
+                              className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white focus:border-[#D4AF37] outline-none"
+                            />
+                          ) : (
+                            <input
+                              type="text"
+                              value={val || ''}
+                              onChange={(e) => handleUpdateItem(idx, field, e.target.value)}
+                              className="w-full bg-black/60 border border-white/10 p-2 text-xs text-white focus:border-[#D4AF37] outline-none"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+      </div>
+    </div>
+  );
+};
+
+export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchColl = async () => {
+      setLoading(true);
+      try {
+        const snap = await getDocs(collection(db, collectionName));
+        if (isMounted) {
+          setItems(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        }
+      } catch (e) {
+        console.error(`Error loading ${collectionName}`, e);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    fetchColl();
+    return () => { isMounted = false; };
+  }, [collectionName]);
+
+  const handlePersistToFirestore = async (newItems: any[]) => {
+    setItems(newItems);
+    setSaving(true);
+    setStatusMsg("Saving changes to Firestore database...");
+    try {
+      const colRef = collection(db, collectionName);
+      const snap = await getDocs(colRef);
+      const existingIds = new Set(snap.docs.map(d => d.id));
+      const incomingIds = new Set(newItems.map(it => it.id).filter(Boolean));
+
+      // Save all updated/new items directly
+      for (const item of newItems) {
+        const id = item.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        await setDoc(doc(db, collectionName, id), { ...item, id }, { merge: true });
+      }
+
+      // Delete items that were removed
+      for (const existingId of existingIds) {
+        if (!incomingIds.has(existingId)) {
+          await deleteDoc(doc(db, collectionName, existingId));
+        }
+      }
+
+      setStatusMsg("✓ All changes saved to Firestore database!");
+      setTimeout(() => setStatusMsg(null), 4000);
+    } catch (err: any) {
+      console.error(`Error persisting ${collectionName}:`, err);
+      setStatusMsg(`Failed to save: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="p-8 text-center text-xs tracking-widest uppercase text-white/40">Loading {title}...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/[0.03] border border-white/10 p-3.5 rounded gap-3">
+        <div className="flex items-center gap-3">
+          <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-medium">{title}</span>
+          <span className="text-[10px] text-white/40">Direct Cloud Persistence</span>
+        </div>
+        <div className="flex items-center gap-3">
+          {statusMsg && (
+            <span className={`text-xs ${statusMsg.startsWith("✓") ? "text-emerald-400" : "text-amber-400"}`}>
+              {statusMsg}
+            </span>
+          )}
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => handlePersistToFirestore(items)}
+            className="px-4 py-2 bg-[#D4AF37] text-black font-semibold text-xs uppercase tracking-wider rounded hover:bg-white transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+            <span>{saving ? "Saving..." : "Save to Database"}</span>
+          </button>
+        </div>
+      </div>
+      <ArrayEditor
+        title={title}
+        items={items}
+        onChange={handlePersistToFirestore}
+        schema={schema}
+      />
+    </div>
+  );
+};

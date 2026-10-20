@@ -1,7 +1,7 @@
 export interface Section {
   id: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   description: string;
   index: string;
   image?: string;
@@ -36,6 +36,7 @@ export interface Product {
 export interface BlogPost {
   id: string;
   title: string;
+  subtitle?: string;
   date: string;
   excerpt: string;
   content: string;
@@ -51,6 +52,7 @@ export interface BlogPost {
 export interface HeritageItem {
   id: string;
   title: string;
+  subtitle?: string;
   year: string;
   description: string;
   image: string;
@@ -59,6 +61,7 @@ export interface HeritageItem {
 export interface MethodologyStep {
   id: string;
   title: string;
+  subtitle?: string;
   description: string;
   image: string;
 }
@@ -242,7 +245,60 @@ export const BRIDE_GALLERY: Bride[] = [
   }
 ];
 
-export const PRODUCTS: Product[] = [];
+export const PRODUCTS: Product[] = [
+  {
+    id: "luna-tear-pendenta",
+    title: "Luna Tear Pendenta",
+    description: "Centered around a D-color, internally flawless pear-cut diamond, this piece captures the essence of nocturnal brilliance. Every micro-diamond in the platinum chain is hand-selected. 5.02 Carat Center Stone, D/IF, 950 Platinum, GIA Certified.",
+    price: 4500000,
+    category: "Necklaces",
+    image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=1000",
+    images: [
+      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=1000",
+      "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=1000"
+    ]
+  },
+  {
+    id: "solaris-eternal",
+    title: "Solaris Eternal Ring",
+    description: "Inspired by the first light of dawn, the Solaris Eternal features a rare vivid yellow diamond. The emerald cut provides a clean, architectural brilliance that contrasts beautifully with hand-crafted 18k rose gold.",
+    price: 3200000,
+    category: "Rings",
+    image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=1000",
+    images: [
+      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&q=80&w=1000"
+    ]
+  },
+  {
+    id: "aurora-borealis",
+    title: "Aurora Borealis Ear Pendants",
+    description: "Capturing the dancing lights of the north, these earrings feature a complex pattern of marquise and brilliant-cut diamonds. Articulated design with 8.2 carats total weight, E color, VVS1 clarity in 18k white gold.",
+    price: 2800000,
+    category: "Earrings",
+    image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=1000",
+    images: [
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&q=80&w=1000"
+    ]
+  },
+  {
+    id: "nizami-heritage-choker",
+    title: "Nizami Heritage Polki Choker",
+    description: "Masterwork handcrafted in 22kt BIS hallmarked gold, featuring uncut syndicate Polki diamonds framed by Colombian emerald droplets.",
+    price: 3800000,
+    category: "Necklaces",
+    image: "https://images.unsplash.com/photo-1611591475152-47831c367285?auto=format&fit=crop&q=80&w=1000",
+    images: ["https://images.unsplash.com/photo-1611591475152-47831c367285?auto=format&fit=crop&q=80&w=1000"]
+  },
+  {
+    id: "celestial-tennis-bracelet",
+    title: "Celestial Diamond Tennis Bracelet",
+    description: "A continuous line of fire featuring 45 hand-matched F/VVS round brilliant diamonds totalling 12.0 carats in 950 platinum.",
+    price: 1950000,
+    category: "Bracelets",
+    image: "https://images.unsplash.com/photo-1611591475152-47831c367285?auto=format&fit=crop&q=80&w=1000",
+    images: ["https://images.unsplash.com/photo-1611591475152-47831c367285?auto=format&fit=crop&q=80&w=1000"]
+  }
+];
 
 export const DIAMOND_SHAPES = [
   { id: 'round', label: 'Round Brilliant', price: 5000 },

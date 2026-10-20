@@ -59,14 +59,20 @@ async function startServer() {
   const app = express();
   app.set("trust proxy", 1);
 
-const uploadDir = process.env.UPLOAD_DIR || path.join('/tmp', 'uploads');
+const publicUploadDir = path.join(process.cwd(), 'public', 'uploads');
+const tmpUploadDir = path.join('/tmp', 'uploads');
+let uploadDir = publicUploadDir;
 try {
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+  if (!fs.existsSync(publicUploadDir)) {
+    fs.mkdirSync(publicUploadDir, { recursive: true });
   }
 } catch (err) {
-  console.warn('Upload directory unavailable:', err.message);
+  uploadDir = tmpUploadDir;
+  if (!fs.existsSync(tmpUploadDir)) {
+    fs.mkdirSync(tmpUploadDir, { recursive: true });
+  }
 }
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => cb(null, Date.now() + '_' + file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_'))
@@ -79,10 +85,13 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   }
   res.json({ url: '/uploads/' + req.file.filename });
 });
-app.use('/uploads', express.static(uploadDir));
+app.use('/uploads', express.static(publicUploadDir));
+if (uploadDir !== publicUploadDir) {
+  app.use('/uploads', express.static(tmpUploadDir));
+}
 
 
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = 3000;
 
 
   // Legacy redirects
@@ -1470,25 +1479,67 @@ ${JSON.stringify(calicutSchema, null, 2)}
   app.get('/projects/*', (req, res) => res.redirect(301, '/heritage'));
   app.get('/post/*', (req, res) => res.redirect(301, '/journal'));
 
-  // Serve custom favicon endpoints if defined in Firestore 'site_content/global'
+  // Real-time branding synchronization from Firestore 'site_content/global'
   let globalBrandingData: any = null;
   if (db) {
     try {
-      const docSnap = await db.collection("site_content").doc("global").get();
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        globalBrandingData = {
-          faviconSvg: data.customFaviconSvg || null,
-          fav32: data.favicon_32 || null,
-          fav180: data.favicon_180 || data.favicon_apple || null,
-          fav192: data.favicon_192 || null,
-          fav512: data.favicon_512 || null
-        };
-      }
+      db.collection("site_content").doc("global").onSnapshot((docSnap: any) => {
+        if (docSnap && docSnap.exists) {
+          const data = typeof docSnap.data === "function" ? docSnap.data() : docSnap.data;
+          if (data) {
+            globalBrandingData = {
+              logoUrl: data.logoUrl || null,
+              faviconSvg: data.customFaviconSvg || null,
+              fav32: data.favicon_32 || null,
+              fav180: data.favicon_180 || data.favicon_apple || null,
+              fav192: data.favicon_192 || null,
+              fav512: data.favicon_512 || null
+            };
+          }
+        }
+      }, (err: any) => {
+        console.error("Error in real-time branding snapshot:", err);
+      });
     } catch (e) {
       console.error("Error setting up Firestore snapshot inside server:", e);
     }
   }
+
+  app.get("/logo.svg", (req, res, next) => {
+    res.setHeader("Content-Type", "image/svg+xml");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    if (globalBrandingData && globalBrandingData.faviconSvg) {
+      return res.send(globalBrandingData.faviconSvg);
+    }
+    const localSvg = path.join(process.cwd(), "public", "logo.svg");
+    if (fs.existsSync(localSvg)) {
+      return res.sendFile(localSvg);
+    }
+    next();
+  });
+
+  app.get("/logo.png", (req, res, next) => {
+    res.setHeader("Content-Type", "image/png");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    if (globalBrandingData && globalBrandingData.fav512) {
+      try {
+        const base64Data = globalBrandingData.fav512.split(",")[1] || globalBrandingData.fav512;
+        const imgBuffer = Buffer.from(base64Data, "base64");
+        return res.send(imgBuffer);
+      } catch (e) {
+        console.error("Error serving logo.png dynamically:", e);
+      }
+    }
+    const localPng = path.join(process.cwd(), "public", "logo.png");
+    if (fs.existsSync(localPng)) {
+      return res.sendFile(localPng);
+    }
+    next();
+  });
 
   app.get("/favicon.svg", (req, res, next) => {
     if (globalBrandingData && globalBrandingData.faviconSvg) {

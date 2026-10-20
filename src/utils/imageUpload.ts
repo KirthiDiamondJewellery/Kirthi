@@ -1,17 +1,15 @@
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../lib/firebase';
-import imageCompression from 'browser-image-compression';
+import imageCompression from "browser-image-compression";
 
 export const compressImage = async (file: File): Promise<File> => {
-  if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+  if (file.type === "image/svg+xml" || file.type === "image/gif") {
     return file;
   }
   
   const options = {
-    maxSizeMB: 1,
+    maxSizeMB: 0.8,
     maxWidthOrHeight: 1200,
     useWebWorker: true,
-    fileType: file.type === 'image/png' ? 'image/png' : 'image/webp'
+    fileType: file.type === "image/png" ? "image/png" : "image/webp"
   };
   
   try {
@@ -19,7 +17,7 @@ export const compressImage = async (file: File): Promise<File> => {
     return compressedFile;
   } catch (error) {
     console.error("Compression error:", error);
-    return file; // fallback to original file if compression fails
+    return file;
   }
 };
 
@@ -27,15 +25,39 @@ export const uploadImage = async (file: File): Promise<string> => {
   let finalFile = file;
   try {
     finalFile = await compressImage(file);
-    if (finalFile.name === file.name && finalFile.type === 'image/webp' && !file.name.endsWith('.webp')) {
-       finalFile = new File([finalFile], file.name.replace(/\.[^/.]+$/, "") + '.webp', { type: 'image/webp' });
-    }
   } catch (e) {
-    console.warn("Compression failed, using original file", e);
+    console.warn("Compression warning, using original file", e);
   }
 
-  const storageRef = ref(storage, `uploads/${Date.now()}_${finalFile.name}`);
-  const snapshot = await uploadBytes(storageRef, finalFile);
-  const downloadURL = await getDownloadURL(snapshot.ref);
-  return downloadURL;
+  // 1. Try server-side persistent upload (/api/upload)
+  try {
+    const bodyFormData = new FormData();
+    bodyFormData.append("file", finalFile);
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: bodyFormData,
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.url) {
+        return data.url;
+      }
+    }
+  } catch (err) {
+    console.warn("Server upload attempt failed, falling back to base64 DataURL:", err);
+  }
+
+  // 2. Fallback to compressed base64 data URL
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Failed to read file as data URL"));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(finalFile);
+  });
 };

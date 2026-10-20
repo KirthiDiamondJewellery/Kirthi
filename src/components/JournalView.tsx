@@ -156,6 +156,8 @@ export default function JournalView({ onInquiry, onGoHome }: { onInquiry?: () =>
                       {(() => {
                         const gridImgSrc = (post.image && post.image !== "undefined" && post.image.trim() !== "")
                           ? post.image
+                          : (post.featuredImage && post.featuredImage !== "undefined" && post.featuredImage.trim() !== "")
+                          ? post.featuredImage
                           : (post.images && post.images.length > 0 && post.images[0] && post.images[0] !== "undefined" && post.images[0].trim() !== "")
                           ? post.images[0]
                           : "/logo.png";

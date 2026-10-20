@@ -41,7 +41,7 @@ export default function ContactView() {
     <div className="min-h-screen bg-black text-white selection:bg-[#D4AF37] selection:text-black">
       <header className="fixed top-[env(safe-area-inset-top,0px)] w-full flex justify-between items-center px-4 sm:px-6 md:px-12 py-4 sm:py-6 md:py-10 z-[70] pointer-events-none bg-gradient-to-b from-black/80 via-black/40 to-transparent backdrop-blur-[2px]">
         <a href="/" className="pointer-events-auto">
-          <img src={content.logoUrl || "/logo.png"} alt="Kirthi Diamonds" className="h-6 opacity-80" />
+          <img src={content.logoUrl || "/logo.svg"} onError={(e) => { if (!e.currentTarget.src.endsWith('/logo.svg')) e.currentTarget.src = '/logo.svg'; }} alt="Kirthi Diamonds" className="h-6 opacity-80" />
         </a>
       </header>
       <div className="max-w-7xl mx-auto pt-32 px-4 sm:px-6 md:px-12 pb-32">

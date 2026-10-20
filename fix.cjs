@@ -1,15 +1,11 @@
 const fs = require('fs');
-let code = fs.readFileSync('src/constants.ts', 'utf8');
-
-const bad = `  {
-    id: 'contact',
-    title: 'Contact',
-    subtitle: 'Boutiques',
-    description: 'Get in touch with Kirthi Diamonds.',
-    index: '09 / 09',
-    location: 'Kerala, India',
-    image: '',
-  },
-];`;
-code = code.replace(bad, "details: string[];");
-fs.writeFileSync('src/constants.ts', code);
+let content = fs.readFileSync('src/components/ContactView.tsx', 'utf8');
+content = content.replace(
+  /body: JSON\.stringify\(\{\s*name: formData\.name,\s*email: formData\.email,\s*phone: formData\.phone,\s*message: formData\.message\s*\}\)/,
+  'body: JSON.stringify(formData)'
+);
+content = content.replace(
+  /setFormData\(\{ name: "", email: "", phone: "", message: "" \}\);/,
+  'setFormData({ name: "", phone: "", boutique: "kochi", date: "", message: "" });'
+);
+fs.writeFileSync('src/components/ContactView.tsx', content);

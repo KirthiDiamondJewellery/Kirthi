@@ -43,11 +43,12 @@ export default function BoutiqueLocalView({ location }: { location: 'kochi' | 'c
     <div className="min-h-screen bg-black text-white selection:bg-[#D4AF37] selection:text-black">
       <header className="fixed top-[env(safe-area-inset-top,0px)] w-full flex justify-between items-center px-4 sm:px-6 md:px-12 py-4 sm:py-6 md:py-10 z-[70] pointer-events-none bg-gradient-to-b from-black/80 via-black/40 to-transparent backdrop-blur-[2px]">
         <a href="/" className="pointer-events-auto">
-          {content?.logoUrl ? (
-            <img src={content.logoUrl} alt="Kirthi Diamonds" className="h-6 sm:h-8 md:h-10 w-auto filter brightness-125 drop-shadow-lg object-contain opacity-80 hover:opacity-100 transition-opacity" />
-          ) : (
-            <img src="/logo.png" alt="Kirthi Diamonds" className="h-6 opacity-80" />
-          )}
+          <img 
+            src={content?.logoUrl || "/logo.svg"} 
+            onError={(e) => { if (!e.currentTarget.src.endsWith('/logo.svg')) e.currentTarget.src = '/logo.svg'; }}
+            alt="Kirthi Diamonds" 
+            className="h-6 sm:h-8 md:h-10 w-auto filter brightness-125 drop-shadow-lg object-contain opacity-80 hover:opacity-100 transition-opacity" 
+          />
         </a>
       </header>
 

@@ -17,10 +17,7 @@ function BrideCard({ bride }: { bride: any; key?: React.Key }) {
   const images = bride.images?.length > 0 ? bride.images : [bride.image];
 
   const getOptimizedUrl = (url: string, width: number = 2400) => {
-    if (!url || url.includes('unsplash.com') || url.includes('images.unsplash')) {
-      return '/logo.png';
-    }
-    if (url.startsWith('data:')) return url;
+    if (!url) return '/logo.svg';
     return url;
   };
 
