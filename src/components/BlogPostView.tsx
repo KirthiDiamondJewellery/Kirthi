@@ -312,7 +312,7 @@ export default function BlogPostView() {
           </span>
         </Link>
         <div>
-          <img src={content.logoUrl || "/logo.png"} alt="Kirthi Diamonds" className="h-6 opacity-80" />
+          <img src={content.logoUrl || "/logo.svg"} onError={(e) => { if (!e.currentTarget.src.endsWith('/logo.svg')) e.currentTarget.src = '/logo.svg'; }} alt="Kirthi Diamonds" className="h-6 opacity-80" />
         </div>
       </header>
 
@@ -341,11 +341,15 @@ export default function BlogPostView() {
               <span className="opacity-60">Updated: May 29, 2026</span>
             </div>
             {(() => {
-              const imageSrc = post.featuredImage && post.featuredImage.trim() !== "" 
-                ? post.featuredImage 
-                : "https://kirthidiamonds.com/og-cover.jpg";
+              const imageSrc = (post.featuredImage && post.featuredImage.trim() !== "")
+                ? post.featuredImage
+                : (post.image && post.image.trim() !== "")
+                ? post.image
+                : (post.images && post.images.length > 0 && post.images[0] && post.images[0].trim() !== "")
+                ? post.images[0]
+                : null;
               
-              if (imageSrc === "https://kirthidiamonds.com/og-cover.jpg") {
+              if (!imageSrc) {
                 return null;
               }
               return (
@@ -353,7 +357,7 @@ export default function BlogPostView() {
                   <FastImage
                     src={imageSrc}
                     alt={post.title}
-                    className="w-full h-full transition-all duration-1000 object-cover grayscale brightness-90 hover:grayscale-0 hover:brightness-100"
+                    className="w-full h-full transition-all duration-1000 object-cover brightness-95 hover:brightness-105"
                   />
                 </div>
               );

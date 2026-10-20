@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { doc, onSnapshot, setDoc, collection, getDocs, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, setDoc, collection, getDocs, deleteDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import {
   SECTIONS,
@@ -206,7 +206,7 @@ const defaultContent: SiteContent = {
   colourstoneBuybackPercentage: 70,
   colourstoneExchangePercentage: 80,
   logoUrl: "/logo.png",
-  heroVideoUrl: "",
+  heroVideoUrl: "https://youtu.be/cGrZrg3_BQw",
   landingTitle: "Our Diamond Heritage",
   landingSubtitle: "Kirthi Diamonds is a bespoke diamond jewellery house based in Kochi and Calicut, Kerala, specialising in GIA and IGI certified diamonds, custom-designed bridal jewellery, and high-jewellery commissions. Founded in 2006 from a family diamond trade established in 1975, every piece is BIS hallmarked and backed by a lifetime exchange policy.",
   philosophyTitle: "The Philosophy",
@@ -334,6 +334,7 @@ const defaultContent: SiteContent = {
   heritageItems: HERITAGE_ITEMS,
   methodologySteps: METHODOLOGY_STEPS,
   brideGallery: BRIDE_GALLERY,
+  shopProducts: PRODUCTS,
   contactTitle: "Get In Touch",
   contactSubtitle: "one-on-one bespoke consultation",
   contactDescription: "Kirthi Diamonds creates bespoke, direct-sourced diamond masterpieces for discerning brides and collectors. Schedule a bespoke consultation at our exclusive showrooms.",
@@ -468,7 +469,39 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         collection(db, `site_content_${col}`),
         (snap) => {
           if (!snap.empty) {
-            currentData[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const rawItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            currentData[col] = rawItems;
+            
+            // Check legacy site_content backup doc if any image is empty
+            if (["blogPosts", "blogs", "heritageItems", "methodologySteps", "brideGallery"].includes(col)) {
+              getDoc(doc(db, "site_content", col)).then(legSnap => {
+                if (legSnap.exists() && legSnap.data().items && isMounted) {
+                  const legItems = legSnap.data().items;
+                  const legMap = new Map();
+                  legItems.forEach((it: any) => {
+                    if (it.image && (it.image.startsWith("data:") || it.image.startsWith("/"))) {
+                      if (it.id) legMap.set(it.id, it.image);
+                      if (it.title) legMap.set(it.title.toLowerCase().trim(), it.image);
+                    }
+                  });
+                  let merged = false;
+                  const enriched = rawItems.map((item: any) => {
+                    if (!item.image || item.image.trim() === "" || item.image.includes("unsplash.com")) {
+                      const legImg = legMap.get(item.id) || (item.title ? legMap.get(item.title.toLowerCase().trim()) : null);
+                      if (legImg) {
+                        merged = true;
+                        return { ...item, image: legImg, featuredImage: legImg };
+                      }
+                    }
+                    return item;
+                  });
+                  if (merged && isMounted) {
+                    currentData[col] = enriched;
+                    setContent({ ...currentData });
+                  }
+                }
+              }).catch(() => {});
+            }
           } else {
              // Fallback to constants if empty initially to bootstrap
             if (!listInitials[col]) {

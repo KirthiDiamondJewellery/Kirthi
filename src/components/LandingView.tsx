@@ -203,10 +203,11 @@ export default function LandingView({ onExplore, nextSectionId }: { onExplore: (
             style={{ opacity: heroOpacity, scale: heroScale }}
             className="w-full h-full absolute inset-0 z-0 bg-black"
           >
-            {content.heroVideoUrl?.includes("youtube.com") ||
-            content.heroVideoUrl?.includes("youtu.be") ? (
-              (() => {
-                const videoId = content.heroVideoUrl?.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i)?.[1];
+            {(() => {
+              const activeHeroVideo = content.heroVideoUrl || content.pageVideos?.find(v => v.id === "home" || v.id === "hero" || v.id === "methodology")?.videoUrl || "https://youtu.be/cGrZrg3_BQw";
+              
+              if (activeHeroVideo.includes("youtube.com") || activeHeroVideo.includes("youtu.be")) {
+                const videoId = activeHeroVideo.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i)?.[1];
                 const originStr = typeof window !== "undefined" && window.location.origin ? `&origin=${encodeURIComponent(window.location.origin)}` : "";
                 return videoId ? (
                   <iframe
@@ -220,83 +221,75 @@ export default function LandingView({ onExplore, nextSectionId }: { onExplore: (
                     allowFullScreen
                   />
                 ) : null;
-              })()
-            ) : content.heroVideoUrl?.includes("vimeo.com") && !content.heroVideoUrl?.includes(".mp4") ? (
-              <iframe
-                src={
-                  content.heroVideoUrl.includes("player.vimeo.com")
-                    ? `${content.heroVideoUrl}&autoplay=1&muted=1&loop=1`
-                    : `https://player.vimeo.com/video/${content.heroVideoUrl.match(/(?:vimeo\.com\/)(\d+)/i)?.[1]}?autoplay=1&muted=1&loop=1`
-                }
-                title="Hero Background Video"
-                width="100%"
-                height="100%"
-                className="w-[150vw] h-[150vh] -ml-[25vw] -mt-[25vh] absolute top-0 left-0 object-cover grayscale brightness-[0.35] pointer-events-none"
-                allow="autoplay; fullscreen"
-              />
-            ) : content.heroVideoUrl?.includes("drive.google.com") ? (
-              <div className="w-[150vw] h-[150vh] -ml-[25vw] -mt-[25vh] absolute top-0 left-0 z-0">
-                <iframe
-                  src={content.heroVideoUrl.includes("/file/d/") ? `https://drive.google.com/file/d/${content.heroVideoUrl.split('/file/d/')[1].split('/')[0]}/preview?autoplay=1&mute=1` : `${content.heroVideoUrl}?autoplay=1&mute=1`}
-                  title="Hero Background Video"
-                  width="100%"
-                  height="100%"
-                  className="w-[150vw] h-[150vh] absolute top-0 left-0 object-cover grayscale brightness-[0.35] pointer-events-none"
-                  allow="autoplay; fullscreen"
-                />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
-                  <span className="bg-[#D4AF37]/20 text-[#D4AF37] text-xs uppercase tracking-[0.2em] px-6 py-3 border border-[#D4AF37]/30 mt-[25vh] backdrop-blur-md text-center max-w-md leading-relaxed">
-                    Google Drive blocks background Auto-play. <br/>
-                    Please use YouTube, Vimeo, or an MP4 link.
-                  </span>
-                </div>
-              </div>
-            ) : content.heroVideoUrl?.match(/\.(jpeg|jpg|gif|png|webp|avif)$/i) || content.heroVideoUrl?.includes('unsplash') || content.heroVideoUrl?.includes('image') ? (
-              (() => {
-                let imgUrl = content.heroVideoUrl;
-                if (imgUrl?.includes('unsplash.com') || imgUrl?.includes('images.unsplash')) {
-                  imgUrl = '/logo.png';
-                }
-                const isLogo = imgUrl === '/logo.png';
+              }
+
+              if (activeHeroVideo.includes("vimeo.com") && !activeHeroVideo.includes(".mp4")) {
+                const vimeoId = activeHeroVideo.match(/(?:vimeo\.com\/)(\d+)/i)?.[1];
+                const vimeoSrc = activeHeroVideo.includes("player.vimeo.com")
+                  ? `${activeHeroVideo}&autoplay=1&muted=1&loop=1`
+                  : `https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=1&loop=1`;
+                return (
+                  <iframe
+                    src={vimeoSrc}
+                    title="Hero Background Video"
+                    width="100%"
+                    height="100%"
+                    className="w-[150vw] h-[150vh] -ml-[25vw] -mt-[25vh] absolute top-0 left-0 object-cover grayscale brightness-[0.35] pointer-events-none"
+                    allow="autoplay; fullscreen"
+                  />
+                );
+              }
+
+              if (activeHeroVideo.includes("drive.google.com")) {
+                return (
+                  <div className="w-[150vw] h-[150vh] -ml-[25vw] -mt-[25vh] absolute top-0 left-0 z-0">
+                    <iframe
+                      src={activeHeroVideo.includes("/file/d/") ? `https://drive.google.com/file/d/${activeHeroVideo.split('/file/d/')[1].split('/')[0]}/preview?autoplay=1&mute=1` : `${activeHeroVideo}?autoplay=1&mute=1`}
+                      title="Hero Background Video"
+                      width="100%"
+                      height="100%"
+                      className="w-[150vw] h-[150vh] absolute top-0 left-0 object-cover grayscale brightness-[0.35] pointer-events-none"
+                      allow="autoplay; fullscreen"
+                    />
+                  </div>
+                );
+              }
+
+              if (activeHeroVideo.match(/\.(jpeg|jpg|gif|png|webp|avif)$/i) || activeHeroVideo.includes("image")) {
                 return (
                   <picture>
-                    <source media="(max-width: 768px)" srcSet={imgUrl} />
-                    <source media="(min-width: 769px)" srcSet={imgUrl} />
+                    <source media="(max-width: 768px)" srcSet={activeHeroVideo} />
+                    <source media="(min-width: 769px)" srcSet={activeHeroVideo} />
                     <img
-                      key={imgUrl}
-                      src={imgUrl}
+                      key={activeHeroVideo}
+                      src={activeHeroVideo}
                       alt="Hero Background"
                       width={1920}
                       height={1080}
                       loading="eager"
                       fetchPriority="high"
                       decoding="async"
-                      referrerPolicy="no-referrer"
-                      className={`w-full h-full grayscale brightness-[0.35] pointer-events-none ${isLogo ? 'object-contain max-h-[50%]' : 'object-cover'}`}
+                      className="w-full h-full object-cover grayscale brightness-[0.35] pointer-events-none"
                     />
                   </picture>
                 );
-              })()
-            ) : (
-              <video
-                key={content.heroVideoUrl || "default"}
-                autoPlay
-                muted
-                controls={false}
-                loop
-                playsInline
-                preload="auto"
-                poster={undefined}
-                className="w-full h-full object-cover grayscale brightness-[0.35] pointer-events-none"
-              >
-                <source
-                  src={
-                    content.heroVideoUrl ||
-                    undefined
-                  }
-                />
-              </video>
-            )}
+              }
+
+              return (
+                <video
+                  key={activeHeroVideo}
+                  autoPlay
+                  muted
+                  controls={false}
+                  loop
+                  playsInline
+                  preload="auto"
+                  className="w-full h-full object-cover grayscale brightness-[0.35] pointer-events-none"
+                >
+                  <source src={activeHeroVideo} />
+                </video>
+              );
+            })()}
           </motion.div>
           <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A] via-transparent to-[#050505] z-10 pointer-events-none" />
@@ -419,7 +412,8 @@ export default function LandingView({ onExplore, nextSectionId }: { onExplore: (
             <div className="pt-8 relative group">
               {content?.logoUrl ? (
                 <img
-                  src={content.logoUrl || undefined}
+                  src={content?.logoUrl || "/logo.svg"}
+                  onError={(e) => { if (!e.currentTarget.src.endsWith('/logo.svg')) e.currentTarget.src = '/logo.svg'; }}
                   width="300"
                   height="128"
                   loading="eager"

@@ -7,6 +7,7 @@ import { VideoFacade } from './VideoFacade';
 import { HeadlessVideoPlayer } from './HeadlessVideoPlayer';
 
 const PAGE_KEYS = [
+  { id: 'home', label: 'Home Page (Hero Background Video)' },
   { id: 'methodology', label: 'Methodology Page' },
   { id: 'bespoke', label: 'Bespoke (Inside the Workshop)' }
 ];
@@ -80,6 +81,10 @@ export function AdminVideos() {
     try {
       const docRef = doc(db, 'site_content_pageVideos', selectedPage);
       await setDoc(docRef, videoData);
+      if (selectedPage === 'home') {
+        const globalRef = doc(db, 'site_content', 'global');
+        await setDoc(globalRef, { heroVideoUrl: videoData.videoUrl }, { merge: true });
+      }
       alert('Saved successfully');
     } catch (e) {
       console.error(e);
