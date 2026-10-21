@@ -485,36 +485,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
             const rawItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             currentData[col] = rawItems;
             
-            // Check legacy site_content backup doc if any image is empty
-            if (["blogPosts", "blogs", "heritageItems", "methodologySteps", "brideGallery"].includes(col)) {
-              getDoc(doc(db, "site_content", col)).then(legSnap => {
-                if (legSnap.exists() && legSnap.data().items && isMounted) {
-                  const legItems = legSnap.data().items;
-                  const legMap = new Map();
-                  legItems.forEach((it: any) => {
-                    if (it.image && (it.image.startsWith("data:") || it.image.startsWith("/"))) {
-                      if (it.id) legMap.set(it.id, it.image);
-                      if (it.title) legMap.set(it.title.toLowerCase().trim(), it.image);
-                    }
-                  });
-                  let merged = false;
-                  const enriched = rawItems.map((item: any) => {
-                    if (!item.image || item.image.trim() === "" || item.image.includes("unsplash.com")) {
-                      const legImg = legMap.get(item.id) || (item.title ? legMap.get(item.title.toLowerCase().trim()) : null);
-                      if (legImg) {
-                        merged = true;
-                        return { ...item, image: legImg, featuredImage: legImg };
-                      }
-                    }
-                    return item;
-                  });
-                  if (merged && isMounted) {
-                    currentData[col] = enriched;
-                    setContent({ ...currentData });
-                  }
-                }
-              }).catch(() => {});
-            }
+            // Cloud SQL PostgreSQL authoritative state preserved
           } else {
              // Fallback to constants if empty initially to bootstrap
             if (!listInitials[col]) {

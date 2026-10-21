@@ -1,4 +1,4 @@
-import { fetchFullContentFromSql, saveGlobalContentToSql, saveBlogPostToSql, getPgPool } from "./src/db/queries";
+import { fetchFullContentFromSql, saveGlobalContentToSql, saveBlogPostToSql, getCollectionFromSql, saveCollectionToSql, getPgPool } from "./src/db/queries";
 import multer from "multer";
 import sharp from "sharp";
 import express from "express";
@@ -133,6 +133,27 @@ if (uploadDir !== publicUploadDir) {
     } catch (err: any) {
       console.error("Error saving post to Cloud SQL:", err);
       res.status(500).json({ error: "Failed to save post to Cloud SQL" });
+    }
+  });
+
+    app.get("/api/db/collection/:name", async (req, res) => {
+    try {
+      const items = await getCollectionFromSql(req.params.name);
+      res.json(items);
+    } catch (err: any) {
+      console.error(`Error fetching collection ${req.params.name} from Cloud SQL:`, err);
+      res.status(500).json({ error: "Failed to fetch collection from Cloud SQL" });
+    }
+  });
+
+  app.post("/api/db/collection/:name", async (req, res) => {
+    try {
+      const items = Array.isArray(req.body) ? req.body : (req.body?.items || []);
+      const result = await saveCollectionToSql(req.params.name, items);
+      res.json(result);
+    } catch (err: any) {
+      console.error(`Error saving collection ${req.params.name} to Cloud SQL:`, err);
+      res.status(500).json({ error: "Failed to save collection to Cloud SQL" });
     }
   });
 

@@ -126,6 +126,200 @@ export async function fetchFullContentFromSql() {
   };
 }
 
+export async function getCollectionFromSql(name: string): Promise<any[]> {
+  const pool = getPgPool();
+  const cleanName = name.replace(/^site_content_/, '');
+
+  if (cleanName === 'blogPosts') {
+    const res = await pool.query("SELECT * FROM blog_posts ORDER BY created_at DESC");
+    return res.rows.map(r => ({
+      ...r,
+      featuredImage: r.featured_image,
+      metaDescription: r.meta_description,
+      images: typeof r.images === 'string' ? JSON.parse(r.images) : r.images || []
+    }));
+  }
+
+  if (cleanName === 'journalTrends') {
+    const res = await pool.query("SELECT * FROM journal_trends ORDER BY created_at DESC");
+    return res.rows.map(r => ({
+      ...r,
+      featuredImage: r.featured_image,
+      images: typeof r.images === 'string' ? JSON.parse(r.images) : r.images || []
+    }));
+  }
+
+  if (cleanName === 'shopProducts') {
+    const res = await pool.query("SELECT * FROM products ORDER BY created_at ASC");
+    return res.rows.map(r => ({
+      ...r,
+      longDescription: r.long_description,
+      metalWeight: r.metal_weight,
+      diamondWeight: r.diamond_weight,
+      polkiWeight: r.polki_weight,
+      metalQuality: r.metal_quality,
+      diamondQuality: r.diamond_quality,
+      colourStoneWeight: r.colour_stone_weight,
+      angles: typeof r.angles === 'string' ? JSON.parse(r.angles) : r.angles || [],
+      availableMetals: typeof r.available_metals === 'string' ? JSON.parse(r.available_metals) : r.available_metals || [],
+      availableSizes: typeof r.available_sizes === 'string' ? JSON.parse(r.available_sizes) : r.available_sizes || [],
+      details: typeof r.details === 'string' ? JSON.parse(r.details) : r.details || []
+    }));
+  }
+
+  if (cleanName === 'heritageItems') {
+    const res = await pool.query("SELECT * FROM heritage_items ORDER BY created_at ASC");
+    return res.rows;
+  }
+
+  if (cleanName === 'methodologySteps') {
+    const res = await pool.query("SELECT * FROM methodology_steps ORDER BY step_order ASC, created_at ASC");
+    return res.rows.map(r => ({ ...r, stepOrder: r.step_order }));
+  }
+
+  if (cleanName === 'brideGallery') {
+    const res = await pool.query("SELECT * FROM bride_gallery ORDER BY created_at ASC");
+    return res.rows.map(r => ({
+      ...r,
+      images: typeof r.images === 'string' ? JSON.parse(r.images) : r.images || []
+    }));
+  }
+
+  return [];
+}
+
+export async function saveCollectionToSql(name: string, items: any[]): Promise<{ success: boolean }> {
+  const pool = getPgPool();
+  const cleanName = name.replace(/^site_content_/, '');
+
+  if (cleanName === 'blogPosts') {
+    const ids = items.map(it => it.id).filter(Boolean);
+    for (const p of items) {
+      await saveBlogPostToSql(p);
+    }
+    if (ids.length > 0) {
+      await pool.query("DELETE FROM blog_posts WHERE NOT (id = ANY($1))", [ids]);
+    }
+    return { success: true };
+  }
+
+  if (cleanName === 'journalTrends') {
+    const ids = items.map(it => it.id).filter(Boolean);
+    for (const t of items) {
+      const id = t.id || `trend_${Date.now()}`;
+      await pool.query(
+        `INSERT INTO journal_trends (id, title, date, excerpt, content, image, featured_image, images)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT (id) DO UPDATE SET title = $2, date = $3, excerpt = $4, content = $5, image = $6, featured_image = $7, images = $8`,
+        [
+          id,
+          t.title || "Trends",
+          t.date || "",
+          t.excerpt || "",
+          t.content || "",
+          t.image || "",
+          t.featuredImage || t.image || "",
+          JSON.stringify(t.images || [])
+        ]
+      );
+    }
+    if (ids.length > 0) {
+      await pool.query("DELETE FROM journal_trends WHERE NOT (id = ANY($1))", [ids]);
+    }
+    return { success: true };
+  }
+
+  if (cleanName === 'shopProducts') {
+    const ids = items.map(it => it.id).filter(Boolean);
+    for (const pr of items) {
+      const id = pr.id || `product_${Date.now()}`;
+      await pool.query(
+        `INSERT INTO products (id, name, price, category, description, long_description, image, angles, metal_weight, diamond_weight, polki_weight, metal_quality, diamond_quality, colour_stone_weight, available_metals, available_sizes, details)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+         ON CONFLICT (id) DO UPDATE SET name = $2, price = $3, category = $4, description = $5, long_description = $6, image = $7, angles = $8`,
+        [
+          id,
+          pr.name || "Product",
+          pr.price || 0,
+          pr.category || "",
+          pr.description || "",
+          pr.longDescription || "",
+          pr.image || "",
+          JSON.stringify(pr.angles || []),
+          String(pr.metalWeight || ""),
+          String(pr.diamondWeight || ""),
+          String(pr.polkiWeight || ""),
+          pr.metalQuality || "",
+          pr.diamondQuality || "",
+          String(pr.colourStoneWeight || ""),
+          JSON.stringify(pr.availableMetals || []),
+          JSON.stringify(pr.availableSizes || []),
+          JSON.stringify(pr.details || [])
+        ]
+      );
+    }
+    if (ids.length > 0) {
+      await pool.query("DELETE FROM products WHERE NOT (id = ANY($1))", [ids]);
+    }
+    return { success: true };
+  }
+
+  if (cleanName === 'heritageItems') {
+    const ids = items.map(it => it.id).filter(Boolean);
+    for (const h of items) {
+      const id = h.id || `heritage_${Date.now()}`;
+      await pool.query(
+        `INSERT INTO heritage_items (id, title, era, year, description, materials, image)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (id) DO UPDATE SET title = $2, era = $3, year = $4, description = $5, materials = $6, image = $7`,
+        [id, h.title || "", h.era || "", h.year || "", h.description || "", h.materials || "", h.image || ""]
+      );
+    }
+    if (ids.length > 0) {
+      await pool.query("DELETE FROM heritage_items WHERE NOT (id = ANY($1))", [ids]);
+    }
+    return { success: true };
+  }
+
+  if (cleanName === 'methodologySteps') {
+    const ids = items.map(it => it.id).filter(Boolean);
+    for (let idx = 0; idx < items.length; idx++) {
+      const m = items[idx];
+      const id = m.id || `step_${Date.now()}_${idx}`;
+      const stepOrder = typeof m.stepOrder === 'number' && m.stepOrder > 0 ? m.stepOrder : (idx + 1);
+      await pool.query(
+        `INSERT INTO methodology_steps (id, title, subtitle, text, detail, image, step_order)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (id) DO UPDATE SET title = $2, subtitle = $3, text = $4, detail = $5, image = $6, step_order = $7`,
+        [id, m.title || "", m.subtitle || "", m.text || "", m.detail || "", m.image || "", stepOrder]
+      );
+    }
+    if (ids.length > 0) {
+      await pool.query("DELETE FROM methodology_steps WHERE NOT (id = ANY($1))", [ids]);
+    }
+    return { success: true };
+  }
+
+  if (cleanName === 'brideGallery') {
+    const ids = items.map(it => it.id).filter(Boolean);
+    for (const b of items) {
+      const id = b.id || `bride_${Date.now()}`;
+      await pool.query(
+        `INSERT INTO bride_gallery (id, name, story, description, image, images)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (id) DO UPDATE SET name = $2, story = $3, description = $4, image = $5, images = $6`,
+        [id, b.name || "", b.story || "", b.description || "", b.image || "", JSON.stringify(b.images || [])]
+      );
+    }
+    if (ids.length > 0) {
+      await pool.query("DELETE FROM bride_gallery WHERE NOT (id = ANY($1))", [ids]);
+    }
+    return { success: true };
+  }
+
+  return { success: true };
+}
+
 export async function saveGlobalContentToSql(newContent: any) {
   const pool = getPgPool();
   const {
@@ -157,45 +351,22 @@ export async function saveGlobalContentToSql(newContent: any) {
 
   // Update collections if provided
   if (Array.isArray(shopProducts)) {
-    for (const pr of shopProducts) {
-      if (!pr.id) continue;
-      await pool.query(
-        `INSERT INTO products (id, name, price, category, description, long_description, image, angles, metal_weight, diamond_weight, polki_weight, metal_quality, diamond_quality, colour_stone_weight, available_metals, available_sizes, details)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-         ON CONFLICT (id) DO UPDATE SET name = $2, price = $3, category = $4, description = $5, long_description = $6, image = $7, angles = $8`,
-        [
-          pr.id,
-          pr.name || "Product",
-          pr.price || 0,
-          pr.category || "",
-          pr.description || "",
-          pr.longDescription || "",
-          pr.image || "",
-          JSON.stringify(pr.angles || []),
-          String(pr.metalWeight || ""),
-          String(pr.diamondWeight || ""),
-          String(pr.polkiWeight || ""),
-          pr.metalQuality || "",
-          pr.diamondQuality || "",
-          String(pr.colourStoneWeight || ""),
-          JSON.stringify(pr.availableMetals || []),
-          JSON.stringify(pr.availableSizes || []),
-          JSON.stringify(pr.details || [])
-        ]
-      );
-    }
+    await saveCollectionToSql('shopProducts', shopProducts);
   }
-
   if (Array.isArray(heritageItems)) {
-    for (const h of heritageItems) {
-      if (!h.id) continue;
-      await pool.query(
-        `INSERT INTO heritage_items (id, title, era, year, description, materials, image)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT (id) DO UPDATE SET title = $2, era = $3, year = $4, description = $5, materials = $6, image = $7`,
-        [h.id, h.title || "", h.era || "", h.year || "", h.description || "", h.materials || "", h.image || ""]
-      );
-    }
+    await saveCollectionToSql('heritageItems', heritageItems);
+  }
+  if (Array.isArray(methodologySteps)) {
+    await saveCollectionToSql('methodologySteps', methodologySteps);
+  }
+  if (Array.isArray(brideGallery)) {
+    await saveCollectionToSql('brideGallery', brideGallery);
+  }
+  if (Array.isArray(journalTrends)) {
+    await saveCollectionToSql('journalTrends', journalTrends);
+  }
+  if (Array.isArray(blogPosts)) {
+    await saveCollectionToSql('blogPosts', blogPosts);
   }
 
   return { success: true };
@@ -205,6 +376,27 @@ export async function saveBlogPostToSql(post: any) {
   const pool = getPgPool();
   const id = post.id || `post_${Date.now()}`;
   const slug = post.title ? post.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "") : id;
+
+  let gallery = Array.isArray(post.images)
+    ? post.images
+    : (typeof post.images === 'string' ? JSON.parse(post.images || '[]') : []);
+
+  let primaryImg = post.image || "";
+  let featuredImg = post.featuredImage || primaryImg || "";
+
+  // Prioritize custom uploaded image (data URL or local) over placeholder Unsplash
+  if (gallery.length > 0 && gallery[0] && (gallery[0].startsWith("data:") || gallery[0].startsWith("/"))) {
+    if (!primaryImg || primaryImg.includes("unsplash.com")) {
+      primaryImg = gallery[0];
+    }
+    if (!featuredImg || featuredImg.includes("unsplash.com")) {
+      featuredImg = gallery[0];
+    }
+  }
+
+  if (primaryImg && (primaryImg.startsWith("data:") || primaryImg.startsWith("/")) && (!gallery || gallery.length === 0)) {
+    gallery = [primaryImg];
+  }
 
   await pool.query(
     `INSERT INTO blog_posts (id, title, slug, date, excerpt, content, image, featured_image, images, published, author, meta_description)
@@ -217,9 +409,9 @@ export async function saveBlogPostToSql(post: any) {
       post.date || "",
       post.excerpt || "",
       post.content || "",
-      post.image || "",
-      post.featuredImage || post.image || "",
-      JSON.stringify(post.images || []),
+      primaryImg,
+      featuredImg || primaryImg,
+      JSON.stringify(gallery),
       post.published !== false,
       post.author || "Shekar Menon",
       post.metaDescription || ""

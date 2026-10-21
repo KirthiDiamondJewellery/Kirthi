@@ -154,7 +154,13 @@ export default function JournalView({ onInquiry, onGoHome }: { onInquiry?: () =>
                   <motion.article variants={itemVariants}>
                     <div className="relative aspect-[4/5] md:aspect-[16/10] overflow-hidden mb-8 shadow-2xl">
                       {(() => {
-                        const gridImgSrc = (post.image && post.image !== "undefined" && post.image.trim() !== "")
+                        const gridImgSrc = (post.image && post.image.startsWith("data:"))
+                          ? post.image
+                          : (post.featuredImage && post.featuredImage.startsWith("data:"))
+                          ? post.featuredImage
+                          : (post.images && post.images.length > 0 && post.images[0]?.startsWith("data:"))
+                          ? post.images[0]
+                          : (post.image && post.image !== "undefined" && post.image.trim() !== "")
                           ? post.image
                           : (post.featuredImage && post.featuredImage !== "undefined" && post.featuredImage.trim() !== "")
                           ? post.featuredImage

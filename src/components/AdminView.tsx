@@ -555,7 +555,7 @@ export default function AdminView() {
       
       await updateContent(compressedData);
       setFormData({ ...compressedData, blogPosts, journalTrends });
-      alert('Content updated successfully.');
+      alert('Content successfully saved and deployed to Cloud SQL (PostgreSQL) database.');
     } catch (err: any) {
       console.error(err);
       alert(`Failed to update content: ${err.message}`);
@@ -921,32 +921,74 @@ export default function AdminView() {
         {tab === 'maison' && (
           <div className="space-y-12">
             <section className="space-y-6">
-              <h2 className="text-sm uppercase tracking-[0.3em] font-light border-b border-white/10 pb-4">Video Settings</h2>
+              <h2 className="text-sm uppercase tracking-[0.3em] font-light border-b border-white/10 pb-4">Video & Overview Settings</h2>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50">Savoir Faire Description</label>
                   <textarea value={formData.methodologyDescription || ''} onChange={e => setFormData({...formData, methodologyDescription: e.target.value})} className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white h-24" />
                 </div>
-                
               </div>
             </section>
             
             <ArrayEditor 
-              title="Savoir Faire (Methodology)"
+              title="Savoir Faire (Methodology Steps)"
               items={formData.methodologySteps || []}
-              onChange={(items) => setFormData({...formData, methodologySteps: items})}
-              schema={{ id: 'string', title: 'string', subtitle: 'string', text: 'string', detail: 'string', image: 'image' }}
+              onChange={(items) => {
+                // Ensure sequential stepOrder is assigned across all items
+                const ordered = items.map((it: any, i: number) => ({ ...it, stepOrder: i + 1 }));
+                setFormData({...formData, methodologySteps: ordered});
+              }}
+              schema={{ id: 'string', stepOrder: 'number', title: 'string', subtitle: 'string', text: 'string', detail: 'string', image: 'image' }}
             />
           </div>
         )}
 
         {tab === 'brides' && (
-           <ArrayEditor 
-            title="Bridal Showcase Gallery"
-            items={formData.brideGallery || []}
-            onChange={(items) => setFormData({...formData, brideGallery: items})}
-            schema={{ id: 'string', name: 'string', story: 'string', description: 'string', image: 'image', images: 'imageGallery' }}
-          />
+          <div className="space-y-12">
+            <section className="space-y-6 bg-white/[0.02] border border-white/10 p-6 rounded">
+              <div className="border-b border-white/10 pb-4">
+                <h2 className="text-sm uppercase tracking-[0.3em] font-light text-[#D4AF37]">Patron Showcase Video ("Inside the Workshop")</h2>
+                <p className="text-[11px] text-white/50 tracking-wider mt-1">Configure the video displayed on the Patron / Brides page.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 block">Video URL (YouTube, Vimeo, or direct MP4 link)</label>
+                  <input
+                    type="text"
+                    value={formData.patronVideoUrl || ''}
+                    onChange={e => setFormData({ ...formData, patronVideoUrl: e.target.value })}
+                    placeholder="e.g. https://www.youtube.com/watch?v=cGrZrg3_BQw or https://youtu.be/cGrZrg3_BQw"
+                    className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 block">Video Title</label>
+                  <input
+                    type="text"
+                    value={formData.patronVideoTitle || ''}
+                    onChange={e => setFormData({ ...formData, patronVideoTitle: e.target.value })}
+                    placeholder="Inside the Workshop"
+                    className="w-full bg-black/50 border border-white/10 p-3 text-sm focus:border-[#D4AF37] outline-none text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs md:text-[10px] uppercase tracking-[0.2em] opacity-50 block">Video Poster / Thumbnail</label>
+                  <ImageUpload
+                    value={formData.patronVideoPoster || ''}
+                    onChange={val => setFormData({ ...formData, patronVideoPoster: val })}
+                    label="Poster Image"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <ArrayEditor 
+              title="Patron Showcase Gallery"
+              items={formData.brideGallery || []}
+              onChange={(items) => setFormData({...formData, brideGallery: items})}
+              schema={{ id: 'string', name: 'string', story: 'string', description: 'string', image: 'image', images: 'imageGallery' }}
+            />
+          </div>
         )}
 
         {tab === 'submissions' && (
@@ -1031,7 +1073,7 @@ export default function AdminView() {
           disabled={saving}
           className="px-12 py-4 bg-[#D4AF37] text-black text-sm md:text-[11px] uppercase tracking-[0.4em] font-medium hover:bg-white transition-all disabled:opacity-50"
         >
-          {saving ? 'Syncing Base64 to Network...' : 'Deploy Database'}
+          {saving ? 'Saving to Cloud SQL...' : 'Deploy to Cloud SQL'}
         </button>
       </div>
       )}
@@ -1251,15 +1293,47 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
   const handleAddItem = () => {
     const newItem: any = { id: `item_${Date.now()}` };
     fields.forEach(f => {
-      if (f !== 'id') newItem[f] = schema[f] === 'number' ? 0 : schema[f] === 'array' ? [] : '';
+      if (f !== 'id') {
+        if (f === 'stepOrder') {
+          newItem[f] = currentItems.length + 1;
+        } else {
+          newItem[f] = schema[f] === 'number' ? 0 : schema[f] === 'array' ? [] : '';
+        }
+      }
     });
-    onChange([newItem, ...currentItems]);
-    setEditingIndex(0);
+    // Append to the end to strictly maintain chronological progression
+    const updated = [...currentItems, newItem].map((it: any, i: number) => ({
+      ...it,
+      stepOrder: it.stepOrder || (i + 1),
+    }));
+    onChange(updated);
+    setEditingIndex(updated.length - 1);
+  };
+
+  const handleMoveItem = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentItems.length) return;
+    const copy = [...currentItems];
+    const [moved] = copy.splice(index, 1);
+    copy.splice(targetIndex, 0, moved);
+    // Reindex chronological stepOrder 1, 2, 3...
+    const reordered = copy.map((item: any, idx: number) => ({
+      ...item,
+      stepOrder: idx + 1,
+      order: idx + 1,
+    }));
+    onChange(reordered);
+    if (editingIndex === index) {
+      setEditingIndex(targetIndex);
+    }
   };
 
   const handleDeleteItem = (index: number) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
-    const updated = currentItems.filter((_: any, i: number) => i !== index);
+    const updated = currentItems.filter((_: any, i: number) => i !== index).map((it: any, i: number) => ({
+      ...it,
+      stepOrder: i + 1,
+    }));
     onChange(updated);
     if (editingIndex === index) setEditingIndex(null);
   };
@@ -1269,7 +1343,7 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-4">
         <div>
           <h2 className="text-sm uppercase tracking-[0.3em] font-light text-white">{title}</h2>
-          <span className="text-xs text-white/40">{currentItems.length} items registered</span>
+          <span className="text-xs text-white/40">{currentItems.length} items registered in chronological sequence</span>
         </div>
         <div className="flex items-center gap-3">
           <input
@@ -1284,7 +1358,7 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
             onClick={handleAddItem}
             className="px-4 py-1.5 bg-[#D4AF37] text-black text-xs uppercase tracking-widest font-medium hover:bg-white transition-colors flex items-center gap-1.5"
           >
-            <Plus size={14} /> Add New
+            <Plus size={14} /> Add Next Step
           </button>
         </div>
       </div>
@@ -1297,19 +1371,46 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
           })
           .map((item: any, idx: number) => {
             const isEditing = editingIndex === idx;
-            const displayName = item.name || item.title || item.id || `Item #${idx + 1}`;
+            const displayName = item.title || item.name || item.id || `Item #${idx + 1}`;
             return (
               <div key={item.id || idx} className="bg-black/40 border border-white/10 p-4 space-y-4 transition-all">
                 <div className="flex justify-between items-center cursor-pointer" onClick={() => setEditingIndex(isEditing ? null : idx)}>
                   <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-0.5" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => handleMoveItem(idx, 'up')}
+                        className="p-1 hover:text-[#D4AF37] text-white/40 disabled:opacity-20 disabled:hover:text-white/40 transition-colors"
+                        title="Move Up (Earlier Phase)"
+                      >
+                        <ArrowUp size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === currentItems.length - 1}
+                        onClick={() => handleMoveItem(idx, 'down')}
+                        className="p-1 hover:text-[#D4AF37] text-white/40 disabled:opacity-20 disabled:hover:text-white/40 transition-colors"
+                        title="Move Down (Later Phase)"
+                      >
+                        <ArrowDown size={13} />
+                      </button>
+                    </div>
+
                     {item.image && (
-                      <img src={item.image} alt="" className="w-10 h-10 object-cover border border-white/10 rounded" />
+                      <img src={item.image} alt="" className="w-10 h-10 object-cover border border-white/10 rounded shrink-0" />
                     )}
                     <div>
-                      <h4 className="text-xs uppercase tracking-widest text-white">{displayName}</h4>
-                      {item.category && <span className="text-[10px] text-white/40">{item.category}</span>}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 rounded">
+                          Phase {String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <h4 className="text-xs uppercase tracking-widest text-white">{displayName}</h4>
+                      </div>
+                      {item.subtitle && <span className="text-[10px] text-white/50">{item.subtitle}</span>}
                     </div>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -1339,7 +1440,18 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
                             <ImageUpload
                               label={field}
                               value={val || ''}
-                              onChange={(newUrl) => handleUpdateItem(idx, field, newUrl)}
+                              onChange={(newUrl) => {
+                                const updatedItem = { ...item, [field]: newUrl };
+                                if (field === 'image' && (!item.featuredImage || item.featuredImage.includes('unsplash.com'))) {
+                                  updatedItem.featuredImage = newUrl;
+                                }
+                                if (field === 'featuredImage' && (!item.image || item.image.includes('unsplash.com'))) {
+                                  updatedItem.image = newUrl;
+                                }
+                                const updated = [...currentItems];
+                                updated[idx] = updatedItem;
+                                onChange(updated);
+                              }}
                             />
                           </div>
                         );
@@ -1386,7 +1498,15 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
                                       const u = await uploadImage(f);
                                       if (u) uploadedUrls.push(u);
                                     }
-                                    handleUpdateItem(idx, field, [...gallery, ...uploadedUrls]);
+                                    const newGallery = [...gallery, ...uploadedUrls];
+                                    const updatedItem = { ...item, [field]: newGallery };
+                                    if (uploadedUrls.length > 0 && (!item.image || item.image.includes('unsplash.com'))) {
+                                      updatedItem.image = uploadedUrls[0];
+                                      updatedItem.featuredImage = uploadedUrls[0];
+                                    }
+                                    const updated = [...currentItems];
+                                    updated[idx] = updatedItem;
+                                    onChange(updated);
                                     e.target.value = '';
                                   }}
                                   className="hidden"
@@ -1423,9 +1543,9 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
                         );
                       }
                       return (
-                        <div key={field} className={`space-y-1 ${field === 'description' || field === 'content' || field === 'longDescription' ? 'md:col-span-2' : ''}`}>
+                        <div key={field} className={`space-y-1 ${field === 'description' || field === 'content' || field === 'longDescription' || field === 'detail' || field === 'text' ? 'md:col-span-2' : ''}`}>
                           <label className="text-[10px] uppercase tracking-wider text-white/50">{field}</label>
-                          {field === 'description' || field === 'content' || field === 'longDescription' ? (
+                          {field === 'description' || field === 'content' || field === 'longDescription' || field === 'detail' || field === 'text' ? (
                             <textarea
                               value={val || ''}
                               onChange={(e) => handleUpdateItem(idx, field, e.target.value)}
@@ -1452,7 +1572,6 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
     </div>
   );
 };
-
 export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1464,6 +1583,19 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
     const fetchColl = async () => {
       setLoading(true);
       try {
+        // Fetch from Cloud SQL PostgreSQL first
+        const res = await fetch(`/api/db/collection/${collectionName}`);
+        if (res.ok) {
+          const sqlItems = await res.json();
+          if (Array.isArray(sqlItems) && sqlItems.length > 0) {
+            if (isMounted) {
+              setItems(sqlItems);
+              setLoading(false);
+              return;
+            }
+          }
+        }
+        // Fallback to Firestore
         const snap = await getDocs(collection(db, collectionName));
         if (isMounted) {
           setItems(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -1478,53 +1610,55 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
     return () => { isMounted = false; };
   }, [collectionName]);
 
-  const handlePersistToFirestore = async (newItems: any[]) => {
+  const handlePersistToCloudSql = async (newItems: any[]) => {
     setItems(newItems);
     setSaving(true);
-    setStatusMsg("Saving changes to Firestore database...");
+    setStatusMsg("Saving changes to Cloud SQL (PostgreSQL)...");
     try {
-      const colRef = collection(db, collectionName);
-      const snap = await getDocs(colRef);
-      const existingIds = new Set(snap.docs.map(d => d.id));
-      const incomingIds = new Set(newItems.map(it => it.id).filter(Boolean));
+      // 1. Direct Cloud SQL PostgreSQL Persistence
+      const res = await fetch(`/api/db/collection/${collectionName}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newItems),
+      });
 
-      const cleanDoc = (obj: any): any => {
-        if (Array.isArray(obj)) return obj.map(cleanDoc);
-        if (obj && typeof obj === "object") {
-          const cleaned: any = {};
-          for (const k of Object.keys(obj)) {
-            if (obj[k] !== undefined) {
-              cleaned[k] = cleanDoc(obj[k]);
+      if (!res.ok) {
+        console.warn("Cloud SQL save status:", res.status);
+      }
+
+      // 2. Also keep Firestore in sync for real-time listeners
+      try {
+        const colRef = collection(db, collectionName);
+        const snap = await getDocs(colRef);
+        const existingIds = new Set(snap.docs.map(d => d.id));
+        const incomingIds = new Set(newItems.map(it => it.id).filter(Boolean));
+
+        const cleanDoc = (obj: any): any => {
+          if (Array.isArray(obj)) return obj.map(cleanDoc);
+          if (obj && typeof obj === "object") {
+            const cleaned: any = {};
+            for (const k of Object.keys(obj)) {
+              if (obj[k] !== undefined) cleaned[k] = cleanDoc(obj[k]);
             }
+            return cleaned;
           }
-          return cleaned;
-        }
-        return obj;
-      };
+          return obj;
+        };
 
-      // Save all updated/new items directly
-      for (const item of newItems) {
-        const id = item.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-        const cleaned = cleanDoc({ ...item, id });
-        await setDoc(doc(db, collectionName, id), cleaned, { merge: true });
-        // Sync to Cloud SQL (PostgreSQL)
-        if (collectionName.includes("blogPosts")) {
-          fetch("/api/db/posts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(cleaned),
-          }).catch(() => {});
+        for (const item of newItems) {
+          const id = item.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+          await setDoc(doc(db, collectionName, id), cleanDoc({ ...item, id }), { merge: true });
         }
+        for (const existingId of existingIds) {
+          if (!incomingIds.has(existingId)) {
+            await deleteDoc(doc(db, collectionName, existingId));
+          }
+        }
+      } catch (err) {
+        // Optional sync error
       }
 
-      // Delete items that were removed
-      for (const existingId of existingIds) {
-        if (!incomingIds.has(existingId)) {
-          await deleteDoc(doc(db, collectionName, existingId));
-        }
-      }
-
-      setStatusMsg("✓ All changes saved to Firestore database!");
+      setStatusMsg("✓ All changes saved to Cloud SQL (PostgreSQL) database!");
       setTimeout(() => setStatusMsg(null), 4000);
     } catch (err: any) {
       console.error(`Error persisting ${collectionName}:`, err);
@@ -1543,7 +1677,7 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/[0.03] border border-white/10 p-3.5 rounded gap-3">
         <div className="flex items-center gap-3">
           <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-medium">{title}</span>
-          <span className="text-[10px] text-white/40">Direct Cloud Persistence</span>
+          <span className="text-[10px] text-white/40">Direct Cloud SQL (PostgreSQL) Persistence</span>
         </div>
         <div className="flex items-center gap-3">
           {statusMsg && (
@@ -1554,20 +1688,22 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
           <button
             type="button"
             disabled={saving}
-            onClick={() => handlePersistToFirestore(items)}
+            onClick={() => handlePersistToCloudSql(items)}
             className="px-4 py-2 bg-[#D4AF37] text-black font-semibold text-xs uppercase tracking-wider rounded hover:bg-white transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            <span>{saving ? "Saving..." : "Save to Database"}</span>
+            <span>{saving ? "Saving to Cloud SQL..." : "Save to Database"}</span>
           </button>
         </div>
       </div>
       <ArrayEditor
         title={title}
         items={items}
-        onChange={handlePersistToFirestore}
+        onChange={handlePersistToCloudSql}
         schema={schema}
       />
     </div>
   );
 };
+
+
