@@ -15,14 +15,16 @@ export interface Section {
 export interface Product {
   id: string;
   variantId?: string;
-  name: string;
+  name?: string;
+  title?: string;
   category: string;
   price: number;
   description: string;
-  longDescription: string;
+  longDescription?: string;
   image: string;
-  details: string[];
-  angles: string[];
+  details?: string[];
+  angles?: string[];
+  images?: string[];
   metalWeight?: number | string;
   diamondWeight?: number | string;
   polkiWeight?: number | string;

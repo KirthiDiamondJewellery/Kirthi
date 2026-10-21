@@ -7,7 +7,7 @@ import { auth, db, storage } from '../lib/firebase';
 import { doc, getDoc, collection, getDocs, deleteDoc, setDoc, query, startAfter, limit } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, uploadBytes } from 'firebase/storage';
 import { useContent, SiteContent } from '../contexts/ContentContext';
-import { X, Plus, Trash2, Image as ImageIcon, Loader2, Star, Save, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Plus, Trash2, Image as ImageIcon, Loader2, Star, Save, ChevronLeft, ChevronRight, ArrowUp, ArrowDown } from 'lucide-react';
 import AdminOrders from './AdminOrders';
 import AdminAnalytics from './AdminAnalytics';
 import AdminBridalSubmissions from './AdminBridalSubmissions';
