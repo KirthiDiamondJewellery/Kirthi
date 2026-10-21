@@ -9,7 +9,11 @@ import { SharedFooter } from './SharedFooter';
 
 export default function SavoirFaire({ onInquiry, onGoHome }: { onInquiry?: () => void, onGoHome?: () => void }) {
   const { content } = useContent();
-  const steps = content.methodologySteps || [];
+  const steps = (content.methodologySteps || []).slice().sort((a: any, b: any) => {
+    const orderA = typeof a.stepOrder === "number" ? a.stepOrder : typeof a.step_order === "number" ? a.step_order : typeof a.order === "number" ? a.order : 999;
+    const orderB = typeof b.stepOrder === "number" ? b.stepOrder : typeof b.step_order === "number" ? b.step_order : typeof b.order === "number" ? b.order : 999;
+    return orderA - orderB;
+  });
       
   const pageVideo = content.pageVideos?.find(v => v.id === 'methodology');
   const isMobile = useIsMobile();

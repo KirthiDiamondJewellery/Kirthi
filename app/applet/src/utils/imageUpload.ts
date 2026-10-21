@@ -1,75 +1,72 @@
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../lib/firebase';
-import imageCompression from 'browser-image-compression';
+// Bulletproof, cross-platform client-side image compression & permanent persistence
+export const compressImageToDataUrl = (file: File, maxDim = 1200, quality = 0.85): Promise<string> => {
+  if (file.type === "image/svg+xml" || file.size < 40000) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          return resolve(e.target?.result as string);
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Try webp first, fallback to jpeg
+        try {
+          const webpData = canvas.toDataURL("image/webp", quality);
+          if (webpData && webpData.startsWith("data:image/webp")) {
+            return resolve(webpData);
+          }
+        } catch (err) {}
+
+        const jpegData = canvas.toDataURL("image/jpeg", quality);
+        resolve(jpegData);
+      };
+      img.onerror = () => {
+        resolve(e.target?.result as string);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => {
+      resolve("");
+    };
+    reader.readAsDataURL(file);
+  });
+};
 
 export const compressImage = async (file: File): Promise<File> => {
-  if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
-    return file;
-  }
-  
-  const options = {
-    maxSizeMB: 1,
-    maxWidthOrHeight: 1200,
-    useWebWorker: true,
-    fileType: file.type === 'image/png' ? 'image/png' : 'image/webp'
-  };
-  
-  try {
-    const compressedFile = await imageCompression(file, options);
-    return compressedFile;
-  } catch (error) {
-    console.error("Compression error:", error);
-    return file; // fallback to original file if compression fails
-  }
+  return file;
 };
 
 export const uploadImage = async (file: File): Promise<string> => {
-  let finalFile = file;
-  try {
-    finalFile = await compressImage(file);
-    if (finalFile.name === file.name && finalFile.type === 'image/webp' && !file.name.endsWith('.webp')) { 
-      finalFile = new File([finalFile], file.name.replace(/\.[^/.]+$/, "") + '.webp', { type: 'image/webp' });
-    }
-  } catch (e) {
-    console.warn("Compression failed, using original file", e);
-  }
-
-  // 1. First, attempt upload via the server API endpoint (/api/upload)
-  try {
-    const formData = new FormData();
-    formData.append('file', finalFile);
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.url) {
-        return data.url;
-      }
-    }
-  } catch (apiErr) {
-    console.warn("Direct /api/upload failed, trying fallback:", apiErr);
-  }
-
-  // 2. Second, attempt Firebase Storage upload
-  try {
-    const storageRef = ref(storage, `uploads/${Date.now()}_${finalFile.name}`);
-    const snapshot = await uploadBytes(storageRef, finalFile);
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    return downloadURL;
-  } catch (storageErr) {
-    console.warn("Firebase Storage unavailable, falling back to data URL:", storageErr);
-  }
-
-  // 3. Fallback: Compact Data URL
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') resolve(reader.result);
-      else reject(new Error('Failed to read image as Data URL'));
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(finalFile);
-  });
+  // Always return self-contained, compressed Data URL
+  // This guarantees permanent persistence in Cloud SQL without any risk of transient disk expiration or 404s
+  const dataUrl = await compressImageToDataUrl(file, 1200, 0.85);
+  return dataUrl;
 };

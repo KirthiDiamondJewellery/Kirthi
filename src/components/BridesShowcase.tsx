@@ -219,10 +219,12 @@ export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: ()
   const gallery = content.brideGallery || [];
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   
-  const pageVideo = content.pageVideos?.find(v => v.id === 'brides') || content.pageVideos?.find(v => v.id === 'methodology');
+  const pageVideo = content.pageVideos?.find(v => v.id === 'brides') || content.pageVideos?.find(v => v.id === 'patron') || content.pageVideos?.find(v => v.id === 'methodology');
   const isMobile = useIsMobile();
-  const videoUrl = (isMobile && pageVideo?.mobileVideoUrl) ? pageVideo.mobileVideoUrl : (pageVideo?.videoUrl || pageVideo?.youtubeUrl || 'https://youtu.be/cGrZrg3_BQw');
-  const videoIdMatch = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i);
+  const rawVideoUrl = (isMobile && (content.patronMobileVideoUrl || pageVideo?.mobileVideoUrl))
+    ? (content.patronMobileVideoUrl || pageVideo?.mobileVideoUrl)
+    : (content.patronVideoUrl || content.bridesVideoUrl || pageVideo?.videoUrl || pageVideo?.youtubeUrl || 'https://www.youtube.com/watch?v=cGrZrg3_BQw');
+  const videoIdMatch = rawVideoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/i);
   const videoIdStr = videoIdMatch ? videoIdMatch[1] : "cGrZrg3_BQw";
 
   return (
@@ -480,14 +482,12 @@ export default function BridesShowcase({ onInquiry, onGoHome }: { onInquiry?: ()
             Witness the meticulous craftsmanship behind our bespoke bridal pieces. Every commission receives the undivided attention of our master bench jewellers.
           </p>
           <div className="w-full max-w-4xl mx-auto mb-16">
-            {videoIdStr ? (
-              <VideoFacade 
-                videoId={videoIdStr}
-                title={pageVideo?.title || "Inside the Workshop"}
-              />
-            ) : (
-              <VideoFacade videoId="cGrZrg3_BQw" title="Inside the Workshop" />
-            )}
+            <VideoFacade 
+              videoUrl={rawVideoUrl}
+              videoId={videoIdStr}
+              title={content.patronVideoTitle || pageVideo?.title || "Inside the Workshop"}
+              posterUrl={content.patronVideoPoster}
+            />
           </div>
         </div>
 

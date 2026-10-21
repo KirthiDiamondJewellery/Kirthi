@@ -132,8 +132,8 @@ export const FastImage = forwardRef<HTMLImageElement, FastImageProps>(({
         alt=""
         aria-hidden="true"
         referrerPolicy="no-referrer"
-        className={`absolute inset-0 w-full h-full object-cover blur-xl scale-110 transition-opacity duration-1000 pointer-events-none z-10 ${
-          isLoaded ? 'opacity-0' : 'opacity-100'
+        className={`absolute inset-0 w-full h-full object-cover blur-xl scale-110 transition-opacity duration-500 pointer-events-none z-10 ${
+          (isLoaded || src?.startsWith("data:")) ? 'opacity-0 pointer-events-none hidden' : 'opacity-100'
         }`}
       />
 
@@ -164,8 +164,8 @@ export const FastImage = forwardRef<HTMLImageElement, FastImageProps>(({
           src={getOptimizedUrl(src, 1200, 'webp')}
           alt={alt || "Image"}
           referrerPolicy="no-referrer"
-          className={`${className || 'w-full h-full object-cover'} transition-all duration-1000 ${
-            isLoaded ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-95 blur-md'
+          className={`${className || 'w-full h-full object-cover'} transition-all duration-500 ${
+            (isLoaded || src?.startsWith("data:")) ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-95 blur-md'
           }`}
           onLoad={handleLoad}
           onError={(e) => {

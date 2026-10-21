@@ -341,7 +341,13 @@ export default function BlogPostView() {
               <span className="opacity-60">Updated: May 29, 2026</span>
             </div>
             {(() => {
-              const imageSrc = (post.featuredImage && post.featuredImage.trim() !== "")
+              const imageSrc = (post.featuredImage && post.featuredImage.startsWith("data:"))
+                ? post.featuredImage
+                : (post.image && post.image.startsWith("data:"))
+                ? post.image
+                : (post.images && post.images.length > 0 && post.images[0]?.startsWith("data:"))
+                ? post.images[0]
+                : (post.featuredImage && post.featuredImage.trim() !== "")
                 ? post.featuredImage
                 : (post.image && post.image.trim() !== "")
                 ? post.image

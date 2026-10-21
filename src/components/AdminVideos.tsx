@@ -9,7 +9,8 @@ import { HeadlessVideoPlayer } from './HeadlessVideoPlayer';
 const PAGE_KEYS = [
   { id: 'home', label: 'Home Page (Hero Background Video)' },
   { id: 'methodology', label: 'Methodology Page' },
-  { id: 'bespoke', label: 'Bespoke (Inside the Workshop)' }
+  { id: 'bespoke', label: 'Bespoke (Inside the Workshop)' },
+  { id: 'brides', label: 'Patron Showcase (Inside the Workshop)' }
 ];
 
 export function AdminVideos() {
