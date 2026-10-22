@@ -1558,7 +1558,8 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
       });
 
       if (!res.ok) {
-        throw new Error(`Cloud SQL save failed with status ${res.status}`);
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.details || errJson.error || `status ${res.status}`);
       }
 
       // 2. Keep ContentContext in sync immediately
