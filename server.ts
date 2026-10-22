@@ -136,7 +136,7 @@ if (uploadDir !== publicUploadDir) {
       res.json(result);
     } catch (err: any) {
       console.error(`Error saving collection ${req.params.name} to Cloud SQL:`, err);
-      res.status(500).json({ error: "Failed to save collection to Cloud SQL" });
+      res.status(500).json({ error: "Failed to save collection to Cloud SQL", details: err?.message || String(err) });
     }
   });
 

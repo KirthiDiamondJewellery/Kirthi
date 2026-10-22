@@ -1,3 +1,27 @@
+export function safeParseArray(val: any): string[] {
+  if (!val) return [];
+  if (Array.isArray(val)) {
+    return val.map(item => (typeof item === 'string' ? item : JSON.stringify(item))).filter(Boolean);
+  }
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.map(item => (typeof item === 'string' ? item : JSON.stringify(item))).filter(Boolean);
+        }
+      } catch {}
+    }
+    if (trimmed.includes(',')) {
+      return trimmed.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [trimmed];
+  }
+  return [];
+}
+
 import { Pool } from 'pg';
 
 let pgPool: Pool | null = null;
@@ -136,7 +160,7 @@ export async function getCollectionFromSql(name: string): Promise<any[]> {
       ...r,
       featuredImage: r.featured_image,
       metaDescription: r.meta_description,
-      images: typeof r.images === 'string' ? JSON.parse(r.images) : r.images || []
+      images: safeParseArray(r.images)
     }));
   }
 
@@ -145,7 +169,7 @@ export async function getCollectionFromSql(name: string): Promise<any[]> {
     return res.rows.map(r => ({
       ...r,
       featuredImage: r.featured_image,
-      images: typeof r.images === 'string' ? JSON.parse(r.images) : r.images || []
+      images: safeParseArray(r.images)
     }));
   }
 
@@ -153,6 +177,8 @@ export async function getCollectionFromSql(name: string): Promise<any[]> {
     const res = await pool.query("SELECT * FROM products ORDER BY created_at ASC");
     return res.rows.map(r => ({
       ...r,
+      name: r.name || r.title || "Product",
+      title: r.name || r.title || "Product",
       longDescription: r.long_description,
       metalWeight: r.metal_weight,
       diamondWeight: r.diamond_weight,
@@ -160,10 +186,10 @@ export async function getCollectionFromSql(name: string): Promise<any[]> {
       metalQuality: r.metal_quality,
       diamondQuality: r.diamond_quality,
       colourStoneWeight: r.colour_stone_weight,
-      angles: typeof r.angles === 'string' ? JSON.parse(r.angles) : r.angles || [],
-      availableMetals: typeof r.available_metals === 'string' ? JSON.parse(r.available_metals) : r.available_metals || [],
-      availableSizes: typeof r.available_sizes === 'string' ? JSON.parse(r.available_sizes) : r.available_sizes || [],
-      details: typeof r.details === 'string' ? JSON.parse(r.details) : r.details || []
+      angles: safeParseArray(r.angles),
+      availableMetals: safeParseArray(r.available_metals),
+      availableSizes: safeParseArray(r.available_sizes),
+      details: safeParseArray(r.details)
     }));
   }
 
@@ -181,7 +207,7 @@ export async function getCollectionFromSql(name: string): Promise<any[]> {
     const res = await pool.query("SELECT * FROM bride_gallery ORDER BY created_at ASC");
     return res.rows.map(r => ({
       ...r,
-      images: typeof r.images === 'string' ? JSON.parse(r.images) : r.images || []
+      images: safeParseArray(r.images)
     }));
   }
 
@@ -193,9 +219,13 @@ export async function saveCollectionToSql(name: string, items: any[]): Promise<{
   const cleanName = name.replace(/^site_content_/, '');
 
   if (cleanName === 'blogPosts') {
-    const ids = items.map(it => it.id).filter(Boolean);
-    for (const p of items) {
-      await saveBlogPostToSql(p);
+    const validItems = Array.isArray(items) ? items : [];
+    const ids: string[] = [];
+    for (const p of validItems) {
+      if (p && typeof p === 'object') {
+        const res = await saveBlogPostToSql(p);
+        if (res && res.id) ids.push(res.id);
+      }
     }
     if (ids.length > 0) {
       await pool.query("DELETE FROM blog_posts WHERE NOT (id = ANY($1))", [ids]);
@@ -204,22 +234,29 @@ export async function saveCollectionToSql(name: string, items: any[]): Promise<{
   }
 
   if (cleanName === 'journalTrends') {
-    const ids = items.map(it => it.id).filter(Boolean);
-    for (const t of items) {
-      const id = t.id || `trend_${Date.now()}`;
+    const validItems = Array.isArray(items) ? items : [];
+    const ids: string[] = [];
+    for (let idx = 0; idx < validItems.length; idx++) {
+      const t = validItems[idx];
+      if (!t || typeof t !== 'object') continue;
+      const id = String(t.id || `trend_${Date.now()}_${idx}`);
+      ids.push(id);
+      const gallery = safeParseArray(t.images);
+      const primaryImg = typeof t.image === 'string' ? t.image : (gallery.length > 0 ? gallery[0] : "");
+      const featuredImg = typeof t.featuredImage === 'string' ? t.featuredImage : primaryImg;
       await pool.query(
         `INSERT INTO journal_trends (id, title, date, excerpt, content, image, featured_image, images)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (id) DO UPDATE SET title = $2, date = $3, excerpt = $4, content = $5, image = $6, featured_image = $7, images = $8`,
         [
           id,
-          t.title || "Trends",
-          t.date || "",
-          t.excerpt || "",
-          t.content || "",
-          t.image || "",
-          t.featuredImage || t.image || "",
-          JSON.stringify(t.images || [])
+          String(t.title || "Trends"),
+          String(t.date || ""),
+          String(t.excerpt || ""),
+          String(t.content || ""),
+          primaryImg,
+          featuredImg,
+          JSON.stringify(gallery)
         ]
       );
     }
@@ -374,15 +411,22 @@ export async function saveGlobalContentToSql(newContent: any) {
 
 export async function saveBlogPostToSql(post: any) {
   const pool = getPgPool();
-  const id = post.id || `post_${Date.now()}`;
-  const slug = post.title ? post.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "") : id;
+  if (!post || typeof post !== 'object') {
+    return { success: false, id: null };
+  }
 
-  let gallery = Array.isArray(post.images)
-    ? post.images
-    : (typeof post.images === 'string' ? JSON.parse(post.images || '[]') : []);
+  const id = String(post.id || `post_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`);
+  const rawTitle = String(post.title || "Untitled Article").trim();
+  const fallbackSlug = id.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const derivedSlug = rawTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+  const slug = post.slug ? String(post.slug).trim() : (derivedSlug || fallbackSlug);
 
-  let primaryImg = post.image || "";
-  let featuredImg = post.featuredImage || primaryImg || "";
+  let gallery = safeParseArray(post.images);
+  let primaryImg = typeof post.image === 'string' ? post.image : "";
+  let featuredImg = typeof post.featuredImage === 'string' ? post.featuredImage : primaryImg;
 
   // Prioritize custom uploaded image (data URL or local) over placeholder Unsplash
   if (gallery.length > 0 && gallery[0] && (gallery[0].startsWith("data:") || gallery[0].startsWith("/"))) {
@@ -394,27 +438,38 @@ export async function saveBlogPostToSql(post: any) {
     }
   }
 
-  if (primaryImg && (primaryImg.startsWith("data:") || primaryImg.startsWith("/")) && (!gallery || gallery.length === 0)) {
+  if (primaryImg && gallery.length === 0) {
     gallery = [primaryImg];
   }
 
   await pool.query(
     `INSERT INTO blog_posts (id, title, slug, date, excerpt, content, image, featured_image, images, published, author, meta_description)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-     ON CONFLICT (id) DO UPDATE SET title = $2, slug = $3, date = $4, excerpt = $5, content = $6, image = $7, featured_image = $8, images = $9, published = $10, author = $11, meta_description = $12`,
+     ON CONFLICT (id) DO UPDATE SET 
+       title = $2, 
+       slug = $3, 
+       date = $4, 
+       excerpt = $5, 
+       content = $6, 
+       image = $7, 
+       featured_image = $8, 
+       images = $9, 
+       published = $10, 
+       author = $11, 
+       meta_description = $12`,
     [
       id,
-      post.title || "Untitled",
+      rawTitle || "Untitled",
       slug,
-      post.date || "",
-      post.excerpt || "",
-      post.content || "",
+      String(post.date || new Date().toLocaleDateString('en-GB')),
+      String(post.excerpt || ""),
+      String(post.content || ""),
       primaryImg,
       featuredImg || primaryImg,
       JSON.stringify(gallery),
       post.published !== false,
-      post.author || "Shekar Menon",
-      post.metaDescription || ""
+      String(post.author || "Shekar Menon"),
+      String(post.metaDescription || "")
     ]
   );
   return { success: true, id };
