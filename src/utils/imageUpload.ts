@@ -1,4 +1,4 @@
-// Bulletproof, cross-platform client-side image compression & upload
+// Bulletproof, cross-platform client-side image compression & permanent persistence
 export const compressImageToDataUrl = (file: File, maxDim = 1200, quality = 0.85): Promise<string> => {
   if (file.type === "image/svg+xml" || file.size < 40000) {
     return new Promise((resolve, reject) => {
@@ -16,6 +16,7 @@ export const compressImageToDataUrl = (file: File, maxDim = 1200, quality = 0.85
       img.onload = () => {
         let width = img.width;
         let height = img.height;
+
         if (width > maxDim || height > maxDim) {
           if (width > height) {
             height = Math.round((height * maxDim) / width);
@@ -25,6 +26,7 @@ export const compressImageToDataUrl = (file: File, maxDim = 1200, quality = 0.85
             height = maxDim;
           }
         }
+
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
@@ -32,6 +34,7 @@ export const compressImageToDataUrl = (file: File, maxDim = 1200, quality = 0.85
         if (!ctx) {
           return resolve(e.target?.result as string);
         }
+
         ctx.drawImage(img, 0, 0, width, height);
 
         // Try webp first, fallback to jpeg
@@ -62,27 +65,8 @@ export const compressImage = async (file: File): Promise<File> => {
 };
 
 export const uploadImage = async (file: File): Promise<string> => {
-  // 1. First generate compressed data URL (guaranteed fallback)
-  const dataUrl = await compressImageToDataUrl(file);
-
-  // 2. Try server-side persistent upload (/api/upload)
-  try {
-    const bodyFormData = new FormData();
-    bodyFormData.append("file", file);
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: bodyFormData,
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.url) {
-        return data.url;
-      }
-    }
-  } catch (err) {
-    console.warn("Server upload endpoint unavailable, using compressed data URL:", err);
-  }
-
-  // Fallback directly to compressed data URL
+  // Always return self-contained, high-performance compressed Data URL
+  // This is stored permanently in Cloud SQL PostgreSQL and NEVER depends on ephemeral disk files
+  const dataUrl = await compressImageToDataUrl(file, 1200, 0.85);
   return dataUrl;
 };

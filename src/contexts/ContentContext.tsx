@@ -376,232 +376,72 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [loading, setLoading] = useState(true);
 
-  // Expose initContent logic through an effect
+  // Authoritative load from Cloud SQL (PostgreSQL)
   useEffect(() => {
-    let currentData: any = { ...defaultContent };
     let isMounted = true;
-    
-    // Safety timeout
+
     const timeout = setTimeout(() => {
       if (isMounted) setLoading(false);
-    }, 5000);
+    }, 4000);
 
-    // Initial load from Cloud SQL (PostgreSQL)
     fetch("/api/db/content")
       .then(res => res.ok ? res.json() : null)
       .then(sqlData => {
         if (sqlData && isMounted) {
-          currentData = { ...currentData, ...sqlData };
-          setContent({ ...currentData });
+          setContent(prev => ({
+            ...defaultContent,
+            ...prev,
+            ...sqlData
+          }));
           setLoading(false);
           clearTimeout(timeout);
         }
       })
-      .catch(() => {});
-
-    const listCollections = ['blogPosts', 'pageVideos', 'shopProducts', 'heritageItems', 'methodologySteps', 'brideGallery', 'journalTrends', 'faqs', 'homeFAQs'];
-    let loadedCount = 0;
-    const totalToLoad = 1 + listCollections.length;
-
-    const checkLoading = () => {
-      loadedCount++;
-      if (loadedCount >= totalToLoad && isMounted) {
-        setLoading(false);
-        clearTimeout(timeout);
-      }
-    };
-
-    const unsubs: (() => void)[] = [];
-
-    // 1. Global site_content
-    let globalInitial = false;
-    const globalUnsub = onSnapshot(
-      doc(db, "site_content", "global"),
-      (docSnap) => {
-        if (docSnap.exists()) {
-          const snapData = docSnap.data();
-          
-          // Sanitize journalTrendsContent
-          if (snapData.journalTrendsContent && typeof snapData.journalTrendsContent === 'string') {
-            snapData.journalTrendsContent = snapData.journalTrendsContent
-              .replace(new RegExp(['c', 'oncierge', ' team'].join(''), 'gi'), 'our design team')
-              .replace(/Diamond Specialist team/gi, 'our design team');
-          }
-
-          if (snapData.sections && Array.isArray(snapData.sections)) {
-            const mergedSections = [...snapData.sections];
-            SECTIONS.forEach(defaultSec => {
-              const exists = mergedSections.some(s => s.id === defaultSec.id);
-              if (!exists) {
-                mergedSections.push(defaultSec);
-              }
-            });
-            // Ensure shop section has quiet luxury copy
-            mergedSections.forEach(sec => {
-              if (sec.id === 'shop') {
-                if (sec.description.includes('Acquire our most coveted') || sec.description.includes('curated digital flagship') || sec.description.includes('discerning collector')) {
-                  sec.description = "A selection of our pieces, shown in detail. For acquisitions and bespoke commissions, we recommend a visit to the boutique.";
-                }
-              }
-            });
-            snapData.sections = mergedSections;
-          }
-          if (snapData.logoUrl === 'https://kirthidiamonds.com/logo.png') {
-            snapData.logoUrl = '/logo.png';
-          }
-          currentData = { ...currentData, ...snapData };
-          if (isMounted) setContent({ ...currentData });
-        } else {
-          // If document doesn't exist, fallback completely for global variables
-          currentData = { ...currentData, ...defaultContent };
-          if (isMounted) setContent({ ...currentData });
-        }
-        if (!globalInitial) {
-          globalInitial = true;
-          checkLoading();
-        }
-      },
-      (err: any) => {
-        console.error("Firestore global fetch failed, falling back to default constants:", err);
-        currentData = { ...currentData, ...defaultContent };
-        if (isMounted) setContent({ ...currentData });
-        
-        if (!globalInitial) {
-          globalInitial = true;
-          checkLoading();
-        }
-      }
-    );
-    unsubs.push(globalUnsub);
-
-    // 2. Collection lists
-    const listInitials: Record<string, boolean> = {};
-    listCollections.forEach(col => {
-      listInitials[col] = false;
-      const unsub = onSnapshot(
-        collection(db, `site_content_${col}`),
-        (snap) => {
-          if (!snap.empty) {
-            const rawItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            currentData[col] = rawItems;
-            
-            // Cloud SQL PostgreSQL authoritative state preserved
-          } else {
-             // Fallback to constants if empty initially to bootstrap
-            if (!listInitials[col]) {
-              currentData[col] = (defaultContent as any)[col] || [];
-            } else {
-              currentData[col] = [];
-            }
-          }
-          if (isMounted) setContent({ ...currentData });
-          if (!listInitials[col]) {
-            listInitials[col] = true;
-            checkLoading();
-          }
-        },
-        (err: any) => {
-          console.error(`Firestore collection ${col} fetch failed, falling back to constants:`, err);
-          currentData[col] = (defaultContent as any)[col] || [];
-          if (isMounted) setContent({ ...currentData });
-
-          if (!listInitials[col]) {
-             listInitials[col] = true;
-             checkLoading();
-          }
-        }
-      );
-      unsubs.push(unsub);
-    });
+      .catch((err) => {
+        console.warn("Could not load from Cloud SQL:", err);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
 
     return () => {
       isMounted = false;
-      unsubs.forEach(unsub => unsub());
+      clearTimeout(timeout);
     };
   }, []);
 
   const updateContent = useCallback(async (newContent: Partial<SiteContent>) => {
     try {
-      // Always update globalData by merging content and newContent's global fields
-      // But only update collections if they are explicitly passed in newContent.
-      
-      const { 
-        blogPosts, 
-        journalTrends,
-        shopProducts, 
-        heritageItems, 
-        methodologySteps, 
-        brideGallery, 
-        ...globalData 
-      } = { ...content, ...newContent } as any;
+      // 1. Immediately reflect updates in local client-side state
+      setContent(prev => ({
+        ...prev,
+        ...newContent
+      }));
 
-      if (globalData.journalTrendsContent && typeof globalData.journalTrendsContent === 'string') {
-        globalData.journalTrendsContent = globalData.journalTrendsContent
-          .replace(new RegExp(['c', 'oncierge', ' team'].join(''), 'gi'), 'our design team')
-          .replace(/Diamond Specialist team/gi, 'our design team');
-      }
-      if (globalData.sections && Array.isArray(globalData.sections)) {
-        globalData.sections.forEach((sec: any) => {
-          if (sec.id === 'shop') {
-            if (sec.description.includes('Acquire our most coveted') || sec.description.includes('curated digital flagship') || sec.description.includes('discerning collector')) {
-              sec.description = "A selection of our pieces, shown in detail. For acquisitions and bespoke commissions, we recommend a visit to the boutique.";
-            }
-          }
-        });
+      // 2. Persist directly to Cloud SQL (PostgreSQL)
+      const res = await fetch("/api/db/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newContent),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to save to Cloud SQL: status ${res.status}`);
       }
 
-      // 1. Sync to Cloud SQL (PostgreSQL)
-      try {
-        await fetch("/api/db/content", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newContent),
-        });
-      } catch (sqlErr) {
-        console.warn("Could not sync to Cloud SQL:", sqlErr);
+      // 3. Re-sync from server to confirm persistence
+      const freshRes = await fetch("/api/db/content");
+      if (freshRes.ok) {
+        const freshData = await freshRes.json();
+        if (freshData) {
+          setContent(prev => ({ ...prev, ...freshData }));
+        }
       }
-
-      await setDoc(doc(db, "site_content", "global"), globalData);
-
-      const replaceCollection = async (colName: string, items: any[]) => {
-        if (!items) return;
-        const colRef = collection(db, `site_content_${colName}`);
-        const snap = await getDocs(colRef);
-        
-        const incomingIds = new Set();
-        
-        const setPromises = items.map((item, idx) => {
-           // Allow preserving IDs, fallback to generated
-           const id = item.id || `item_${idx}_${Date.now()}`;
-           incomingIds.add(id);
-           const itemWithId = { ...item, id };
-           return setDoc(doc(colRef, id), itemWithId);
-        });
-
-        // Delete any items that are no longer in the incoming array
-        const deletePromises = snap.docs
-           .filter(d => !incomingIds.has(d.id))
-           .map(d => deleteDoc(d.ref));
-
-        await Promise.all([...setPromises, ...deletePromises]);
-      };
-
-      const promises = [];
-      if ('blogPosts' in newContent) promises.push(replaceCollection("blogPosts", newContent.blogPosts as any[]));
-      if ('faqs' in newContent) promises.push(replaceCollection("faqs", newContent.faqs as any[]));
-      if ('homeFAQs' in newContent) promises.push(replaceCollection("homeFAQs", newContent.homeFAQs as any[]));
-      if ('journalTrends' in newContent) promises.push(replaceCollection("journalTrends", newContent.journalTrends as any[]));
-      if ('shopProducts' in newContent) promises.push(replaceCollection("shopProducts", newContent.shopProducts as any[]));
-      if ('heritageItems' in newContent) promises.push(replaceCollection("heritageItems", newContent.heritageItems as any[]));
-      if ('methodologySteps' in newContent) promises.push(replaceCollection("methodologySteps", newContent.methodologySteps as any[]));
-      if ('brideGallery' in newContent) promises.push(replaceCollection("brideGallery", newContent.brideGallery as any[]));
-
-      await Promise.all(promises);
     } catch (e) {
       console.error("Failed to update content", e);
       throw e;
     }
-  }, [content]);
+  }, []);
 
   return (
     <ContentContext.Provider value={{ content, loading, updateContent }}>

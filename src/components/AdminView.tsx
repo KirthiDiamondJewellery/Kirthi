@@ -156,10 +156,11 @@ export default function AdminView() {
   }, [authLoading, user, checkedUid]);
   const { content, updateContent, loading: contentLoading } = useContent();
   const [formData, setFormData] = useState<SiteContent>(content);
+  const isInitializedRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (!contentLoading) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!contentLoading && !isInitializedRef.current) {
+      isInitializedRef.current = true;
       setFormData(content);
     }
   }, [contentLoading, content]);
@@ -484,77 +485,11 @@ export default function AdminView() {
     );
   }
 
-  const recompressBase64 = async (base64Str: string): Promise<string> => {
-    if (!base64Str.startsWith('data:image/') || base64Str.length < 5000) {
-      return base64Str;
-    }
-
-    try {
-      // Convert base64 string to a File object
-      const res = await fetch(base64Str);
-      const blob = await res.blob();
-      const extMatch = blob.type.match(/\/(png|jpeg|jpg|webp|gif|svg)/);
-      const ext = extMatch ? extMatch[1].replace('jpeg', 'jpg') : 'webp';
-      const file = new File([blob], `inline.${ext}`, { type: blob.type });
-
-      return await uploadImage(file);
-    } catch (e) {
-      console.warn("Failed to upload inline base64 image", e);
-      return base64Str;
-    }
-  };
-
-  const traverseAndCompress = async (obj: any): Promise<any> => {
-    if (!obj) return obj;
-    if (typeof obj === 'string') {
-      if (obj.startsWith('data:image/')) {
-        return await recompressBase64(obj);
-      }
-      
-      // Inline string replacement for base64
-      if (obj.includes('data:image/')) {
-        const regex = /data:image\/[^;]+;base64,[^"'\s]+/g;
-        const matches = obj.match(regex);
-        if (matches && matches.length > 0) {
-          let newStr = obj;
-          for (const match of matches) {
-            const compressed = await recompressBase64(match);
-            newStr = newStr.replace(match, compressed);
-          }
-          return newStr;
-        }
-      }
-      
-      return obj;
-    }
-    if (Array.isArray(obj)) {
-      const arr = [];
-      for (const item of obj) {
-        arr.push(await traverseAndCompress(item));
-      }
-      return arr;
-    }
-    if (typeof obj === 'object') {
-      const newObj: any = {};
-      for (const key of Object.keys(obj)) {
-        newObj[key] = await traverseAndCompress(obj[key]);
-      }
-      return newObj;
-    }
-    return obj;
-  };
-
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setSaving(true);
     try {
-      const { blogPosts, journalTrends, ...restData } = formData;
-      const compressedData = await traverseAndCompress(restData);
-      
-      console.log("Size of shopProducts after compression:", JSON.stringify(compressedData.shopProducts)?.length);
-      
-      await updateContent(compressedData);
-      setFormData({ ...compressedData, blogPosts, journalTrends });
+      await updateContent(formData);
       alert('Content successfully saved and deployed to Cloud SQL (PostgreSQL) database.');
     } catch (err: any) {
       console.error(err);
@@ -1623,40 +1558,12 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
       });
 
       if (!res.ok) {
-        console.warn("Cloud SQL save status:", res.status);
+        throw new Error(`Cloud SQL save failed with status ${res.status}`);
       }
 
-      // 2. Also keep Firestore in sync for real-time listeners
-      try {
-        const colRef = collection(db, collectionName);
-        const snap = await getDocs(colRef);
-        const existingIds = new Set(snap.docs.map(d => d.id));
-        const incomingIds = new Set(newItems.map(it => it.id).filter(Boolean));
-
-        const cleanDoc = (obj: any): any => {
-          if (Array.isArray(obj)) return obj.map(cleanDoc);
-          if (obj && typeof obj === "object") {
-            const cleaned: any = {};
-            for (const k of Object.keys(obj)) {
-              if (obj[k] !== undefined) cleaned[k] = cleanDoc(obj[k]);
-            }
-            return cleaned;
-          }
-          return obj;
-        };
-
-        for (const item of newItems) {
-          const id = item.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-          await setDoc(doc(db, collectionName, id), cleanDoc({ ...item, id }), { merge: true });
-        }
-        for (const existingId of existingIds) {
-          if (!incomingIds.has(existingId)) {
-            await deleteDoc(doc(db, collectionName, existingId));
-          }
-        }
-      } catch (err) {
-        // Optional sync error
-      }
+      // 2. Keep ContentContext in sync immediately
+      const cleanName = collectionName.replace(/^site_content_/, '');
+      updateContent({ [cleanName]: newItems });
 
       setStatusMsg("✓ All changes saved to Cloud SQL (PostgreSQL) database!");
       setTimeout(() => setStatusMsg(null), 4000);

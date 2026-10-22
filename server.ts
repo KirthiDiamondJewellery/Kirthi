@@ -8,8 +8,7 @@ import dotenv from "dotenv";
 import compression from "compression";
 import helmet from "helmet";
 import crypto from "crypto";
-import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+// Firebase Admin Firestore removed - 100% Cloud SQL PostgreSQL backend
 
 import fs from "fs";
 import { weaveLinks } from "./src/lib/linkWeaver";
@@ -22,26 +21,10 @@ import { marked } from "marked";
 dotenv.config();
 const canonicalBaseUrl = process.env.BASE_URL || 'https://kirthidiamonds.com';
 
-let firebaseConfig: any = null;
-try {
-  firebaseConfig = JSON.parse(fs.readFileSync(path.join(process.cwd(), "firebase-applet-config.json"), "utf8"));
-} catch (e) {
-  console.error("Could not read firebase-applet-config.json");
-}
 
-let db: any = null;
-if (firebaseConfig) {
-  try {
-    initializeApp({
-      projectId: firebaseConfig.projectId
-    });
-    db = getFirestore(firebaseConfig.firestoreDatabaseId || "(default)");
-    console.log("Firebase Admin initialized successfully with project:", firebaseConfig.projectId, "and DB:", firebaseConfig.firestoreDatabaseId || '(default)');
-    console.log("Firestore database path connectivity:", db.collection("site_content_shopProducts").path);
-  } catch (e) {
-    console.error("Firebase Admin initialization error:", e);
-  }
-}
+
+// Backend runs 100% on Cloud SQL PostgreSQL
+console.log("Backend running 100% on Cloud SQL PostgreSQL database.");
 
 let razorpayClient: Razorpay | null = null;
 function getRazorpay(): Razorpay {
@@ -461,18 +444,12 @@ Sitemap: ${baseUrl}/sitemap-index.xml`;
     let shopProductsText = "";
     let heritageItemsText = "";
     
-    if (db) {
-      try {
-        const fetchItems = async (col: string) => {
-          const snap = await db.collection(col).get();
-          return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        };
-
+    try {
         const [posts, trends, products, heritage] = await Promise.all([
-          fetchItems("site_content_blogPosts"),
-          fetchItems("site_content_journalTrends"),
-          fetchItems("site_content_shopProducts"),
-          fetchItems("site_content_heritageItems")
+          getCollectionFromSql("blogPosts"),
+          getCollectionFromSql("journalTrends"),
+          getCollectionFromSql("shopProducts"),
+          getCollectionFromSql("heritageItems")
         ]);
 
         journalArticlesText = [...posts, ...trends]
@@ -492,7 +469,6 @@ Sitemap: ${baseUrl}/sitemap-index.xml`;
       } catch (e) {
         console.error("Error fetching data for llms.txt", e);
       }
-    }
 
     const llms = `# Kirthi Diamonds
 
@@ -613,12 +589,11 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
     <priority>0.8</priority>
   </url>`;
 
-      if (db) {
-        try {
-          const snap = await db.collection("site_content_blogPosts").get();
-          const trendsSnap = await db.collection("site_content_journalTrends").get();
-          const posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
-          const trends = trendsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+      try {
+          const [posts, trends] = await Promise.all([
+            getCollectionFromSql("blogPosts"),
+            getCollectionFromSql("journalTrends")
+          ]);
           [...posts, ...trends].forEach((post: any) => {
             const slug = post.title ? post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : encodeURIComponent(post.id);
             sitemap += `
@@ -630,7 +605,6 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
           });
         } catch (e) {
           console.error("Error fetching site_content_blogPosts for sitemap", e);
-        }
       }
 
       sitemap += `\n</urlset>`;
@@ -696,21 +670,11 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
   </url>`;
       }
 
-      if (db) {
-        const fetchItems = async (col: string) => {
-          try {
-            const snap = await db.collection(col).get();
-            return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          } catch (e) {
-            console.error(`Error fetching ${col} for sitemap`, e);
-            return [];
-          }
-        };
-
+      try {
         const [products, heritage, brides] = await Promise.all([
-          fetchItems("site_content_shopProducts"),
-          fetchItems("site_content_heritageItems"),
-          fetchItems("site_content_brideGallery")
+          getCollectionFromSql("shopProducts"),
+          getCollectionFromSql("heritageItems"),
+          getCollectionFromSql("brideGallery")
         ]);
 
         products.forEach((product: any) => {
@@ -739,6 +703,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
     <priority>0.6</priority>
   </url>`;
         });
+      } catch (e) {
+        console.error("Error fetching sitemap items:", e);
       }
 
       sitemap += `\n</urlset>`;
@@ -771,27 +737,22 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
         "/pages/certified-diamonds", "/pages/exchange-policy"
       ];
       
-      let postSlugs = [];
-      if (db) {
-        // We only need the title or id, but get() fetches the whole document
-        // We can optimize by using select() if we are using the admin SDK properly
-        // However, using the standard get() on collection is fine if we cache it
-        try {
-          const postsSnap = await db.collection("site_content_blogPosts").select("title").get();
-          postsSnap.forEach(doc => {
-            const d = doc.data();
-            const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
-            if (slug) postSlugs.push(slug);
-          });
-          const trendsSnap = await db.collection("site_content_journalTrends").select("title").get();
-          trendsSnap.forEach(doc => {
-            const d = doc.data();
-            const slug = d.title ? d.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : doc.id;
-            if (slug) postSlugs.push(slug);
-          });
-        } catch (e) {
-          console.error("Error fetching sitemap posts", e);
-        }
+      let postSlugs: string[] = [];
+      try {
+        const [posts, trends] = await Promise.all([
+          getCollectionFromSql("blogPosts"),
+          getCollectionFromSql("journalTrends")
+        ]);
+        posts.forEach((p: any) => {
+          const slug = p.title ? p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : p.id;
+          if (slug) postSlugs.push(slug);
+        });
+        trends.forEach((t: any) => {
+          const slug = t.title ? t.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : t.id;
+          if (slug) postSlugs.push(slug);
+        });
+      } catch (e) {
+        console.error("Error fetching sitemap posts from Cloud SQL", e);
       }
       
       if (postSlugs.length === 0) {
@@ -1094,32 +1055,31 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
           let post: any = null;
           let categoryName = "The Publication";
 
-          if (db) {
-            const postsCollection = db.collection("site_content_blogPosts");
-            const trendsCollection = db.collection("site_content_journalTrends");
-            try {
-              const snapshot = await postsCollection.get();
-              snapshot.forEach(doc => {
-                const data = doc.data();
-                const pSlug = (data.title || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || doc.id;
-                if (pSlug === slug || doc.id === slug) {
-                  post = { id: doc.id, ...data };
-                }
-              });
-              if (!post) {
-                const trendsSnapshot = await trendsCollection.get();
-                trendsSnapshot.forEach(doc => {
-                  const data = doc.data();
-                  const pSlug = (data.title || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || doc.id;
-                  if (pSlug === slug || doc.id === slug) {
-                    post = { id: doc.id, ...data };
-                    categoryName = "Trends";
-                  }
-                });
+          try {
+            const [posts, trends] = await Promise.all([
+              getCollectionFromSql("blogPosts"),
+              getCollectionFromSql("journalTrends")
+            ]);
+            for (const p of posts) {
+              const pSlug = (p.title || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || p.id;
+              if (pSlug === slug || p.id === slug) {
+                post = p;
+                categoryName = "The Publication";
+                break;
               }
-            } catch (err) {
-              console.error("DB Fetch Error for article:", err.message);
             }
+            if (!post) {
+              for (const t of trends) {
+                const pSlug = (t.title || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || t.id;
+                if (pSlug === slug || t.id === slug) {
+                  post = t;
+                  categoryName = "Trends";
+                  break;
+                }
+              }
+            }
+          } catch (err: any) {
+            console.error("Cloud SQL Fetch Error for article:", err.message);
           }
           if (!post) {
             const fallbackPost = hardcodedPosts.find(p => p.id === slug);
@@ -1275,20 +1235,19 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       let posts = [];
       let trends = [];
       let products = [];
-      if (db) {
-        try {
-          if (pathPart === "/journal") {
-            const snap = await db.collection("site_content_blogPosts").get();
-            const trendsSnap = await db.collection("site_content_journalTrends").get();
-            posts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            trends = trendsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          } else if (pathPart === "/shop") {
-            const snap = await db.collection("site_content_shopProducts").get();
-            products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          }
-        } catch (e) {
-          console.error("Error fetching dynamic SEO content:", e);
+      try {
+        if (pathPart === "/journal") {
+          const [p, t] = await Promise.all([
+            getCollectionFromSql("blogPosts"),
+            getCollectionFromSql("journalTrends")
+          ]);
+          posts = p;
+          trends = t;
+        } else if (pathPart === "/shop") {
+          products = await getCollectionFromSql("shopProducts");
         }
+      } catch (e) {
+        console.error("Error fetching dynamic SEO content from Cloud SQL:", e);
       }
       
       if (pathPart === "/journal") {
@@ -1558,27 +1517,7 @@ ${JSON.stringify(calicutSchema, null, 2)}
         return globalBrandingData;
       }
     } catch (e) {}
-    if (db) {
-      try {
-        const docSnap = await db.collection("site_content").doc("global").get();
-        if (docSnap && docSnap.exists) {
-          const data = typeof docSnap.data === "function" ? docSnap.data() : docSnap.data;
-          if (data) {
-            globalBrandingData = {
-              logoUrl: data.logoUrl || null,
-              faviconSvg: data.customFaviconSvg || null,
-              fav32: data.favicon_32 || null,
-              fav180: data.favicon_180 || data.favicon_apple || null,
-              fav192: data.favicon_192 || null,
-              fav512: data.favicon_512 || null
-            };
-            lastBrandingFetch = now;
-          }
-        }
-      } catch (e) {
-        // Safe fallback
-      }
-    }
+// Cloud SQL is already authoritative
     return globalBrandingData;
   }
 
