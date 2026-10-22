@@ -239,7 +239,7 @@ export async function saveCollectionToSql(name: string, items: any[]): Promise<{
          ON CONFLICT (id) DO UPDATE SET name = $2, price = $3, category = $4, description = $5, long_description = $6, image = $7, angles = $8`,
         [
           id,
-          pr.name || "Product",
+          pr.name || pr.title || "Product",
           pr.price || 0,
           pr.category || "",
           pr.description || "",

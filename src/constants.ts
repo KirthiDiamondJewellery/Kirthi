@@ -262,6 +262,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "solaris-eternal",
+    name: "Solaris Eternal Ring",
     title: "Solaris Eternal Ring",
     description: "Inspired by the first light of dawn, the Solaris Eternal features a rare vivid yellow diamond. The emerald cut provides a clean, architectural brilliance that contrasts beautifully with hand-crafted 18k rose gold.",
     price: 3200000,
@@ -273,6 +274,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "aurora-borealis",
+    name: "Aurora Borealis Ear Pendants",
     title: "Aurora Borealis Ear Pendants",
     description: "Capturing the dancing lights of the north, these earrings feature a complex pattern of marquise and brilliant-cut diamonds. Articulated design with 8.2 carats total weight, E color, VVS1 clarity in 18k white gold.",
     price: 2800000,
@@ -284,6 +286,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "nizami-heritage-choker",
+    name: "Nizami Heritage Polki Choker",
     title: "Nizami Heritage Polki Choker",
     description: "Masterwork handcrafted in 22kt BIS hallmarked gold, featuring uncut syndicate Polki diamonds framed by Colombian emerald droplets.",
     price: 3800000,
@@ -293,6 +296,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "celestial-tennis-bracelet",
+    name: "Celestial Diamond Tennis Bracelet",
     title: "Celestial Diamond Tennis Bracelet",
     description: "A continuous line of fire featuring 45 hand-matched F/VVS round brilliant diamonds totalling 12.0 carats in 950 platinum.",
     price: 1950000,
