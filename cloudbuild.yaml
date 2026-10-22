@@ -56,6 +56,8 @@ steps:
         apk add --no-cache bash curl
         CANDIDATE_URL=$(cat /workspace/candidate_url.txt)
         echo "Validating $$CANDIDATE_URL"
+        echo "Warming up candidate (cold start can take ~30s)..."
+        curl -s --retry 12 --retry-delay 5 --retry-all-errors -o /dev/null "$$CANDIDATE_URL/healthz"
         bash ./pre-deploy.sh "$$CANDIDATE_URL"
 
   # Only shift traffic if validation passed
