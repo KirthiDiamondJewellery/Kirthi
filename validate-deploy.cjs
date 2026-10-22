@@ -43,7 +43,7 @@ async function fetchUrl(url, maxRedirects = 3) {
     });
     
     req.on('error', reject);
-    req.setTimeout(10000, () => {
+    req.setTimeout(30000, () => {
         req.destroy(new Error('Timeout'));
     });
   });
