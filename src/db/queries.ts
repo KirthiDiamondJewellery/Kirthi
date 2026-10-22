@@ -1,24 +1,60 @@
 import fs from 'fs';
+import path from 'path';
 import { Pool } from 'pg';
+import { spawn, execSync } from 'child_process';
+
+export function ensureCloudSqlProxy(): void {
+  const socketFile = "/app/cloudsql/esoteric-portal-471501-t2:asia-southeast1:ai-studio-473f78a6/.s.PGSQL.5432";
+  if (fs.existsSync(socketFile)) {
+    return;
+  }
+
+  try {
+    const pids = execSync("pgrep -f cloud_sql_proxy || true").toString().trim();
+    if (pids) {
+      return;
+    }
+  } catch {}
+
+  if (fs.existsSync("/app/cloud_sql_proxy")) {
+    console.log("[Cloud SQL] Spawning Cloud SQL Auth Proxy watchdog...");
+    try {
+      const p = spawn(
+        "/app/cloud_sql_proxy",
+        [
+          "esoteric-portal-471501-t2:asia-southeast1:ai-studio-473f78a6",
+          "--unix-socket=/app/cloudsql",
+          "--sql-data",
+          "--sql-data-endpoint=sqladmin.googleapis.com",
+          "--sqladmin-api-endpoint=sqladmin.googleapis.com"
+        ],
+        { detached: true, stdio: "ignore" }
+      );
+      p.unref();
+    } catch (e) {
+      console.error("[Cloud SQL] Failed to spawn proxy:", e);
+    }
+  }
+}
 
 export function safeParseArray(val: any): string[] {
   if (!val) return [];
   if (Array.isArray(val)) {
-    return val.map(item => (typeof item === 'string' ? item : JSON.stringify(item))).filter(Boolean);
+    return val.map(item => (typeof item === "string" ? item : JSON.stringify(item))).filter(Boolean);
   }
-  if (typeof val === 'string') {
+  if (typeof val === "string") {
     const trimmed = val.trim();
     if (!trimmed) return [];
-    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
       try {
         const parsed = JSON.parse(trimmed);
         if (Array.isArray(parsed)) {
-          return parsed.map(item => (typeof item === 'string' ? item : JSON.stringify(item))).filter(Boolean);
+          return parsed.map(item => (typeof item === "string" ? item : JSON.stringify(item))).filter(Boolean);
         }
       } catch {}
     }
-    if (trimmed.includes(',')) {
-      return trimmed.split(',').map(s => s.trim()).filter(Boolean);
+    if (trimmed.includes(",")) {
+      return trimmed.split(",").map(s => s.trim()).filter(Boolean);
     }
     return [trimmed];
   }
@@ -42,6 +78,22 @@ export function getResolvedSqlHost(): string {
   return process.env.SQL_HOST || "/app/cloudsql/esoteric-portal-471501-t2:asia-southeast1:ai-studio-473f78a6";
 }
 
+export async function waitForSocket(socketDir: string, maxWaitMs = 12000): Promise<boolean> {
+  const socketFile = path.join(socketDir, ".s.PGSQL.5432");
+  if (fs.existsSync(socketFile)) {
+    return true;
+  }
+  ensureCloudSqlProxy();
+  const startTime = Date.now();
+  while (Date.now() - startTime < maxWaitMs) {
+    if (fs.existsSync(socketFile)) {
+      return true;
+    }
+    await new Promise(r => setTimeout(r, 200));
+  }
+  return fs.existsSync(socketFile);
+}
+
 let pgPool: Pool | null = null;
 
 export function getPgPool(): Pool {
@@ -53,7 +105,7 @@ export function getPgPool(): Pool {
       password: process.env.SQL_PASSWORD,
       database: process.env.SQL_DB_NAME || "cloud_sql_development_database",
       max: 10,
-      connectionTimeoutMillis: 15000,
+      connectionTimeoutMillis: 25000,
     });
     pgPool.on('error', (err) => {
       console.error('Unexpected error on idle PostgreSQL client:', err);
@@ -65,22 +117,41 @@ export function getPgPool(): Pool {
 
 export async function executeSql<T>(queryFn: (pool: Pool) => Promise<T>): Promise<T> {
   let attempt = 0;
-  const maxRetries = 3;
+  const maxRetries = 5;
   while (attempt < maxRetries) {
     attempt++;
     try {
+      const host = getResolvedSqlHost();
+      const socketReady = await waitForSocket(host, 10000);
+      if (!socketReady) {
+        throw new Error(`ENOENT: Cloud SQL socket not active at ${path.join(host, ".s.PGSQL.5432")}`);
+      }
       const pool = getPgPool();
       return await queryFn(pool);
     } catch (err: any) {
+      const errMsg = String(err?.message || '');
+      const errCode = String(err?.code || '');
       const isConnError = 
-        err.code === 'ECONNREFUSED' || 
-        err.message?.includes('ECONNREFUSED') ||
-        err.message?.includes('Connection terminated') ||
-        err.code === '57P01';
+        errCode === 'ENOENT' ||
+        errMsg.includes('ENOENT') ||
+        errCode === 'ECONNREFUSED' || 
+        errMsg.includes('ECONNREFUSED') ||
+        errCode === 'ECONNRESET' ||
+        errMsg.includes('ECONNRESET') ||
+        errCode === 'ETIMEDOUT' ||
+        errMsg.includes('timeout') ||
+        errMsg.includes('Connection terminated') ||
+        errMsg.includes('terminating connection') ||
+        errCode === '57P01' ||
+        errCode === '08006' ||
+        errCode === '08001' ||
+        errCode === '08004';
+
       if (isConnError && attempt < maxRetries) {
-        console.warn(`Cloud SQL reconnecting (attempt ${attempt}/${maxRetries}), retrying in 1.5s...`);
+        console.warn(`[Cloud SQL] Socket/proxy reconnecting (attempt ${attempt}/${maxRetries}): ${errMsg}. Retrying in ${attempt * 1.5}s...`);
         pgPool = null;
-        await new Promise(r => setTimeout(r, 1500));
+        ensureCloudSqlProxy();
+        await new Promise(r => setTimeout(r, attempt * 1500));
         continue;
       }
       throw err;
