@@ -488,15 +488,25 @@ export default function AdminView() {
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setSaving(true);
-    try {
-      await updateContent(formData);
-      alert('Content successfully saved and deployed to Cloud SQL (PostgreSQL) database.');
-    } catch (err: any) {
-      console.error(err);
-      alert(`Failed to update content: ${err.message}`);
-    } finally {
-      setSaving(false);
+    let attempt = 0;
+    while (attempt < 3) {
+      attempt++;
+      try {
+        await updateContent(formData);
+        alert('Content successfully saved and deployed to Cloud SQL (PostgreSQL) database.');
+        break;
+      } catch (err: any) {
+        const errMsg = String(err?.message || '');
+        if (attempt < 3 && (errMsg.includes('ENOENT') || errMsg.includes('ECONNREFUSED') || errMsg.includes('reconnecting') || errMsg.includes('500'))) {
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+        console.error(err);
+        alert(`Failed to update content: ${err.message}`);
+        break;
+      }
     }
+    setSaving(false);
   };
 
   const tabs = [
@@ -1549,31 +1559,43 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
     setItems(newItems);
     setSaving(true);
     setStatusMsg("Saving changes to Cloud SQL (PostgreSQL)...");
-    try {
-      // 1. Direct Cloud SQL PostgreSQL Persistence
-      const res = await fetch(`/api/db/collection/${collectionName}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newItems),
-      });
 
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.details || errJson.error || `status ${res.status}`);
+    let attempt = 0;
+    const maxAttempts = 3;
+    while (attempt < maxAttempts) {
+      attempt++;
+      try {
+        const res = await fetch(`/api/db/collection/${collectionName}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newItems),
+        });
+
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          const errMsg = errJson.details || errJson.error || `status ${res.status}`;
+          if (attempt < maxAttempts && (errMsg.includes('ENOENT') || errMsg.includes('ECONNREFUSED') || errMsg.includes('reconnecting') || errMsg.includes('waking up'))) {
+            setStatusMsg(`Cloud SQL database waking up (attempt ${attempt}/${maxAttempts}), retrying in 2s...`);
+            await new Promise(r => setTimeout(r, 2000));
+            continue;
+          }
+          throw new Error(errMsg);
+        }
+
+        const cleanName = collectionName.replace(/^site_content_/, '');
+        updateContent({ [cleanName]: newItems });
+
+        setStatusMsg("✓ All changes saved to Cloud SQL (PostgreSQL) database!");
+        setTimeout(() => setStatusMsg(null), 4000);
+        break;
+      } catch (err: any) {
+        if (attempt >= maxAttempts) {
+          console.error(`Error persisting ${collectionName}:`, err);
+          setStatusMsg(`Failed to save: ${err.message}`);
+        }
       }
-
-      // 2. Keep ContentContext in sync immediately
-      const cleanName = collectionName.replace(/^site_content_/, '');
-      updateContent({ [cleanName]: newItems });
-
-      setStatusMsg("✓ All changes saved to Cloud SQL (PostgreSQL) database!");
-      setTimeout(() => setStatusMsg(null), 4000);
-    } catch (err: any) {
-      console.error(`Error persisting ${collectionName}:`, err);
-      setStatusMsg(`Failed to save: ${err.message}`);
-    } finally {
-      setSaving(false);
     }
+    setSaving(false);
   };
 
   if (loading) {
@@ -1587,11 +1609,22 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
           <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-medium">{title}</span>
           <span className="text-[10px] text-white/40">Direct Cloud SQL (PostgreSQL) Persistence</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {statusMsg && (
-            <span className={`text-xs ${statusMsg.startsWith("✓") ? "text-emerald-400" : "text-amber-400"}`}>
-              {statusMsg}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs ${statusMsg.startsWith("✓") ? "text-emerald-400 font-medium" : "text-amber-400 font-mono"}`}>
+                {statusMsg}
+              </span>
+              {statusMsg.startsWith("Failed") && (
+                <button
+                  type="button"
+                  onClick={() => handlePersistToCloudSql(items)}
+                  className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/50 rounded hover:bg-amber-500/30 transition-all cursor-pointer shadow"
+                >
+                  Retry Now
+                </button>
+              )}
+            </div>
           )}
           <button
             type="button"
