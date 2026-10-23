@@ -15,6 +15,7 @@ import './index.css';
 
 import FAQView from './components/FAQView';
 import GlobalConsultationModal from './components/GlobalConsultationModal';
+import DynamicFAQSchemaProvider from './components/DynamicFAQSchemaProvider';
 import { reportWebVitalsToFirestore } from './lib/vitals';
 
 // Initialize performance monitoring
@@ -66,23 +67,25 @@ createRoot(document.getElementById('root')!).render(
     <ErrorBoundary>
       <ContentProvider>
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<App />} />
-            <Route path="/faq" element={<FAQView />} />
-            <Route path="/find-a-store" element={<StoreLocatorView />} />
-            
-            <Route path="/contact" element={<ContactView />} />
-            <Route path="/kochi" element={<BoutiqueLocalView location="kochi" />} />
-            <Route path="/calicut" element={<BoutiqueLocalView location="calicut" />} />
+          <DynamicFAQSchemaProvider>
+            <Routes>
+              <Route path="/" element={<App />} />
+              <Route path="/faq" element={<FAQView />} />
+              <Route path="/find-a-store" element={<StoreLocatorView />} />
+              
+              <Route path="/contact" element={<ContactView />} />
+              <Route path="/kochi" element={<BoutiqueLocalView location="kochi" />} />
+              <Route path="/calicut" element={<BoutiqueLocalView location="calicut" />} />
 
-            <Route path="/pages/:slug" element={<PageView />} />
-            <Route path="/:sectionId" element={<App />} />
-            <Route path="/blog/:postId" element={<BlogRedirect />} />
-            <Route path="/journal" element={<JournalView />} />
-            <Route path="/journal/:postId" element={<BlogPostView />} />
-            <Route path="*" element={<LegacyRouteHandler />} />
-          </Routes>
-          <GlobalConsultationModal />
+              <Route path="/pages/:slug" element={<PageView />} />
+              <Route path="/:sectionId" element={<App />} />
+              <Route path="/blog/:postId" element={<BlogRedirect />} />
+              <Route path="/journal" element={<JournalView />} />
+              <Route path="/journal/:postId" element={<BlogPostView />} />
+              <Route path="*" element={<LegacyRouteHandler />} />
+            </Routes>
+            <GlobalConsultationModal />
+          </DynamicFAQSchemaProvider>
         </BrowserRouter>
       </ContentProvider>
     </ErrorBoundary>

@@ -5,15 +5,24 @@ import { getStorage, ref, getMetadata, updateMetadata } from 'firebase/storage';
 
 import appletConfig from '../../firebase-applet-config.json';
 
+const getEnv = (key: string): string => {
+  try {
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+      return process.env[key] as string;
+    }
+  } catch {}
+  return '';
+};
+
 const firebaseConfig = {
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || appletConfig.projectId,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || appletConfig.appId,
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || appletConfig.apiKey,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || appletConfig.authDomain,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || appletConfig.storageBucket,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || appletConfig.messagingSenderId,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || appletConfig.measurementId,
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DB_ID || import.meta.env.VITE_FIREBASE_DATABASE_ID || appletConfig.firestoreDatabaseId || "(default)"
+  projectId: getEnv('VITE_FIREBASE_PROJECT_ID') || appletConfig.projectId,
+  appId: getEnv('VITE_FIREBASE_APP_ID') || appletConfig.appId,
+  apiKey: getEnv('VITE_FIREBASE_API_KEY') || appletConfig.apiKey,
+  authDomain: getEnv('VITE_FIREBASE_AUTH_DOMAIN') || appletConfig.authDomain,
+  storageBucket: getEnv('VITE_FIREBASE_STORAGE_BUCKET') || appletConfig.storageBucket,
+  messagingSenderId: getEnv('VITE_FIREBASE_MESSAGING_SENDER_ID') || appletConfig.messagingSenderId,
+  measurementId: getEnv('VITE_FIREBASE_MEASUREMENT_ID') || appletConfig.measurementId,
+  firestoreDatabaseId: getEnv('VITE_FIREBASE_FIRESTORE_DB_ID') || appletConfig.firestoreDatabaseId || "(default)"
 };
 
 export const app = initializeApp(firebaseConfig);
