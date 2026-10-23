@@ -1,3 +1,10 @@
+import { 
+  fetchContentFromFirestore, 
+  getCollectionFromFirestore, 
+  saveCollectionToFirestore, 
+  saveContentToFirestore 
+} from "./src/lib/firestore-sync";
+
 import { fetchFullContentFromSql, saveGlobalContentToSql, saveBlogPostToSql, getCollectionFromSql, saveCollectionToSql, getPgPool } from "./src/db/queries";
 import multer from "multer";
 import sharp from "sharp";
@@ -88,25 +95,63 @@ if (uploadDir !== publicUploadDir) {
 
 
   
-  // Cloud SQL Relational Database APIs
+  // Dual-Persistence Database APIs (Always-On Firestore Primary + Cloud SQL Sync)
   app.get("/api/db/content", async (req, res) => {
+    // 1. Read from Firestore first (Always-on, zero cold starts, zero ENOENT errors)
+    try {
+      const firestoreData = await fetchContentFromFirestore();
+      if (firestoreData && (firestoreData.blogPosts?.length > 0 || firestoreData.landingTitle)) {
+        return res.json(firestoreData);
+      }
+    } catch (fsErr) {
+      console.warn("Firestore fetch error, falling back to Cloud SQL:", fsErr);
+    }
+
+    // 2. Fallback to Cloud SQL if available
     try {
       const data = await fetchFullContentFromSql();
-      res.json(data);
+      if (data && (data.blogPosts?.length > 0 || data.landingTitle)) {
+        return res.json(data);
+      }
     } catch (err: any) {
-      console.error("Error fetching content from Cloud SQL:", err);
-      res.status(500).json({ error: "Failed to fetch content from Cloud SQL" });
+      console.warn("Cloud SQL fetch also failed:", err?.message);
     }
+
+    res.status(500).json({ error: "Failed to fetch content from database" });
   });
 
   app.post("/api/db/content", async (req, res) => {
+    let savedToFirestore = false;
+    let savedToSql = false;
+
+    // 1. Save to Firestore (Always-on, zero downtime)
     try {
-      const result = await saveGlobalContentToSql(req.body);
-      res.json(result);
-    } catch (err: any) {
-      console.error("Error saving content to Cloud SQL:", err);
-      res.status(500).json({ error: "Failed to save content to Cloud SQL" });
+      await saveContentToFirestore(req.body);
+      savedToFirestore = true;
+    } catch (fsErr) {
+      console.error("Failed to save content to Firestore:", fsErr);
     }
+
+    // 2. Also save to Cloud SQL
+    try {
+      await saveGlobalContentToSql(req.body);
+      savedToSql = true;
+    } catch (sqlErr: any) {
+      console.warn("Cloud SQL save warning (instance auto-paused):", sqlErr?.message);
+    }
+
+    if (savedToFirestore || savedToSql) {
+      return res.json({ 
+        success: true, 
+        savedToFirestore, 
+        savedToSql,
+        message: savedToFirestore && !savedToSql 
+          ? "Saved to Firestore (Cloud SQL is currently auto-paused)" 
+          : "Saved to database"
+      });
+    }
+
+    res.status(500).json({ error: "Failed to save content to database" });
   });
 
   app.post("/api/db/posts", async (req, res) => {
@@ -119,25 +164,60 @@ if (uploadDir !== publicUploadDir) {
     }
   });
 
-    app.get("/api/db/collection/:name", async (req, res) => {
+  app.get("/api/db/collection/:name", async (req, res) => {
+    // 1. Read from Firestore first (Always awake, instant response)
+    try {
+      const firestoreItems = await getCollectionFromFirestore(req.params.name);
+      if (firestoreItems && firestoreItems.length > 0) {
+        return res.json(firestoreItems);
+      }
+    } catch (fsErr) {
+      console.warn(`Firestore fetch on ${req.params.name} error:`, fsErr);
+    }
+
+    // 2. Fallback to Cloud SQL
     try {
       const items = await getCollectionFromSql(req.params.name);
-      res.json(items);
+      return res.json(items);
     } catch (err: any) {
-      console.error(`Error fetching collection ${req.params.name} from Cloud SQL:`, err);
-      res.status(500).json({ error: "Failed to fetch collection from Cloud SQL" });
+      console.warn(`Cloud SQL fetch on ${req.params.name} also failed:`, err?.message);
+      res.status(500).json({ error: "Failed to fetch collection" });
     }
   });
 
   app.post("/api/db/collection/:name", async (req, res) => {
+    const items = Array.isArray(req.body) ? req.body : (req.body?.items || []);
+    let savedToFirestore = false;
+    let savedToSql = false;
+
+    // 1. Save to Firestore (Always-on, zero downtime)
     try {
-      const items = Array.isArray(req.body) ? req.body : (req.body?.items || []);
-      const result = await saveCollectionToSql(req.params.name, items);
-      res.json(result);
-    } catch (err: any) {
-      console.error(`Error saving collection ${req.params.name} to Cloud SQL:`, err);
-      res.status(500).json({ error: "Failed to save collection to Cloud SQL", details: err?.message || String(err) });
+      await saveCollectionToFirestore(req.params.name, items);
+      savedToFirestore = true;
+    } catch (fsErr) {
+      console.error(`Failed to save ${req.params.name} to Firestore:`, fsErr);
     }
+
+    // 2. Also save to Cloud SQL
+    try {
+      await saveCollectionToSql(req.params.name, items);
+      savedToSql = true;
+    } catch (sqlErr: any) {
+      console.warn(`Cloud SQL save warning on ${req.params.name} (instance auto-paused):`, sqlErr?.message);
+    }
+
+    if (savedToFirestore || savedToSql) {
+      return res.json({ 
+        success: true, 
+        savedToFirestore, 
+        savedToSql,
+        message: savedToFirestore && !savedToSql 
+          ? "Saved to Firestore (Cloud SQL is currently auto-paused)" 
+          : "Saved to database"
+      });
+    }
+
+    res.status(500).json({ error: "Failed to save collection to database" });
   });
 
   app.post("/api/create-order",
