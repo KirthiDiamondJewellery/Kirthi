@@ -1,0 +1,452 @@
+starting build "afa9365c-c477-4204-8a4e-6b6cde8f8f64" using release legacy
+FETCHSOURCE
+From https://github.com/KirthiDiamondJewellery/Kirthi
+ * branch            1769b48dc48e03a07207d00c1b9841fe07347af1 -> FETCH_HEAD
+HEAD is now at 1769b48 Merge pull request #28 from KirthiDiamondJewellery/site-updates
+GitCommit:
+1769b48dc48e03a07207d00c1b9841fe07347af1
+BUILD
+Starting Step #0 - "build"
+Step #0 - "build": Already have image (with digest): gcr.io/cloud-builders/docker
+Step #0 - "build": Sending build context to Docker daemon  13.06MB
+Step #0 - "build": Step 1/24 : FROM node:20.10-alpine AS builder
+Step #0 - "build": 20.10-alpine: Pulling from library/node
+Step #0 - "build": 661ff4d9561e: Pulling fs layer
+Step #0 - "build": 89059ca18a98: Pulling fs layer
+Step #0 - "build": 9bb776f8ddb0: Pulling fs layer
+Step #0 - "build": ef0b6390b7f1: Pulling fs layer
+Step #0 - "build": ef0b6390b7f1: Verifying Checksum
+Step #0 - "build": ef0b6390b7f1: Download complete
+Step #0 - "build": 9bb776f8ddb0: Verifying Checksum
+Step #0 - "build": 9bb776f8ddb0: Download complete
+Step #0 - "build": 661ff4d9561e: Download complete
+Step #0 - "build": 661ff4d9561e: Pull complete
+Step #0 - "build": 89059ca18a98: Verifying Checksum
+Step #0 - "build": 89059ca18a98: Download complete
+Step #0 - "build": 89059ca18a98: Pull complete
+Step #0 - "build": 9bb776f8ddb0: Pull complete
+Step #0 - "build": ef0b6390b7f1: Pull complete
+Step #0 - "build": Digest: sha256:9e38d3d4117da74a643f67041c83914480b335c3bd44d37ccf5b5ad86cd715d1
+Step #0 - "build": Status: Downloaded newer image for node:20.10-alpine
+Step #0 - "build":  ---> 0dc964c4b6e5
+Step #0 - "build": Step 2/24 : WORKDIR /app
+Step #0 - "build":  ---> Running in bf6036621dbf
+Step #0 - "build": Removing intermediate container bf6036621dbf
+Step #0 - "build":  ---> ac2677ff7348
+Step #0 - "build": Step 3/24 : COPY package.json package-lock.json* ./
+Step #0 - "build":  ---> 160c2834afcd
+Step #0 - "build": Step 4/24 : ENV PUPPETEER_SKIP_DOWNLOAD=1
+Step #0 - "build":  ---> Running in 2bad06094abb
+Step #0 - "build": Removing intermediate container 2bad06094abb
+Step #0 - "build":  ---> 6a51b35bace2
+Step #0 - "build": Step 5/24 : RUN npm install --no-audit --no-fund
+Step #0 - "build":  ---> Running in 1953ec940ac6
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@asamuzakjp/css-color@5.1.11',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@asamuzakjp/dom-selector@7.1.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@asamuzakjp/generational-cache@1.0.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@csstools/color-helpers@6.0.2',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '>=20.19.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@csstools/css-calc@3.2.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '>=20.19.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@csstools/css-color-parser@4.1.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '>=20.19.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@csstools/css-parser-algorithms@4.0.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '>=20.19.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@csstools/css-tokenizer@4.0.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '>=20.19.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@eslint/config-array@0.23.5',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@eslint/config-helpers@0.6.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@eslint/core@1.2.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@eslint/js@10.0.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@eslint/object-schema@3.0.5',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@eslint/plugin-kit@0.7.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@exodus/bytes@1.15.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'eslint-visitor-keys@5.0.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: '@vitejs/plugin-react@5.2.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || >=22.12.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'data-urls@7.0.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'entities@8.0.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '>=20.19.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'eslint@10.4.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'eslint-scope@9.1.2',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'eslint-visitor-keys@5.0.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'espree@11.2.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'eslint-visitor-keys@5.0.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'firebase-admin@14.2.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '>=22' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'html-encoding-sniffer@6.0.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'jsdom@29.1.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24.0.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'jwks-rsa@4.1.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >= 23.0.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'undici@7.25.0',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '>=20.18.1' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN EBADENGINE Unsupported engine {
+Step #0 - "build": npm WARN EBADENGINE   package: 'whatwg-url@16.0.1',
+Step #0 - "build": npm WARN EBADENGINE   required: { node: '^20.19.0 || ^22.12.0 || >=24.0.0' },
+Step #0 - "build": npm WARN EBADENGINE   current: { node: 'v20.10.0', npm: '10.2.3' }
+Step #0 - "build": npm WARN EBADENGINE }
+Step #0 - "build": npm WARN deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.hirok.io
+Step #0 - "build": npm WARN deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.hirok.io
+Step #0 - "build": npm WARN deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+Step #0 - "build": npm WARN deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+Step #0 - "build": npm WARN deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+Step #0 - "build": 
+Step #0 - "build": added 982 packages in 32s
+Step #0 - "build": npm notice 
+Step #0 - "build": npm notice New major version of npm available! 10.2.3 -> 12.2.1
+Step #0 - "build": npm notice Changelog: <https://github.com/npm/cli/releases/tag/v12.2.1>
+Step #0 - "build": npm notice Run `npm install -g npm@12.2.1` to update!
+Step #0 - "build": npm notice 
+Step #0 - "build": Removing intermediate container 1953ec940ac6
+Step #0 - "build":  ---> e2ec34bebcd5
+Step #0 - "build": Step 6/24 : COPY . .
+Step #0 - "build":  ---> 97926c399fed
+Step #0 - "build": Step 7/24 : RUN npm run build
+Step #0 - "build":  ---> Running in 8daae2b39587
+Step #0 - "build": 
+Step #0 - "build": > kirthi-diamonds-bespoke@0.0.0 build
+Step #0 - "build": > vite build && node scripts/patch-html.js && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs
+Step #0 - "build": 
+Step #0 - "build": vite v6.4.2 building for production...
+Step #0 - "build": transforming...
+Step #0 - "build": ✓ 3104 modules transformed.
+Step #0 - "build": [plugin vite:reporter] 
+Step #0 - "build": (!) /app/node_modules/firebase/firestore/dist/esm/index.esm.js is dynamically imported by /app/src/components/AdminAnalytics.tsx but also statically imported by /app/src/App.tsx, /app/src/components/AdminAccessControl.tsx, /app/src/components/AdminAnalytics.tsx, /app/src/components/AdminBridalSubmissions.tsx, /app/src/components/AdminConsultations.tsx, /app/src/components/AdminOrders.tsx, /app/src/components/AdminVideos.tsx, /app/src/components/AdminView.tsx, /app/src/components/BlogPostView.tsx, /app/src/components/BridalSubmissionModal.tsx, /app/src/components/ConsultationModal.tsx, /app/src/components/FAQView.tsx, /app/src/components/OrderStatus.tsx, /app/src/components/ShopExperience.tsx, /app/src/lib/firebase.ts, /app/src/lib/vitals.ts, dynamic import will not move module into another chunk.
+Step #0 - "build": 
+Step #0 - "build": [plugin vite:reporter] 
+Step #0 - "build": (!) /app/src/utils/imageUpload.ts is dynamically imported by /app/src/components/AdminVideos.tsx but also statically imported by /app/src/components/AdminView.tsx, /app/src/components/BridalSubmissionModal.tsx, /app/src/components/ConsultationModal.tsx, dynamic import will not move module into another chunk.
+Step #0 - "build": 
+Step #0 - "build": rendering chunks...
+Step #0 - "build": computing gzip size...
+Step #0 - "build": 
+Step #0 - "build": (!) Some chunks are larger than 500 kB after minification. Consider:
+Step #0 - "build": - Using dynamic import() to code-split the application
+Step #0 - "build": - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+Step #0 - "build": - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+Step #0 - "build": dist/index.html                    31.97 kB │ gzip:   6.49 kB
+Step #0 - "build": dist/assets/index-C4p1jVcp.css    102.98 kB │ gzip:  15.55 kB
+Step #0 - "build": dist/assets/index-BwTUCveV.js   2,393.88 kB │ gzip: 657.17 kB
+Step #0 - "build": ✓ built in 11.45s
+Step #0 - "build": 
+Step #0 - "build": ✨ [vite-plugin-compression]:algorithm=gzip - compressed file successfully: 
+Step #0 - "build": dist//app/index.html.gz                  31.22kb / gzip: 6.29kb
+Step #0 - "build": dist//app/assets/index-C4p1jVcp.css.gz   100.57kb / gzip: 15.07kb
+Step #0 - "build": dist//app/assets/index-BwTUCveV.js.gz    2337.78kb / gzip: 640.32kb
+Step #0 - "build": 
+Step #0 - "build": 
+Step #0 - "build": CSS async patch applied to dist/index.html
+Step #0 - "build": 
+Step #0 - "build":   dist/server.cjs      124.0kb
+Step #0 - "build":   dist/server.cjs.map  210.6kb
+Step #0 - "build": 
+Step #0 - "build": ⚡ Done in 10ms
+Step #0 - "build": Removing intermediate container 8daae2b39587
+Step #0 - "build":  ---> 0ceee2e2ccb1
+Step #0 - "build": Step 8/24 : FROM node:20.10-alpine AS runner
+Step #0 - "build":  ---> 0dc964c4b6e5
+Step #0 - "build": Step 9/24 : WORKDIR /app
+Step #0 - "build":  ---> Using cache
+Step #0 - "build":  ---> ac2677ff7348
+Step #0 - "build": Step 10/24 : ENV NODE_ENV=production
+Step #0 - "build":  ---> Running in 01481deec475
+Step #0 - "build": Removing intermediate container 01481deec475
+Step #0 - "build":  ---> c51ccbc92eb0
+Step #0 - "build": Step 11/24 : ENV PORT=8080
+Step #0 - "build":  ---> Running in 871728ed77ea
+Step #0 - "build": Removing intermediate container 871728ed77ea
+Step #0 - "build":  ---> c1f990bcf394
+Step #0 - "build": Step 12/24 : RUN addgroup -g 1001 nodejs && adduser -S kirthi -u 1001 -G nodejs
+Step #0 - "build":  ---> Running in 6426c8195003
+Step #0 - "build": Removing intermediate container 6426c8195003
+Step #0 - "build":  ---> 4c650fcf0005
+Step #0 - "build": Step 13/24 : COPY --from=builder --chown=kirthi:nodejs /app/dist ./dist
+Step #0 - "build":  ---> 94b81714af50
+Step #0 - "build": Step 14/24 : COPY --from=builder --chown=kirthi:nodejs /app/public ./public
+Step #0 - "build":  ---> 35a15db6f8da
+Step #0 - "build": Step 15/24 : COPY --from=builder --chown=kirthi:nodejs /app/node_modules ./node_modules
+Step #0 - "build":  ---> 33505b8127a3
+Step #0 - "build": Step 16/24 : COPY --from=builder --chown=kirthi:nodejs /app/server.ts ./server.ts
+Step #0 - "build":  ---> 0c9f8052a868
+Step #0 - "build": Step 17/24 : COPY --from=builder --chown=kirthi:nodejs /app/package.json ./package.json
+Step #0 - "build":  ---> 88169f8073ed
+Step #0 - "build": Step 18/24 : COPY --from=builder --chown=kirthi:nodejs /app/tsconfig.json ./tsconfig.json
+Step #0 - "build":  ---> 6c127c63d515
+Step #0 - "build": Step 19/24 : COPY --from=builder --chown=kirthi:nodejs /app/src ./src
+Step #0 - "build":  ---> 5843422cdd2d
+Step #0 - "build": Step 20/24 : COPY --from=builder --chown=kirthi:nodejs /app/firebase-applet-config.json ./firebase-applet-config.json
+Step #0 - "build":  ---> 8f6e61a9e43c
+Step #0 - "build": Step 21/24 : USER kirthi
+Step #0 - "build":  ---> Running in 7c1d5d3d77bd
+Step #0 - "build": Removing intermediate container 7c1d5d3d77bd
+Step #0 - "build":  ---> 8925abf041a0
+Step #0 - "build": Step 22/24 : EXPOSE 8080
+Step #0 - "build":  ---> Running in 8ea62b9083d2
+Step #0 - "build": Removing intermediate container 8ea62b9083d2
+Step #0 - "build":  ---> 4c4c63fda54a
+Step #0 - "build": Step 23/24 : HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3   CMD wget -qO- http://localhost:${PORT}/healthz || exit 1
+Step #0 - "build":  ---> Running in b16f017c434e
+Step #0 - "build": Removing intermediate container b16f017c434e
+Step #0 - "build":  ---> 59f519622b5f
+Step #0 - "build": Step 24/24 : CMD ["npx", "tsx", "server.ts"]
+Step #0 - "build":  ---> Running in 0362bd8ee260
+Step #0 - "build": Removing intermediate container 0362bd8ee260
+Step #0 - "build":  ---> cab9a2cb5369
+Step #0 - "build": Successfully built cab9a2cb5369
+Step #0 - "build": Successfully tagged asia-southeast1-docker.pkg.dev/esoteric-portal-471501-t2/web/kirthi:1769b48dc48e03a07207d00c1b9841fe07347af1
+Step #0 - "build": Successfully tagged asia-southeast1-docker.pkg.dev/esoteric-portal-471501-t2/web/kirthi:latest
+Finished Step #0 - "build"
+Starting Step #1 - "push"
+Step #1 - "push": Already have image (with digest): gcr.io/cloud-builders/docker
+Step #1 - "push": The push refers to repository [asia-southeast1-docker.pkg.dev/esoteric-portal-471501-t2/web/kirthi]
+Step #1 - "push": 6077c2f2e897: Preparing
+Step #1 - "push": 18c6902e4f2a: Preparing
+Step #1 - "push": 47f980a26bcd: Preparing
+Step #1 - "push": 79e216d9b921: Preparing
+Step #1 - "push": 97a55681fa51: Preparing
+Step #1 - "push": 3a601f211db8: Preparing
+Step #1 - "push": 8cef0457971d: Preparing
+Step #1 - "push": c609ab270796: Preparing
+Step #1 - "push": cb6a423fb6f9: Preparing
+Step #1 - "push": 8e7878c529ff: Preparing
+Step #1 - "push": b256f2c132d9: Preparing
+Step #1 - "push": 6d4bec181d96: Preparing
+Step #1 - "push": 63247acccce3: Preparing
+Step #1 - "push": 5af4f8f59b76: Preparing
+Step #1 - "push": b256f2c132d9: Waiting
+Step #1 - "push": 6d4bec181d96: Waiting
+Step #1 - "push": 63247acccce3: Waiting
+Step #1 - "push": 5af4f8f59b76: Waiting
+Step #1 - "push": 8cef0457971d: Pushed
+Step #1 - "push": 79e216d9b921: Pushed
+Step #1 - "push": 97a55681fa51: Pushed
+Step #1 - "push": 47f980a26bcd: Pushed
+Step #1 - "push": 18c6902e4f2a: Pushed
+Step #1 - "push": cb6a423fb6f9: Pushed
+Step #1 - "push": 8e7878c529ff: Pushed
+Step #1 - "push": 6077c2f2e897: Pushed
+Step #1 - "push": b256f2c132d9: Layer already exists
+Step #1 - "push": 6d4bec181d96: Layer already exists
+Step #1 - "push": 63247acccce3: Layer already exists
+Step #1 - "push": 5af4f8f59b76: Layer already exists
+Step #1 - "push": c609ab270796: Pushed
+Step #1 - "push": 3a601f211db8: Pushed
+Step #1 - "push": 1769b48dc48e03a07207d00c1b9841fe07347af1: digest: sha256:5be2fc44075e2b6bed104d0d11b1662d78766bd96db7d46d505585648df1d15b size: 3249
+Step #1 - "push": 6077c2f2e897: Preparing
+Step #1 - "push": 18c6902e4f2a: Preparing
+Step #1 - "push": 47f980a26bcd: Preparing
+Step #1 - "push": 79e216d9b921: Preparing
+Step #1 - "push": 97a55681fa51: Preparing
+Step #1 - "push": 3a601f211db8: Preparing
+Step #1 - "push": 8cef0457971d: Preparing
+Step #1 - "push": c609ab270796: Preparing
+Step #1 - "push": cb6a423fb6f9: Preparing
+Step #1 - "push": 8e7878c529ff: Preparing
+Step #1 - "push": b256f2c132d9: Preparing
+Step #1 - "push": 6d4bec181d96: Preparing
+Step #1 - "push": 63247acccce3: Preparing
+Step #1 - "push": 5af4f8f59b76: Preparing
+Step #1 - "push": 47f980a26bcd: Layer already exists
+Step #1 - "push": 79e216d9b921: Layer already exists
+Step #1 - "push": 6077c2f2e897: Layer already exists
+Step #1 - "push": 97a55681fa51: Layer already exists
+Step #1 - "push": 3a601f211db8: Layer already exists
+Step #1 - "push": 18c6902e4f2a: Layer already exists
+Step #1 - "push": 8cef0457971d: Layer already exists
+Step #1 - "push": 6d4bec181d96: Layer already exists
+Step #1 - "push": 63247acccce3: Waiting
+Step #1 - "push": 5af4f8f59b76: Waiting
+Step #1 - "push": 8e7878c529ff: Layer already exists
+Step #1 - "push": c609ab270796: Layer already exists
+Step #1 - "push": 63247acccce3: Layer already exists
+Step #1 - "push": 5af4f8f59b76: Layer already exists
+Step #1 - "push": b256f2c132d9: Layer already exists
+Step #1 - "push": cb6a423fb6f9: Layer already exists
+Step #1 - "push": latest: digest: sha256:5be2fc44075e2b6bed104d0d11b1662d78766bd96db7d46d505585648df1d15b size: 3249
+Finished Step #1 - "push"
+Starting Step #2 - "deploy-candidate"
+Step #2 - "deploy-candidate": Pulling image: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+Step #2 - "deploy-candidate": slim: Pulling from google.com/cloudsdktool/cloud-sdk
+Step #2 - "deploy-candidate": ecc510c1e359: Already exists
+Step #2 - "deploy-candidate": a1da1e9ceb4c: Pulling fs layer
+Step #2 - "deploy-candidate": f526cee9736d: Pulling fs layer
+Step #2 - "deploy-candidate": b8bc1531e46c: Pulling fs layer
+Step #2 - "deploy-candidate": b8bc1531e46c: Download complete
+Step #2 - "deploy-candidate": a1da1e9ceb4c: Download complete
+Step #2 - "deploy-candidate": a1da1e9ceb4c: Pull complete
+Step #2 - "deploy-candidate": f526cee9736d: Verifying Checksum
+Step #2 - "deploy-candidate": f526cee9736d: Download complete
+Step #2 - "deploy-candidate": f526cee9736d: Pull complete
+Step #2 - "deploy-candidate": b8bc1531e46c: Pull complete
+Step #2 - "deploy-candidate": Digest: sha256:b7d1db3c46ffd3e94ee95953671bbfb47c440cbc64b78e8caebce35cd945f955
+Step #2 - "deploy-candidate": Status: Downloaded newer image for gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+Step #2 - "deploy-candidate": gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+Step #2 - "deploy-candidate": Deploying container to Cloud Run service [remix-remix-kirthi-diamonds] in project [esoteric-portal-471501-t2] region [asia-southeast1]
+Step #2 - "deploy-candidate": Deploying...
+Step #2 - "deploy-candidate": Setting IAM Policy.............done
+Step #2 - "deploy-candidate": Creating Revision............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................done
+Step #2 - "deploy-candidate": Done.
+Step #2 - "deploy-candidate": Service [remix-remix-kirthi-diamonds] revision [remix-remix-kirthi-diamonds-00252-diz] has been deployed and is serving 0 percent of traffic.
+Step #2 - "deploy-candidate": The revision can be reached directly at https://candidate---remix-remix-kirthi-diamonds-3k5wmimmlq-as.a.run.app
+Step #2 - "deploy-candidate": Candidate URL: https://candidate---remix-remix-kirthi-diamonds-3k5wmimmlq-as.a.run.app
+Finished Step #2 - "deploy-candidate"
+Starting Step #3 - "validate"
+Step #3 - "validate": Pulling image: node:22-alpine
+Step #3 - "validate": 22-alpine: Pulling from library/node
+Step #3 - "validate": 7b229517ed22: Pulling fs layer
+Step #3 - "validate": 8776aa3d2ba7: Pulling fs layer
+Step #3 - "validate": 7246d4c6a55d: Pulling fs layer
+Step #3 - "validate": 304511616d6a: Pulling fs layer
+Step #3 - "validate": 304511616d6a: Download complete
+Step #3 - "validate": 7b229517ed22: Verifying Checksum
+Step #3 - "validate": 7b229517ed22: Download complete
+Step #3 - "validate": 7246d4c6a55d: Verifying Checksum
+Step #3 - "validate": 7246d4c6a55d: Download complete
+Step #3 - "validate": 7b229517ed22: Pull complete
+Step #3 - "validate": 8776aa3d2ba7: Verifying Checksum
+Step #3 - "validate": 8776aa3d2ba7: Download complete
+Step #3 - "validate": 8776aa3d2ba7: Pull complete
+Step #3 - "validate": 7246d4c6a55d: Pull complete
+Step #3 - "validate": 304511616d6a: Pull complete
+Step #3 - "validate": Digest: sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+Step #3 - "validate": Status: Downloaded newer image for node:22-alpine
+Step #3 - "validate": docker.io/library/node:22-alpine
+Step #3 - "validate": ( 1/13) Installing ncurses-terminfo-base (6.6_p20260516-r0)
+Step #3 - "validate": ( 2/13) Installing libncursesw (6.6_p20260516-r0)
+Step #3 - "validate": ( 3/13) Installing readline (8.3.3-r1)
+Step #3 - "validate": ( 4/13) Installing bash (5.3.9-r1)
+Step #3 - "validate":   Executing bash-5.3.9-r1.post-install
+Step #3 - "validate": ( 5/13) Installing brotli-libs (1.2.1-r0)
+Step #3 - "validate": ( 6/13) Installing c-ares (1.34.9-r0)
+Step #3 - "validate": ( 7/13) Installing libunistring (1.4.2-r0)
+Step #3 - "validate": ( 8/13) Installing libidn2 (2.3.8-r0)
+Step #3 - "validate": ( 9/13) Installing nghttp2-libs (1.70.0-r0)
+Step #3 - "validate": (10/13) Installing libpsl (0.21.5-r3)
+Step #3 - "validate": (11/13) Installing zstd-libs (1.5.7-r2)
+Step #3 - "validate": (12/13) Installing libcurl (8.22.0-r0)
+Step #3 - "validate": (13/13) Installing curl (8.22.0-r0)
+Step #3 - "validate": Executing busybox-1.37.0-r31.trigger
+Step #3 - "validate": OK: 18.0 MiB in 32 packages
+Step #3 - "validate": Validating https://candidate---remix-remix-kirthi-diamonds-3k5wmimmlq-as.a.run.app
+Step #3 - "validate": Warming up candidate (cold start can take ~30s)...
+Step #3 - "validate": Running validation script against https://candidate---remix-remix-kirthi-diamonds-3k5wmimmlq-as.a.run.app...
+Step #3 - "validate": Starting validation for https://candidate---remix-remix-kirthi-diamonds-3k5wmimmlq-as.a.run.app, EXPECTED_HOST: candidate---remix-remix-kirthi-diamonds-3k5wmimmlq-as.a.run.app
+Step #3 - "validate": Fetching /journal to extract articles...
+Step #3 - "validate": Unexpected error in validation: Error: Timeout
+Step #3 - "validate":     at ClientRequest.<anonymous> (/workspace/validate-deploy.cjs:47:21)
+Step #3 - "validate":     at Object.onceWrapper (node:events:633:28)
+Step #3 - "validate":     at ClientRequest.emit (node:events:519:28)
+Step #3 - "validate":     at TLSSocket.emitRequestTimeout (node:_http_client:931:9)
+Step #3 - "validate":     at Object.onceWrapper (node:events:633:28)
+Step #3 - "validate":     at TLSSocket.emit (node:events:531:35)
+Step #3 - "validate":     at Socket._onTimeout (node:net:605:8)
+Step #3 - "validate":     at listOnTimeout (node:internal/timers:585:17)
+Step #3 - "validate":     at process.processTimers (node:internal/timers:521:7)
+Finished Step #3 - "validate"
+ERROR
+ERROR: build step 3 "node:22-alpine" failed: step exited with non-zero status: 1

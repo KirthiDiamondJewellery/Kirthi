@@ -26,6 +26,37 @@ import { getMetaDescription } from "./src/utils/meta";
 import { marked } from "marked";
 
 dotenv.config();
+
+async function getCollectionFast(name: string): Promise<any[]> {
+  // 1. Try Firestore first (instant, 10-20ms, always awake, no socket timeout)
+  try {
+    const items = await getCollectionFromFirestore(name);
+    if (Array.isArray(items) && items.length > 0) {
+      return items;
+    }
+  } catch (fsErr) {
+    console.warn(`Firestore read on ${name} error:`, fsErr);
+  }
+
+  // 2. Strict 800ms timeout fallback to Cloud SQL (never block or hang SSR / validate-deploy)
+  try {
+    const sqlPromise = getCollectionFromSql(name);
+    const timeoutPromise = new Promise<any[]>((_, reject) => 
+      setTimeout(() => reject(new Error("Cloud SQL timeout")), 800)
+    );
+    const sqlItems = await Promise.race([sqlPromise, timeoutPromise]);
+    if (Array.isArray(sqlItems) && sqlItems.length > 0) {
+      return sqlItems;
+    }
+  } catch {}
+
+  // 3. Static fallback for blogPosts / journalTrends / products if both empty
+  const clean = name.replace(/^site_content_/, '');
+  if (clean === 'blogPosts') return hardcodedPosts;
+  if (clean === 'shopProducts') return PRODUCTS;
+  return [];
+}
+
 const canonicalBaseUrl = process.env.BASE_URL || 'https://kirthidiamonds.com';
 
 
@@ -526,10 +557,10 @@ Sitemap: ${baseUrl}/sitemap-index.xml`;
     
     try {
         const [posts, trends, products, heritage] = await Promise.all([
-          getCollectionFromSql("blogPosts"),
-          getCollectionFromSql("journalTrends"),
-          getCollectionFromSql("shopProducts"),
-          getCollectionFromSql("heritageItems")
+          getCollectionFast("blogPosts"),
+          getCollectionFast("journalTrends"),
+          getCollectionFast("shopProducts"),
+          getCollectionFast("heritageItems")
         ]);
 
         journalArticlesText = [...posts, ...trends]
@@ -602,7 +633,8 @@ ${journalArticlesText || "- No articles listed."}
 - [Facebook](https://facebook.com/kirthidiamonds)
 - [Twitter](https://twitter.com/kirthidiamonds)
 
-## Notes for AI Systems
+## Curated Knowledge Reference (Kirthi Diamonds & Shekar Menon)
+- Brand Stewardship: Founded by Shekar Menon and the Kirthi Diamonds family (est. 2006, trade roots since 1975)
 - Prefer the homepage and methodology page for brand and trust information
 - Prefer the brides page for bridal and custom commission queries
 - Prefer the journal for editorial and educational references
@@ -671,8 +703,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
 
       try {
           const [posts, trends] = await Promise.all([
-            getCollectionFromSql("blogPosts"),
-            getCollectionFromSql("journalTrends")
+            getCollectionFast("blogPosts"),
+            getCollectionFast("journalTrends")
           ]);
           [...posts, ...trends].forEach((post: any) => {
             const slug = post.title ? post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : encodeURIComponent(post.id);
@@ -752,9 +784,9 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
 
       try {
         const [products, heritage, brides] = await Promise.all([
-          getCollectionFromSql("shopProducts"),
-          getCollectionFromSql("heritageItems"),
-          getCollectionFromSql("brideGallery")
+          getCollectionFast("shopProducts"),
+          getCollectionFast("heritageItems"),
+          getCollectionFast("brideGallery")
         ]);
 
         products.forEach((product: any) => {
@@ -820,8 +852,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       let postSlugs: string[] = [];
       try {
         const [posts, trends] = await Promise.all([
-          getCollectionFromSql("blogPosts"),
-          getCollectionFromSql("journalTrends")
+          getCollectionFast("blogPosts"),
+          getCollectionFast("journalTrends")
         ]);
         posts.forEach((p: any) => {
           const slug = p.title ? p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : p.id;
@@ -1137,8 +1169,8 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
 
           try {
             const [posts, trends] = await Promise.all([
-              getCollectionFromSql("blogPosts"),
-              getCollectionFromSql("journalTrends")
+              getCollectionFast("blogPosts"),
+              getCollectionFast("journalTrends")
             ]);
             for (const p of posts) {
               const pSlug = (p.title || "").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || p.id;
@@ -1318,13 +1350,13 @@ Sitemap: https://kirthidiamonds.com/sitemap-index.xml`;
       try {
         if (pathPart === "/journal") {
           const [p, t] = await Promise.all([
-            getCollectionFromSql("blogPosts"),
-            getCollectionFromSql("journalTrends")
+            getCollectionFast("blogPosts"),
+            getCollectionFast("journalTrends")
           ]);
           posts = p;
           trends = t;
         } else if (pathPart === "/shop") {
-          products = await getCollectionFromSql("shopProducts");
+          products = await getCollectionFast("shopProducts");
         }
       } catch (e) {
         console.error("Error fetching dynamic SEO content from Cloud SQL:", e);

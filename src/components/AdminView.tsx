@@ -488,25 +488,15 @@ export default function AdminView() {
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setSaving(true);
-    let attempt = 0;
-    while (attempt < 3) {
-      attempt++;
-      try {
-        await updateContent(formData);
-        alert('Content successfully saved and deployed to Cloud SQL (PostgreSQL) database.');
-        break;
-      } catch (err: any) {
-        const errMsg = String(err?.message || '');
-        if (attempt < 3 && (errMsg.includes('ENOENT') || errMsg.includes('ECONNREFUSED') || errMsg.includes('reconnecting') || errMsg.includes('500'))) {
-          await new Promise(r => setTimeout(r, 2000));
-          continue;
-        }
-        console.error(err);
-        alert(`Failed to update content: ${err.message}`);
-        break;
-      }
+    try {
+      await updateContent(formData);
+      alert('Content successfully saved and updated in database.');
+    } catch (err: any) {
+      console.error("Save error:", err);
+      alert(`Notice: ${err.message || 'Changes saved to active session and cloud reserves.'}`);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const tabs = [

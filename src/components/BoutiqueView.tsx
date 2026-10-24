@@ -171,7 +171,6 @@ export default function BoutiqueView({ boutiqueId, onInquiry }: BoutiqueViewProp
                       }}
                       defaultZoom={15}
                       mapId="DEMO_MAP_ID"
-                      internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
                       style={{ width: '100%', height: '100%' }}
                       gestureHandling="cooperative"
                     >

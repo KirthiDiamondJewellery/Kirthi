@@ -65,23 +65,28 @@ export function getResolvedSqlHost(): string {
   if (process.env.SQL_HOST && fs.existsSync(process.env.SQL_HOST)) {
     return process.env.SQL_HOST;
   }
-  const baseCloudSqlDir = "/app/cloudsql";
-  if (fs.existsSync(baseCloudSqlDir)) {
-    try {
-      const entries = fs.readdirSync(baseCloudSqlDir);
-      const instanceDir = entries.find(e => e.includes(":"));
-      if (instanceDir) {
-        return `${baseCloudSqlDir}/${instanceDir}`;
-      }
-    } catch {}
+  for (const baseDir of ["/cloudsql", "/app/cloudsql"]) {
+    if (fs.existsSync(baseDir)) {
+      try {
+        const entries = fs.readdirSync(baseDir);
+        const instanceDir = entries.find(e => e.includes(":"));
+        if (instanceDir) {
+          return `${baseDir}/${instanceDir}`;
+        }
+      } catch {}
+    }
   }
-  return process.env.SQL_HOST || "/app/cloudsql/esoteric-portal-471501-t2:asia-southeast1:ai-studio-473f78a6";
+  return process.env.SQL_HOST || "/cloudsql/esoteric-portal-471501-t2:asia-southeast1:ai-studio-473f78a6";
 }
 
-export async function waitForSocket(socketDir: string, maxWaitMs = 12000): Promise<boolean> {
+export async function waitForSocket(socketDir: string, maxWaitMs = 2500): Promise<boolean> {
   const socketFile = path.join(socketDir, ".s.PGSQL.5432");
   if (fs.existsSync(socketFile)) {
     return true;
+  }
+  // If neither socket directory nor proxy executable exists (Cloud SQL not attached), fail fast
+  if (!fs.existsSync(socketDir) && !fs.existsSync("/app/cloud_sql_proxy")) {
+    return false;
   }
   ensureCloudSqlProxy();
   const startTime = Date.now();
@@ -101,7 +106,7 @@ export function getPgPool(): Pool {
     const host = getResolvedSqlHost();
     pgPool = new Pool({
       host,
-      user: process.env.SQL_USER || "ai_studio_app_user",
+      user: process.env.SQL_USER || "kirthi_app_user",
       password: process.env.SQL_PASSWORD,
       database: process.env.SQL_DB_NAME || "cloud_sql_development_database",
       max: 10,
@@ -117,12 +122,12 @@ export function getPgPool(): Pool {
 
 export async function executeSql<T>(queryFn: (pool: Pool) => Promise<T>): Promise<T> {
   let attempt = 0;
-  const maxRetries = 5;
+  const maxRetries = 2;
   while (attempt < maxRetries) {
     attempt++;
     try {
       const host = getResolvedSqlHost();
-      const socketReady = await waitForSocket(host, 10000);
+      const socketReady = await waitForSocket(host, 2500);
       if (!socketReady) {
         throw new Error(`ENOENT: Cloud SQL socket not active at ${path.join(host, ".s.PGSQL.5432")}`);
       }

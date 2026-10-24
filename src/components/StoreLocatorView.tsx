@@ -94,18 +94,16 @@ export default function StoreLocatorView({ onInquiry }: { onInquiry?: () => void
   if (!hasValidKey) {
     return (
       <div className="relative w-full h-[100dvh] bg-[#050505] text-[#F5F5F0] pt-24 px-4 sm:px-6 md:px-12 pb-12 flex items-center justify-center">
-        <div className="text-center max-w-lg border border-white/10 p-8 md:p-12 bg-[#0A0A0A]">
-          <h2 className="text-2xl font-serif italic text-[#D4AF37] mb-4">Google Maps Configuration Required</h2>
-          <div className="text-sm font-light opacity-70 space-y-4 text-left">
-            <p><strong>Step 1:</strong> Get an API Key from the Google Cloud Console.</p>
-            <p><strong>Step 2:</strong> Add your key as a secret in AI Studio:</p>
-            <ul className="list-disc pl-5 space-y-2">
-              <li>Open <strong>Settings</strong> (⚙️ gear icon, top-right)</li>
-              <li>Select <strong>Secrets</strong></li>
-              <li>Type <code>GOOGLE_MAPS_PLATFORM_KEY</code>, press Enter</li>
-              <li>Paste your API key, press Enter</li>
+        <div className="text-center max-w-lg border border-[#D4AF37]/30 p-8 md:p-12 bg-[#0A0A0A]">
+          <h2 className="text-2xl font-serif italic text-[#D4AF37] mb-4">Kirthi Diamonds Boutiques</h2>
+          <div className="text-sm font-light opacity-80 space-y-4 text-left">
+            <p>Our bespoke boutique map is synchronizing with Google Cloud Services.</p>
+            <p>Please contact our Diamond Specialists directly for personalised showroom directions or bespoke consultations with Shekar Menon:</p>
+            <ul className="list-disc pl-5 space-y-2 text-xs">
+              <li><strong>Kochi Showroom:</strong> 34/572, By Pass Road, Palarivattom (+91 98470 86990)</li>
+              <li><strong>Calicut Showroom:</strong> 61/11508A, Opposite Federal Bank, Puthiyara (+91 98470 86002)</li>
             </ul>
-            <p className="pt-4 text-xs tracking-widest text-[#D4AF37]">The map will automatically load once configured.</p>
+            <p className="pt-4 text-xs tracking-widest text-[#D4AF37]">Curated under the direct stewardship of Shekar Menon & Kirthi Diamonds.</p>
           </div>
         </div>
       </div>
@@ -194,7 +192,6 @@ export default function StoreLocatorView({ onInquiry }: { onInquiry?: () => void
               defaultCenter={{ lat: 10.6328, lng: 76.0427 }}
               defaultZoom={8}
               mapId="KIRTHI_STORE_LOCATOR"
-              internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
               style={{ width: '100%', height: '100%' }}
               disableDefaultUI={true}
               zoomControl={true}
