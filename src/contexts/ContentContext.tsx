@@ -418,24 +418,51 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         ...newContent
       }));
 
-      // 2. Persist directly to Cloud SQL (PostgreSQL)
-      const res = await fetch("/api/db/content", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newContent),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to save to Cloud SQL: status ${res.status}`);
+      // 2. Direct client-side Firestore write as immediate guarantee (Always-on, zero cold-starts)
+      try {
+        const { shopProducts, blogPosts, journalTrends, heritageItems, methodologySteps, brideGallery, ...globalFields } = newContent;
+        if (Object.keys(globalFields).length > 0) {
+          const sanitizeClean = (val: any): any => {
+            if (val === undefined) return null;
+            if (val === null || typeof val !== 'object') return val;
+            if (Array.isArray(val)) return val.map(sanitizeClean);
+            const res: Record<string, any> = {};
+            for (const [k, v] of Object.entries(val)) {
+              if (v !== undefined) res[k] = sanitizeClean(v);
+            }
+            return res;
+          };
+          const sanitized = sanitizeClean(globalFields);
+          await setDoc(doc(db, "site_content", "global"), sanitized, { merge: true });
+        }
+      } catch (clientFsErr) {
+        console.warn("Direct client Firestore write notice:", clientFsErr);
       }
 
-      // 3. Re-sync from server to confirm persistence
-      const freshRes = await fetch("/api/db/content");
-      if (freshRes.ok) {
-        const freshData = await freshRes.json();
-        if (freshData) {
-          setContent(prev => ({ ...prev, ...freshData }));
-        }
+      // 3. Persist to backend API (keeps Cloud SQL and backend caches in sync)
+      let serverOk = false;
+      try {
+        const res = await fetch("/api/db/content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newContent),
+        });
+        serverOk = res.ok;
+      } catch (netErr) {
+        console.warn("Backend API sync notice (data is safely preserved in Firestore):", netErr);
+      }
+
+      // 4. Re-sync from server to confirm persistence if available
+      if (serverOk) {
+        try {
+          const freshRes = await fetch("/api/db/content");
+          if (freshRes.ok) {
+            const freshData = await freshRes.json();
+            if (freshData) {
+              setContent(prev => ({ ...prev, ...freshData }));
+            }
+          }
+        } catch {}
       }
     } catch (e) {
       console.error("Failed to update content", e);

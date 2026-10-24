@@ -68,6 +68,19 @@ export async function getCollectionFromFirestore(name: string): Promise<any[]> {
   }
 }
 
+export function sanitizeForFirestore(obj: any): any {
+  if (obj === undefined) return null;
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+  const clean: Record<string, any> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) {
+      clean[k] = sanitizeForFirestore(v);
+    }
+  }
+  return clean;
+}
+
 export async function saveCollectionToFirestore(name: string, items: any[]) {
   const cleanName = name.replace(/^site_content_/, '');
   const firestoreCollection = `site_content_${cleanName}`;
@@ -77,7 +90,8 @@ export async function saveCollectionToFirestore(name: string, items: any[]) {
     const item = validItems[idx];
     if (!item || typeof item !== 'object') continue;
     const id = String(item.id || `${cleanName}_${Date.now()}_${idx}`);
-    await setDoc(doc(db, firestoreCollection, id), { ...item, id });
+    const sanitized = sanitizeForFirestore({ ...item, id });
+    await setDoc(doc(db, firestoreCollection, id), sanitized, { merge: true });
   }
 
   // Delete removed items
@@ -110,7 +124,8 @@ export async function saveContentToFirestore(newContent: any) {
   if (Object.keys(globalFields).length > 0) {
     const existingSnap = await getDoc(doc(db, "site_content", "global"));
     const existing = existingSnap.exists() ? existingSnap.data() : {};
-    await setDoc(doc(db, "site_content", "global"), { ...existing, ...globalFields });
+    const sanitized = sanitizeForFirestore({ ...existing, ...globalFields });
+    await setDoc(doc(db, "site_content", "global"), sanitized, { merge: true });
   }
 
   if (Array.isArray(shopProducts)) await saveCollectionToFirestore('shopProducts', shopProducts);

@@ -29,7 +29,7 @@ export const createPool = () => {
     const host = getResolvedSqlHost();
     global._postgresPool = new Pool({
       host,
-      user: process.env.SQL_USER || "ai_studio_app_user",
+      user: process.env.SQL_USER || "kirthi_app_user",
       password: process.env.SQL_PASSWORD,
       database: process.env.SQL_DB_NAME || "cloud_sql_development_database",
       max: 10,
