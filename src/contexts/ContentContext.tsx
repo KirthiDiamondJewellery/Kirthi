@@ -360,6 +360,7 @@ interface ContentContextType {
   content: SiteContent;
   loading: boolean;
   updateContent: (newContent: Partial<SiteContent>) => Promise<void>;
+  updateLocalContent: (newContent: Partial<SiteContent>) => void;
 }
 
 const ContentContext = createContext<ContentContextType | undefined>(undefined);
@@ -410,13 +411,15 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Reflect already-persisted changes without issuing another database request.
+  const updateLocalContent = useCallback((newContent: Partial<SiteContent>) => {
+    setContent(prev => ({ ...prev, ...newContent }));
+  }, []);
+
   const updateContent = useCallback(async (newContent: Partial<SiteContent>) => {
     try {
       // 1. Immediately reflect updates in local client-side state
-      setContent(prev => ({
-        ...prev,
-        ...newContent
-      }));
+      updateLocalContent(newContent);
 
       // 2. Direct client-side Firestore write as immediate guarantee (Always-on, zero cold-starts)
       try {
@@ -468,10 +471,10 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       console.error("Failed to update content", e);
       throw e;
     }
-  }, []);
+  }, [updateLocalContent]);
 
   return (
-    <ContentContext.Provider value={{ content, loading, updateContent }}>
+    <ContentContext.Provider value={{ content, loading, updateContent, updateLocalContent }}>
       {children}
     </ContentContext.Provider>
   );

@@ -1508,7 +1508,7 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
   );
 };
 export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => {
-  const { updateContent } = useContent();
+  const { updateLocalContent } = useContent();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1574,13 +1574,7 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
         }
 
         const cleanName = collectionName.replace(/^site_content_/, '');
-        if (typeof updateContent === 'function') {
-          try {
-            await updateContent({ [cleanName]: newItems });
-          } catch (ctxErr) {
-            console.warn("Context update notice:", ctxErr);
-          }
-        }
+        updateLocalContent({ [cleanName]: newItems });
 
         setStatusMsg("✓ All changes saved to database!");
         setTimeout(() => setStatusMsg(null), 4000);
