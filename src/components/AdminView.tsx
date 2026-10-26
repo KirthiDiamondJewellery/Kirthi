@@ -1508,6 +1508,7 @@ export const ArrayEditor = ({ title, items, onChange, schema }: any) => {
   );
 };
 export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => {
+  const { updateLocalContent } = useContent();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1518,7 +1519,7 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
     const fetchColl = async () => {
       setLoading(true);
       try {
-        // Fetch from Cloud SQL PostgreSQL first
+        // Fetch from database API first
         const res = await fetch(`/api/db/collection/${collectionName}`);
         if (res.ok) {
           const sqlItems = await res.json();
@@ -1548,7 +1549,7 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
   const handlePersistToCloudSql = async (newItems: any[]) => {
     setItems(newItems);
     setSaving(true);
-    setStatusMsg("Saving changes to Cloud SQL (PostgreSQL)...");
+    setStatusMsg("Saving changes to database...");
 
     let attempt = 0;
     const maxAttempts = 3;
@@ -1565,7 +1566,7 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
           const errJson = await res.json().catch(() => ({}));
           const errMsg = errJson.details || errJson.error || `status ${res.status}`;
           if (attempt < maxAttempts && (errMsg.includes('ENOENT') || errMsg.includes('ECONNREFUSED') || errMsg.includes('reconnecting') || errMsg.includes('waking up'))) {
-            setStatusMsg(`Cloud SQL database waking up (attempt ${attempt}/${maxAttempts}), retrying in 2s...`);
+            setStatusMsg(`Database syncing (attempt ${attempt}/${maxAttempts}), retrying in 2s...`);
             await new Promise(r => setTimeout(r, 2000));
             continue;
           }
@@ -1573,9 +1574,9 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
         }
 
         const cleanName = collectionName.replace(/^site_content_/, '');
-        updateContent({ [cleanName]: newItems });
+        updateLocalContent({ [cleanName]: newItems });
 
-        setStatusMsg("✓ All changes saved to Cloud SQL (PostgreSQL) database!");
+        setStatusMsg("✓ All changes saved to database!");
         setTimeout(() => setStatusMsg(null), 4000);
         break;
       } catch (err: any) {
@@ -1597,7 +1598,7 @@ export const PaginatedArrayEditor = ({ title, collectionName, schema }: any) => 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/[0.03] border border-white/10 p-3.5 rounded gap-3">
         <div className="flex items-center gap-3">
           <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-medium">{title}</span>
-          <span className="text-[10px] text-white/40">Direct Cloud SQL (PostgreSQL) Persistence</span>
+          <span className="text-[10px] text-white/40">Kirthi Diamonds Database Persistence</span>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {statusMsg && (
